@@ -1,14 +1,60 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SubjectCard } from "@/components/subject-card";
+import { getCalendar } from "@/server/functions";
+import type { CalendarDay } from "@/types";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+	loader: async () => getCalendar(),
+	component: HomePage,
+});
 
-function Home() {
+function HomePage() {
+	const calendar = Route.useLoaderData() as CalendarDay[];
+
+	// Today's weekday ID (JS: 0=Sunday, API: 1=Monday..7=Sunday)
+	const todayJsDay = new Date().getDay();
+	const todayApiId = todayJsDay === 0 ? 7 : todayJsDay;
+	const todayTab = String(todayApiId);
+
 	return (
-		<div className="p-8">
-			<h1 className="text-4xl font-bold">Welcome to TanStack Start</h1>
-			<p className="mt-4 text-lg">
-				Edit <code>src/routes/index.tsx</code> to get started.
-			</p>
+		<div>
+			<h1 className="mb-4 text-2xl font-bold">每日放送</h1>
+			<Tabs defaultValue={todayTab}>
+				<TabsList className="mb-4">
+					{calendar.map((day) => (
+						<TabsTrigger key={day.weekday.id} value={String(day.weekday.id)}>
+							{day.weekday.cn}
+						</TabsTrigger>
+					))}
+				</TabsList>
+				{calendar.map((day) => (
+					<TabsContent
+						key={day.weekday.id}
+						value={String(day.weekday.id)}
+						className="mt-0"
+					>
+						{day.items.length === 0 ? (
+							<p className="py-8 text-center text-muted-foreground">
+								今日无放送
+							</p>
+						) : (
+							<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+								{day.items.map((item) => (
+									<SubjectCard
+										key={item.id}
+										id={item.id}
+										name={item.name}
+										nameCn={item.name_cn}
+										image={item.images?.large || item.images?.common}
+										score={item.rating?.score ?? 0}
+									/>
+								))}
+							</div>
+						)}
+					</TabsContent>
+				))}
+			</Tabs>
 		</div>
 	);
 }
