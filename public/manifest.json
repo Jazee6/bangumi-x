@@ -1,0 +1,14 @@
+{
+	"name": "Bangumi X",
+	"short_name": "Bangumi X",
+	"display": "standalone",
+	"theme_color": "#171717",
+	"background_color": "#171717",
+	"start_url": "/",
+	"icons": [
+		{
+			"src": "/icon.svg",
+			"type": "image/svg+xml"
+		}
+	]
+}

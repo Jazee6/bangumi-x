@@ -1,5 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
-import { bgmFetch } from "./utils";
+import { bgmFetch, buildParams } from "./utils";
+import {
+	idSchema,
+	subjectIdSchema,
+	characterIdSchema,
+	personIdSchema,
+	browseSubjectsSchema,
+	searchSubjectsSchema,
+	searchCharactersSchema,
+	searchPersonsSchema,
+} from "./schemas";
 import type {
 	CalendarDay,
 	Subject,
@@ -14,45 +24,35 @@ import type {
 	CharacterPerson,
 	PersonCharacter,
 	PagedResponse,
-	SearchSubjectsBody,
-	SearchCharactersBody,
-	SearchPersonsBody,
-	BrowseSubjectsQuery,
 } from "@/types";
 
 // ─── Calendar ─────────────────────────────────────────────
 
 export const getCalendar = createServerFn().handler(async () => {
-	return bgmFetch<CalendarDay[]>("/calendar");
+	return bgmFetch<CalendarDay[]>("/calendar", { cacheTtl: 21600 });
 });
 
 // ─── Subject ──────────────────────────────────────────────
 
 export const getSubject = createServerFn()
-	.validator((d: { id: number }) => d)
+	.validator(idSchema)
 	.handler(async ({ data }) => {
-		return bgmFetch<Subject>(`/v0/subjects/${data.id}`);
+		return bgmFetch<Subject>(`/v0/subjects/${data.id}`, { cacheTtl: 3600 });
 	});
 
 export const browseSubjects = createServerFn()
-	.validator((d: BrowseSubjectsQuery) => d)
+	.validator(browseSubjectsSchema)
 	.handler(async ({ data }) => {
-		const params = new URLSearchParams();
-		params.set("type", String(data.type));
-		if (data.sort) params.set("sort", data.sort);
-		if (data.year) params.set("year", String(data.year));
-		if (data.month) params.set("month", String(data.month));
-		if (data.limit) params.set("limit", String(data.limit));
-		if (data.offset) params.set("offset", String(data.offset));
-		return bgmFetch<PagedResponse<Subject>>(`/v0/subjects?${params}`);
+		const params = buildParams(data);
+		return bgmFetch<PagedResponse<Subject>>(`/v0/subjects?${params}`, {
+			cacheTtl: 600,
+		});
 	});
 
 export const searchSubjects = createServerFn({ method: "POST" })
-	.validator((d: SearchSubjectsBody & { limit?: number; offset?: number }) => d)
+	.validator(searchSubjectsSchema)
 	.handler(async ({ data }) => {
-		const params = new URLSearchParams();
-		if (data.limit) params.set("limit", String(data.limit));
-		if (data.offset) params.set("offset", String(data.offset));
+		const params = buildParams({ limit: data.limit, offset: data.offset });
 		return bgmFetch<PagedResponse<Subject>>(`/v0/search/subjects?${params}`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -61,55 +61,58 @@ export const searchSubjects = createServerFn({ method: "POST" })
 				sort: data.sort,
 				filter: data.filter,
 			}),
+			cacheTtl: 300,
 		});
 	});
 
 export const getSubjectEpisodes = createServerFn()
-	.validator((d: { subjectId: number }) => d)
+	.validator(subjectIdSchema)
 	.handler(async ({ data }) => {
 		return bgmFetch<PagedResponse<Episode>>(
 			`/v0/episodes?subject_id=${data.subjectId}`,
+			{ cacheTtl: 600 },
 		);
 	});
 
 export const getSubjectCharacters = createServerFn()
-	.validator((d: { subjectId: number }) => d)
+	.validator(subjectIdSchema)
 	.handler(async ({ data }) => {
 		return bgmFetch<RelatedCharacter[]>(
 			`/v0/subjects/${data.subjectId}/characters`,
+			{ cacheTtl: 600 },
 		);
 	});
 
 export const getSubjectPersons = createServerFn()
-	.validator((d: { subjectId: number }) => d)
+	.validator(subjectIdSchema)
 	.handler(async ({ data }) => {
-		return bgmFetch<RelatedPerson[]>(`/v0/subjects/${data.subjectId}/persons`);
+		return bgmFetch<RelatedPerson[]>(`/v0/subjects/${data.subjectId}/persons`, {
+			cacheTtl: 600,
+		});
 	});
 
 // ─── Episode ──────────────────────────────────────────────
 
 export const getEpisode = createServerFn()
-	.validator((d: { id: number }) => d)
+	.validator(idSchema)
 	.handler(async ({ data }) => {
-		return bgmFetch<EpisodeDetail>(`/v0/episodes/${data.id}`);
+		return bgmFetch<EpisodeDetail>(`/v0/episodes/${data.id}`, {
+			cacheTtl: 3600,
+		});
 	});
 
 // ─── Character ────────────────────────────────────────────
 
 export const getCharacter = createServerFn()
-	.validator((d: { id: number }) => d)
+	.validator(idSchema)
 	.handler(async ({ data }) => {
-		return bgmFetch<Character>(`/v0/characters/${data.id}`);
+		return bgmFetch<Character>(`/v0/characters/${data.id}`, { cacheTtl: 3600 });
 	});
 
 export const searchCharacters = createServerFn({ method: "POST" })
-	.validator(
-		(d: SearchCharactersBody & { limit?: number; offset?: number }) => d,
-	)
+	.validator(searchCharactersSchema)
 	.handler(async ({ data }) => {
-		const params = new URLSearchParams();
-		if (data.limit) params.set("limit", String(data.limit));
-		if (data.offset) params.set("offset", String(data.offset));
+		const params = buildParams({ limit: data.limit, offset: data.offset });
 		return bgmFetch<PagedResponse<Character>>(
 			`/v0/search/characters?${params}`,
 			{
@@ -119,40 +122,41 @@ export const searchCharacters = createServerFn({ method: "POST" })
 					keyword: data.keyword,
 					filter: data.filter,
 				}),
+				cacheTtl: 300,
 			},
 		);
 	});
 
 export const getCharacterSubjects = createServerFn()
-	.validator((d: { characterId: number }) => d)
+	.validator(characterIdSchema)
 	.handler(async ({ data }) => {
 		return bgmFetch<RelatedSubject[]>(
 			`/v0/characters/${data.characterId}/subjects`,
+			{ cacheTtl: 600 },
 		);
 	});
 
 export const getCharacterPersons = createServerFn()
-	.validator((d: { characterId: number }) => d)
+	.validator(characterIdSchema)
 	.handler(async ({ data }) => {
 		return bgmFetch<CharacterPerson[]>(
 			`/v0/characters/${data.characterId}/persons`,
+			{ cacheTtl: 600 },
 		);
 	});
 
 // ─── Person ───────────────────────────────────────────────
 
 export const getPerson = createServerFn()
-	.validator((d: { id: number }) => d)
+	.validator(idSchema)
 	.handler(async ({ data }) => {
-		return bgmFetch<PersonDetail>(`/v0/persons/${data.id}`);
+		return bgmFetch<PersonDetail>(`/v0/persons/${data.id}`, { cacheTtl: 3600 });
 	});
 
 export const searchPersons = createServerFn({ method: "POST" })
-	.validator((d: SearchPersonsBody & { limit?: number; offset?: number }) => d)
+	.validator(searchPersonsSchema)
 	.handler(async ({ data }) => {
-		const params = new URLSearchParams();
-		if (data.limit) params.set("limit", String(data.limit));
-		if (data.offset) params.set("offset", String(data.offset));
+		const params = buildParams({ limit: data.limit, offset: data.offset });
 		return bgmFetch<PagedResponse<Person>>(`/v0/search/persons?${params}`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -160,19 +164,23 @@ export const searchPersons = createServerFn({ method: "POST" })
 				keyword: data.keyword,
 				filter: data.filter,
 			}),
+			cacheTtl: 300,
 		});
 	});
 
 export const getPersonSubjects = createServerFn()
-	.validator((d: { personId: number }) => d)
+	.validator(personIdSchema)
 	.handler(async ({ data }) => {
-		return bgmFetch<RelatedSubject[]>(`/v0/persons/${data.personId}/subjects`);
+		return bgmFetch<RelatedSubject[]>(`/v0/persons/${data.personId}/subjects`, {
+			cacheTtl: 600,
+		});
 	});
 
 export const getPersonCharacters = createServerFn()
-	.validator((d: { personId: number }) => d)
+	.validator(personIdSchema)
 	.handler(async ({ data }) => {
 		return bgmFetch<PersonCharacter[]>(
 			`/v0/persons/${data.personId}/characters`,
+			{ cacheTtl: 600 },
 		);
 	});

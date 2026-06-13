@@ -1,36 +1,43 @@
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
+import { zValidator } from "@hono/zod-validator";
+import { cache } from "hono/cache";
+import { proxy } from "hono/proxy";
+import { z } from "zod";
+
+const ALLOWED_HOSTS = ["lain.bgm.tv"];
+
+const imageQuerySchema = z.object({
+	url: z.url().refine((val) => {
+		try {
+			return ALLOWED_HOSTS.includes(new URL(val).hostname);
+		} catch {
+			return false;
+		}
+	}, "Host not allowed"),
+});
 
 export const app = new Hono();
 
 // Image proxy: bypass hotlink protection from lain.bgm.tv
-app.get("/api/image", async (c) => {
-	const url = c.req.query("url");
-	if (!url) {
-		return c.text("Missing url parameter", 400);
+app.get(
+	"/api/image",
+	cache({
+		cacheName: "image-proxy",
+		cacheControl: "max-age=604800, immutable",
+	}),
+	zValidator("query", imageQuerySchema),
+	async (c) => {
+		const { url } = c.req.valid("query");
+
+		return proxy(url);
+	},
+);
+
+app.onError((err, c) => {
+	if (err instanceof HTTPException) {
+		return err.getResponse();
 	}
-
-	try {
-		const res = await fetch(url, {
-			headers: {
-				Referer: "https://bgm.tv",
-				"User-Agent":
-					"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-			},
-		});
-
-		if (!res.ok) {
-			return c.text("Failed to fetch image", 502);
-		}
-
-		const contentType = res.headers.get("Content-Type") || "image/jpeg";
-		return new Response(res.body, {
-			status: 200,
-			headers: {
-				"Content-Type": contentType,
-				"Cache-Control": "public, max-age=604800, immutable",
-			},
-		});
-	} catch {
-		return c.text("Image proxy error", 500);
-	}
+	console.error(err);
+	return c.text("Internal Server Error", 500);
 });

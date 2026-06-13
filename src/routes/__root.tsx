@@ -28,7 +28,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
 			{ title: "Bangumi X" },
 		],
-		links: [{ rel: "stylesheet", href: appCss }],
+		links: [
+			{ rel: "stylesheet", href: appCss },
+			{ rel: "icon", type: "image/svg+xml", href: "/icon.svg" },
+			{ rel: "manifest", href: "/manifest.json" },
+		],
 	}),
 	shellComponent: RootDocument,
 	notFoundComponent: () => (
