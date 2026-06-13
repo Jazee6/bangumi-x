@@ -1,21 +1,21 @@
+import { TanStackDevtools } from "@tanstack/react-devtools";
+import type { QueryClient } from "@tanstack/react-query";
 import {
-	HeadContent,
-	Scripts,
 	createRootRouteWithContext,
+	HeadContent,
+	Link,
+	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanStackDevtools } from "@tanstack/react-devtools";
+import { FileQuestionIcon } from "lucide-react";
 import { ThemeProvider } from "next-themes";
+import { AppSidebar } from "@/components/app-sidebar";
+import { EmptyState } from "@/components/empty-state";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
-
 import appCss from "../styles.css?url";
-
-import type { QueryClient } from "@tanstack/react-query";
 
 interface MyRouterContext {
 	queryClient: QueryClient;
@@ -31,6 +31,21 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		links: [{ rel: "stylesheet", href: appCss }],
 	}),
 	shellComponent: RootDocument,
+	notFoundComponent: () => (
+		<div className="flex flex-col items-center gap-4">
+			<EmptyState
+				icon={FileQuestionIcon}
+				title="页面未找到"
+				description="你访问的页面不存在"
+			/>
+			<Link
+				to="/"
+				className="text-sm text-primary underline-offset-4 hover:underline"
+			>
+				返回首页
+			</Link>
+		</div>
+	),
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {

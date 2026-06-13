@@ -1,13 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { PersonCard } from "@/components/person-card";
-import { SearchInput } from "@/components/search-input";
+import { createFileRoute } from "@tanstack/react-router";
+import { useCallback, useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { InfiniteScroll } from "@/components/infinite-scroll";
+import { PersonCard } from "@/components/person-card";
+import { SearchInput } from "@/components/search-input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { searchCharacters } from "@/server/functions";
-import type { PagedResponse, Character } from "@/types";
+import type { Character, PagedResponse } from "@/types";
 
 const PAGE_SIZE = 20;
 

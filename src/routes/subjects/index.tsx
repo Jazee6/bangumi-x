@@ -1,6 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useCallback, useState } from "react";
+import { EmptyState } from "@/components/empty-state";
+import { InfiniteScroll } from "@/components/infinite-scroll";
+import { SearchInput } from "@/components/search-input";
+import { SubjectCard } from "@/components/subject-card";
 import {
 	Select,
 	SelectContent,
@@ -8,14 +12,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { SubjectCard } from "@/components/subject-card";
-import { SearchInput } from "@/components/search-input";
-import { EmptyState } from "@/components/empty-state";
-import { InfiniteScroll } from "@/components/infinite-scroll";
 import { Skeleton } from "@/components/ui/skeleton";
 import { browseSubjects, searchSubjects } from "@/server/functions";
-import { SubjectType, SubjectTypeLabel } from "@/types";
 import type { PagedResponse, Subject } from "@/types";
+import { SubjectType, SubjectTypeLabel } from "@/types";
 
 const PAGE_SIZE = 20;
 
@@ -24,6 +24,24 @@ export const Route = createFileRoute("/subjects/")({
 		browseSubjects({
 			data: { type: SubjectType.Anime, sort: "rank", limit: PAGE_SIZE },
 		}),
+	pendingComponent: () => (
+		<div>
+			<Skeleton className="mb-4 h-8 w-16" />
+			<div className="mb-6 flex flex-col gap-3 sm:flex-row">
+				<Skeleton className="h-10 flex-1" />
+				<Skeleton className="h-10 w-full sm:w-40" />
+			</div>
+			<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+				{Array.from({ length: PAGE_SIZE }).map((_, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
+					<div key={`sk-${i}`}>
+						<Skeleton className="aspect-[3/4] rounded-lg" />
+						<Skeleton className="mt-2 h-4 w-3/4" />
+					</div>
+				))}
+			</div>
+		</div>
+	),
 	component: SubjectsPage,
 });
 

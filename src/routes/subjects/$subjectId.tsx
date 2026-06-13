@@ -1,22 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { ProxyImage } from "@/components/proxy-image";
 import { PersonCard } from "@/components/person-card";
+import { ProxyImage } from "@/components/proxy-image";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	getSubject,
-	getSubjectEpisodes,
 	getSubjectCharacters,
+	getSubjectEpisodes,
 	getSubjectPersons,
 } from "@/server/functions";
 import {
-	SubjectTypeLabel,
-	EpTypeLabel,
-	type Subject,
 	type Episode,
+	EpTypeLabel,
+	type PagedResponse,
 	type RelatedCharacter,
 	type RelatedPerson,
-	type PagedResponse,
+	type Subject,
+	SubjectTypeLabel,
 } from "@/types";
 
 interface LoaderData {
@@ -42,6 +43,36 @@ export const Route = createFileRoute("/subjects/$subjectId")({
 			persons: persons as RelatedPerson[],
 		} satisfies LoaderData;
 	},
+	pendingComponent: () => (
+		<div className="max-w-5xl">
+			<div className="flex flex-col gap-6 sm:flex-row">
+				<Skeleton className="aspect-[3/4] w-40 shrink-0 self-start rounded-lg" />
+				<div className="min-w-0 flex-1 space-y-3">
+					<Skeleton className="h-7 w-48" />
+					<Skeleton className="h-4 w-32" />
+					<div className="flex gap-2">
+						<Skeleton className="h-6 w-16" />
+						<Skeleton className="h-6 w-20" />
+						<Skeleton className="h-6 w-14" />
+					</div>
+					<Skeleton className="h-4 w-full" />
+					<Skeleton className="h-4 w-5/6" />
+					<Skeleton className="h-4 w-3/4" />
+				</div>
+			</div>
+			<div className="mt-8 space-y-4">
+				<div className="flex gap-2">
+					<Skeleton className="h-9 w-20" />
+					<Skeleton className="h-9 w-20" />
+					<Skeleton className="h-9 w-20" />
+				</div>
+				{Array.from({ length: 3 }).map((_, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
+					<Skeleton key={`row-${i}`} className="h-16 w-full" />
+				))}
+			</div>
+		</div>
+	),
 	component: SubjectDetailPage,
 });
 

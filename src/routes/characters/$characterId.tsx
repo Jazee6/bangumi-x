@@ -1,20 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { ProxyImage } from "@/components/proxy-image";
 import { PersonCard } from "@/components/person-card";
+import { ProxyImage } from "@/components/proxy-image";
 import { SubjectCard } from "@/components/subject-card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	getCharacter,
-	getCharacterSubjects,
 	getCharacterPersons,
+	getCharacterSubjects,
 } from "@/server/functions";
 import {
-	CharacterTypeLabel,
 	BloodTypeLabel,
 	type Character,
-	type RelatedSubject,
 	type CharacterPerson,
+	CharacterTypeLabel,
+	type RelatedSubject,
 } from "@/types";
 
 interface LoaderData {
@@ -37,6 +38,39 @@ export const Route = createFileRoute("/characters/$characterId")({
 		]);
 		return { character, subjects, persons } satisfies LoaderData;
 	},
+	pendingComponent: () => (
+		<div className="max-w-5xl">
+			<div className="flex flex-col gap-6 sm:flex-row">
+				<Skeleton className="aspect-square w-32 shrink-0 self-start rounded-lg" />
+				<div className="min-w-0 flex-1 space-y-3">
+					<Skeleton className="h-7 w-40" />
+					<div className="flex gap-2">
+						<Skeleton className="h-6 w-16" />
+						<Skeleton className="h-6 w-12" />
+						<Skeleton className="h-6 w-20" />
+					</div>
+					<Skeleton className="h-4 w-full" />
+					<Skeleton className="h-4 w-5/6" />
+					<Skeleton className="h-4 w-3/4" />
+				</div>
+			</div>
+			<div className="mt-8 space-y-4">
+				<div className="flex gap-2">
+					<Skeleton className="h-9 w-24" />
+					<Skeleton className="h-9 w-24" />
+				</div>
+				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+					{Array.from({ length: 6 }).map((_, i) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
+						<div key={`card-${i}`}>
+							<Skeleton className="aspect-[3/4] rounded-lg" />
+							<Skeleton className="mt-2 h-4 w-3/4" />
+						</div>
+					))}
+				</div>
+			</div>
+		</div>
+	),
 	component: CharacterDetailPage,
 });
 

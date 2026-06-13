@@ -1,15 +1,34 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeftIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getEpisode } from "@/server/functions";
-import { EpTypeLabel, type EpisodeDetail } from "@/types";
-import { ArrowLeftIcon } from "lucide-react";
+import { type EpisodeDetail, EpTypeLabel } from "@/types";
 
 export const Route = createFileRoute("/episodes/$episodeId")({
 	loader: async ({ params }) => {
 		const id = Number(params.episodeId);
 		return getEpisode({ data: { id } }) as Promise<EpisodeDetail>;
 	},
+	pendingComponent: () => (
+		<div className="max-w-3xl">
+			<Skeleton className="mb-4 h-8 w-24" />
+			<Skeleton className="h-7 w-64" />
+			<Skeleton className="mt-2 h-4 w-40" />
+			<div className="mt-4 flex gap-2">
+				<Skeleton className="h-6 w-16" />
+				<Skeleton className="h-6 w-24" />
+				<Skeleton className="h-6 w-16" />
+			</div>
+			<div className="mt-6 space-y-2">
+				<Skeleton className="h-5 w-12" />
+				<Skeleton className="h-4 w-full" />
+				<Skeleton className="h-4 w-5/6" />
+				<Skeleton className="h-4 w-3/4" />
+			</div>
+		</div>
+	),
 	component: EpisodeDetailPage,
 });
 

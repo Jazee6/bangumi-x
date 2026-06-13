@@ -1,11 +1,32 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SubjectCard } from "@/components/subject-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCalendar } from "@/server/functions";
 import type { CalendarDay } from "@/types";
 
 export const Route = createFileRoute("/")({
 	loader: async () => getCalendar(),
+	pendingComponent: () => (
+		<div>
+			<Skeleton className="mb-4 h-8 w-32" />
+			<div className="mb-4 flex gap-2">
+				{Array.from({ length: 7 }).map((_, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
+					<Skeleton key={`tab-${i}`} className="h-9 w-16" />
+				))}
+			</div>
+			<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+				{Array.from({ length: 6 }).map((_, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
+					<div key={`card-${i}`}>
+						<Skeleton className="aspect-3/4 rounded-lg" />
+						<Skeleton className="mt-2 h-4 w-3/4" />
+					</div>
+				))}
+			</div>
+		</div>
+	),
 	component: HomePage,
 });
 
