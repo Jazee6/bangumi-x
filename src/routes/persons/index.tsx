@@ -6,8 +6,8 @@ import { EmptyState } from "@/components/empty-state";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import { PersonCard } from "@/components/person-card";
 import { SearchInput } from "@/components/search-input";
+import { PersonCardSkeleton } from "@/components/skeletons/person-card-skeleton";
 import { Typography } from "@/components/ui/typography";
-import { Skeleton } from "@/components/ui/skeleton";
 import { searchPersons } from "@/server/functions";
 import type { PagedResponse, Person } from "@/types";
 
@@ -74,13 +74,7 @@ function PersonsPage() {
 				<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 					{Array.from({ length: 8 }).map((_, i) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
-						<div key={`sk-${i}`} className="flex items-center gap-3">
-							<Skeleton className="size-12 rounded-full" />
-							<div className="flex-1">
-								<Skeleton className="h-4 w-24" />
-								<Skeleton className="mt-1 h-3 w-16" />
-							</div>
-						</div>
+						<PersonCardSkeleton key={`sk-${i}`} />
 					))}
 				</div>
 			) : persons.length === 0 ? (

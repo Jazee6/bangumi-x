@@ -3,9 +3,16 @@ import { CharacterItem } from "@/components/character-item";
 import { EpisodeItem } from "@/components/episode-item";
 import { PersonItem } from "@/components/person-item";
 import { ProxyImage } from "@/components/proxy-image";
+import { EpisodeItemSkeleton } from "@/components/skeletons/episode-item-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+	tabsListVariants,
+} from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 import {
 	getSubject,
@@ -90,15 +97,17 @@ export const Route = createFileRoute("/subjects/$subjectId")({
 				</div>
 			</div>
 			<div className="mt-8 space-y-4">
-				<div className="flex gap-2">
-					<Skeleton className="h-9 w-20" />
-					<Skeleton className="h-9 w-20" />
-					<Skeleton className="h-9 w-20" />
+				<div className={tabsListVariants()}>
+					<Skeleton className="h-7 w-16 rounded-full" />
+					<Skeleton className="h-7 w-16 rounded-full" />
+					<Skeleton className="h-7 w-16 rounded-full" />
 				</div>
-				{Array.from({ length: 3 }).map((_, i) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
-					<Skeleton key={`row-${i}`} className="h-16 w-full" />
-				))}
+				<div className="space-y-2">
+					{Array.from({ length: 8 }).map((_, i) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
+						<EpisodeItemSkeleton key={`row-${i}`} />
+					))}
+				</div>
 			</div>
 		</div>
 	),

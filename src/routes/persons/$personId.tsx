@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ProxyImage } from "@/components/proxy-image";
+import { SubjectCardSkeleton } from "@/components/skeletons/subject-card-skeleton";
 import { SubjectCard } from "@/components/subject-card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,7 +12,13 @@ import {
 	ItemTitle,
 } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+	tabsListVariants,
+} from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 import {
 	getPerson,
@@ -70,17 +77,14 @@ export const Route = createFileRoute("/persons/$personId")({
 				</div>
 			</div>
 			<div className="mt-8 space-y-4">
-				<div className="flex gap-2">
-					<Skeleton className="h-9 w-24" />
-					<Skeleton className="h-9 w-24" />
+				<div className={tabsListVariants()}>
+					<Skeleton className="h-7 w-20 rounded-full" />
+					<Skeleton className="h-7 w-20 rounded-full" />
 				</div>
 				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-					{Array.from({ length: 6 }).map((_, i) => (
+					{Array.from({ length: 12 }).map((_, i) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
-						<div key={`card-${i}`}>
-							<Skeleton className="aspect-3/4 rounded-lg" />
-							<Skeleton className="mt-2 h-4 w-3/4" />
-						</div>
+						<SubjectCardSkeleton key={`card-${i}`} />
 					))}
 				</div>
 			</div>

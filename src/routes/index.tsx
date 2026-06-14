@@ -1,7 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SubjectCardSkeleton } from "@/components/skeletons/subject-card-skeleton";
 import { SubjectCard } from "@/components/subject-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+	tabsListVariants,
+} from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 import { getCalendar } from "@/server/functions";
 import type { CalendarDay } from "@/types";
@@ -11,19 +18,16 @@ export const Route = createFileRoute("/")({
 	pendingComponent: () => (
 		<div>
 			<Skeleton className="mb-4 h-8 w-32" />
-			<div className="mb-4 flex gap-2">
+			<div className={`${tabsListVariants()} mb-4 max-w-full overflow-x-auto`}>
 				{Array.from({ length: 7 }).map((_, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
-					<Skeleton key={`tab-${i}`} className="h-9 w-16" />
+					<Skeleton key={`tab-${i}`} className="h-7 w-12 rounded-full" />
 				))}
 			</div>
 			<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-				{Array.from({ length: 6 }).map((_, i) => (
+				{Array.from({ length: 12 }).map((_, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
-					<div key={`card-${i}`}>
-						<Skeleton className="aspect-3/4 rounded-lg" />
-						<Skeleton className="mt-2 h-4 w-3/4" />
-					</div>
+					<SubjectCardSkeleton key={`card-${i}`} />
 				))}
 			</div>
 		</div>
