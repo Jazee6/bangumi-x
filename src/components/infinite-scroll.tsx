@@ -1,4 +1,5 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { Spinner } from "@/components/ui/spinner";
 
 interface InfiniteScrollProps {
 	onLoadMore: () => void;
@@ -39,9 +40,7 @@ export function InfiniteScroll({
 
 	return (
 		<div ref={sentinelRef} className="flex justify-center py-6">
-			{loading && (
-				<div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-			)}
+			{loading && <Spinner className="size-6 text-primary" />}
 		</div>
 	);
 }

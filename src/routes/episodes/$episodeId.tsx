@@ -3,6 +3,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Typography } from "@/components/ui/typography";
 import { getEpisode } from "@/server/functions";
 import { type EpisodeDetail, EpTypeLabel } from "@/types";
 
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/episodes/$episodeId")({
 		return getEpisode({ data: { id } }) as Promise<EpisodeDetail>;
 	},
 	pendingComponent: () => (
-		<div className="max-w-3xl">
+		<div className="max-w-5xl mx-auto">
 			<Skeleton className="mb-4 h-8 w-24" />
 			<Skeleton className="h-7 w-64" />
 			<Skeleton className="mt-2 h-4 w-40" />
@@ -36,11 +37,12 @@ function EpisodeDetailPage() {
 	const episode = Route.useLoaderData() as EpisodeDetail;
 
 	return (
-		<div className="max-w-3xl">
+		<div className="max-w-5xl mx-auto">
 			<Button
 				variant="ghost"
 				size="sm"
 				className="mb-4"
+				nativeButton={false}
 				render={
 					<Link
 						to="/subjects/$subjectId"
@@ -49,12 +51,12 @@ function EpisodeDetailPage() {
 				}
 			>
 				<ArrowLeftIcon className="mr-1 size-4" />
-				返回条目
+				返回
 			</Button>
 
-			<h1 className="text-2xl font-bold">
+			<Typography variant="h1">
 				#{episode.sort} {episode.name_cn || episode.name}
-			</h1>
+			</Typography>
 			{episode.name_cn && episode.name !== episode.name_cn && (
 				<p className="mt-1 text-muted-foreground">{episode.name}</p>
 			)}
@@ -77,7 +79,9 @@ function EpisodeDetailPage() {
 
 			{episode.desc && (
 				<div className="mt-6">
-					<h2 className="mb-2 text-lg font-semibold">简介</h2>
+					<Typography variant="h2" className="mb-2">
+						简介
+					</Typography>
 					<p className="leading-relaxed text-muted-foreground">
 						{episode.desc}
 					</p>

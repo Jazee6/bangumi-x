@@ -1,22 +1,31 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback } from "react";
+import { z } from "zod";
 import { EmptyState } from "@/components/empty-state";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import { PersonCard } from "@/components/person-card";
 import { SearchInput } from "@/components/search-input";
+import { Typography } from "@/components/ui/typography";
 import { Skeleton } from "@/components/ui/skeleton";
 import { searchCharacters } from "@/server/functions";
 import type { Character, PagedResponse } from "@/types";
 
 const PAGE_SIZE = 20;
 
+const searchSchema = z.object({
+	keyword: z.string().optional(),
+});
+
 export const Route = createFileRoute("/characters/")({
+	validateSearch: (search) => searchSchema.parse(search),
 	component: CharactersPage,
 });
 
 function CharactersPage() {
-	const [keyword, setKeyword] = useState("");
+	const search = Route.useSearch();
+	const keyword = search.keyword ?? "";
+	const navigate = useNavigate();
 
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
 		useInfiniteQuery({
@@ -35,13 +44,21 @@ function CharactersPage() {
 
 	const characters = data?.pages.flatMap((page) => page.data) ?? [];
 
-	const handleSearch = useCallback((value: string) => {
-		setKeyword(value);
-	}, []);
+	const handleSearch = useCallback(
+		(value: string) => {
+			navigate({
+				to: ".",
+				search: { keyword: value || undefined },
+			});
+		},
+		[navigate],
+	);
 
 	return (
 		<div>
-			<h1 className="mb-4 text-2xl font-bold">角色</h1>
+			<Typography variant="h1" className="mb-4">
+				角色
+			</Typography>
 
 			<div className="mb-6">
 				<SearchInput
@@ -83,7 +100,7 @@ function CharactersPage() {
 						))}
 					</div>
 					<InfiniteScroll
-						hasMore={!!hasNextPage}
+						hasMore={hasNextPage}
 						loading={isFetchingNextPage}
 						onLoadMore={() => fetchNextPage()}
 					/>

@@ -10,6 +10,7 @@ export function getRouter() {
 		routeTree,
 		context,
 		scrollRestoration: true,
+		defaultStaleTime: 5 * 60 * 1000,
 	});
 
 	setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });

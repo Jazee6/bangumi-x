@@ -139,6 +139,18 @@ body {
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    @apply font-sans scrollbar-track-transparent scrollbar-thumb-border;
   }
+}
+
+@layer utilities {
+  .app-blur {
+    @apply bg-background/80 backdrop-blur-[20px] backdrop-saturate-180;
+  }
+}
+
+.bar {
+  --bprogress-color: var(--primary);
+  --bprogress-height: 4px;
+  --bprogress-box-shadow: 0 0 10px var(--primary), 0 0 5px var(--primary);
 }

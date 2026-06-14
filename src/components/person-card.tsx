@@ -1,5 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { ProxyImage } from "@/components/proxy-image";
+import {
+	Item,
+	ItemActions,
+	ItemContent,
+	ItemDescription,
+	ItemMedia,
+	ItemTitle,
+} from "@/components/ui/item";
 
 interface PersonCardProps {
 	id: number;
@@ -16,18 +24,15 @@ export function PersonCard({ id, name, image, to, subtitle }: PersonCardProps) {
 			: { personId: String(id) };
 
 	return (
-		<Link to={to} params={params} className="group flex items-center gap-3">
-			<div className="size-12 shrink-0 overflow-hidden rounded-full bg-muted">
-				<ProxyImage src={image} alt={name} className="size-full" />
-			</div>
-			<div className="min-w-0">
-				<p className="truncate text-sm font-medium group-hover:underline">
-					{name}
-				</p>
-				{subtitle && (
-					<p className="truncate text-xs text-muted-foreground">{subtitle}</p>
-				)}
-			</div>
-		</Link>
+		<Item variant="outline" render={<Link to={to} params={params} />}>
+			<ItemMedia variant="image">
+				<ProxyImage src={image} alt={name} />
+			</ItemMedia>
+			<ItemContent>
+				<ItemTitle>{name}</ItemTitle>
+				{subtitle && <ItemDescription>{subtitle}</ItemDescription>}
+			</ItemContent>
+			<ItemActions />
+		</Item>
 	);
 }

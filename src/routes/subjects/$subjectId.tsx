@@ -1,9 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { PersonCard } from "@/components/person-card";
+import { createFileRoute } from "@tanstack/react-router";
+import { CharacterItem } from "@/components/character-item";
+import { EpisodeItem } from "@/components/episode-item";
+import { PersonItem } from "@/components/person-item";
 import { ProxyImage } from "@/components/proxy-image";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Typography } from "@/components/ui/typography";
 import {
 	getSubject,
 	getSubjectCharacters,
@@ -12,7 +15,6 @@ import {
 } from "@/server/functions";
 import {
 	type Episode,
-	EpTypeLabel,
 	type PagedResponse,
 	type RelatedCharacter,
 	type RelatedPerson,
@@ -25,6 +27,33 @@ interface LoaderData {
 	episodes: Episode[];
 	characters: RelatedCharacter[];
 	persons: RelatedPerson[];
+}
+
+const characterRelationOrder = ["主角", "配角", "客串", "其他"];
+
+const personRelationOrder = [
+	"原作",
+	"导演",
+	"总导演",
+	"副导演",
+	"系列构成",
+	"脚本",
+	"分镜",
+	"演出",
+	"人物设定",
+	"总作画监督",
+	"作画监督",
+	"原画",
+	"音乐",
+	"主题歌演出",
+	"动画制作",
+	"制作",
+	"其他",
+];
+
+function getRelationScore(relation: string, order: string[]) {
+	const index = order.indexOf(relation);
+	return index === -1 ? order.length : index;
 }
 
 export const Route = createFileRoute("/subjects/$subjectId")({
@@ -44,9 +73,9 @@ export const Route = createFileRoute("/subjects/$subjectId")({
 		} satisfies LoaderData;
 	},
 	pendingComponent: () => (
-		<div className="max-w-5xl">
+		<div className="max-w-5xl mx-auto">
 			<div className="flex flex-col gap-6 sm:flex-row">
-				<Skeleton className="aspect-[3/4] w-40 shrink-0 self-start rounded-lg" />
+				<Skeleton className="aspect-3/4 w-40 shrink-0 self-start rounded-lg" />
 				<div className="min-w-0 flex-1 space-y-3">
 					<Skeleton className="h-7 w-48" />
 					<Skeleton className="h-4 w-32" />
@@ -81,20 +110,20 @@ function SubjectDetailPage() {
 		Route.useLoaderData() as LoaderData;
 
 	return (
-		<div className="max-w-5xl">
+		<div className="max-w-5xl mx-auto">
 			{/* Header */}
 			<div className="flex flex-col gap-6 sm:flex-row">
 				<div className="w-40 shrink-0 self-start">
 					<ProxyImage
 						src={subject.images?.large || subject.images?.common}
 						alt={subject.name_cn || subject.name}
-						className="aspect-[3/4] w-full rounded-lg"
+						className="aspect-3/4 w-full rounded-lg"
 					/>
 				</div>
 				<div className="min-w-0 flex-1">
-					<h1 className="text-2xl font-bold">
+					<Typography variant="h1">
 						{subject.name_cn || subject.name}
-					</h1>
+					</Typography>
 					{subject.name_cn && subject.name !== subject.name_cn && (
 						<p className="mt-1 text-muted-foreground">{subject.name}</p>
 					)}
@@ -118,7 +147,7 @@ function SubjectDetailPage() {
 						)}
 					</div>
 					{subject.summary && (
-						<p className="mt-4 line-clamp-4 text-sm leading-relaxed text-muted-foreground">
+						<p className="mt-4 text-sm leading-relaxed text-muted-foreground">
 							{subject.summary}
 						</p>
 					)}
@@ -151,31 +180,7 @@ function SubjectDetailPage() {
 						) : (
 							<div className="space-y-2">
 								{episodes.map((ep) => (
-									<Link
-										key={ep.id}
-										to="/episodes/$episodeId"
-										params={{ episodeId: String(ep.id) }}
-										className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-accent"
-									>
-										<span className="shrink-0 text-sm font-mono text-muted-foreground">
-											#{ep.sort}
-										</span>
-										<div className="min-w-0 flex-1">
-											<p className="truncate text-sm font-medium">
-												{ep.name_cn || ep.name}
-											</p>
-											<div className="flex gap-2 text-xs text-muted-foreground">
-												{ep.type !== 0 && (
-													<span>
-														{EpTypeLabel[ep.type as keyof typeof EpTypeLabel] ??
-															""}
-													</span>
-												)}
-												{ep.airdate && <span>{ep.airdate}</span>}
-												{ep.duration && <span>{ep.duration}</span>}
-											</div>
-										</div>
-									</Link>
+									<EpisodeItem key={ep.id} episode={ep} />
 								))}
 							</div>
 						)}
@@ -185,17 +190,35 @@ function SubjectDetailPage() {
 						{characters.length === 0 ? (
 							<p className="py-8 text-center text-muted-foreground">暂无角色</p>
 						) : (
-							<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-								{characters.map((c) => (
-									<PersonCard
-										key={c.id}
-										id={c.id}
-										name={c.name}
-										image={c.images?.large || c.images?.medium}
-										to="/characters/$characterId"
-										subtitle={c.relation}
-									/>
-								))}
+							<div className="space-y-6">
+								{Object.entries(
+									characters.reduce<Record<string, typeof characters>>(
+										(acc, c) => {
+											const key = c.relation || "其他";
+											acc[key] ??= [];
+											acc[key].push(c);
+											return acc;
+										},
+										{},
+									),
+								)
+									.sort(
+										([a], [b]) =>
+											getRelationScore(a, characterRelationOrder) -
+											getRelationScore(b, characterRelationOrder),
+									)
+									.map(([relation, items]) => (
+										<div key={relation}>
+											<Typography variant="h3" className="mb-2">
+												{relation}
+											</Typography>
+											<div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+												{items.map((c) => (
+													<CharacterItem key={c.id} character={c} />
+												))}
+											</div>
+										</div>
+									))}
 							</div>
 						)}
 					</TabsContent>
@@ -204,17 +227,32 @@ function SubjectDetailPage() {
 						{persons.length === 0 ? (
 							<p className="py-8 text-center text-muted-foreground">暂无人物</p>
 						) : (
-							<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-								{persons.map((p) => (
-									<PersonCard
-										key={p.id}
-										id={p.id}
-										name={p.name}
-										image={p.images?.large || p.images?.medium}
-										to="/persons/$personId"
-										subtitle={p.relation}
-									/>
-								))}
+							<div className="space-y-6">
+								{Object.entries(
+									persons.reduce<Record<string, typeof persons>>((acc, p) => {
+										const key = p.relation || "其他";
+										acc[key] ??= [];
+										acc[key].push(p);
+										return acc;
+									}, {}),
+								)
+									.sort(
+										([a], [b]) =>
+											getRelationScore(a, personRelationOrder) -
+											getRelationScore(b, personRelationOrder),
+									)
+									.map(([relation, items]) => (
+										<div key={relation}>
+											<Typography variant="h3" className="mb-2">
+												{relation}
+											</Typography>
+											<div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+												{items.map((p) => (
+													<PersonItem key={p.id} person={p} />
+												))}
+											</div>
+										</div>
+									))}
 							</div>
 						)}
 					</TabsContent>

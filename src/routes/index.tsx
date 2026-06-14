@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { SubjectCard } from "@/components/subject-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Typography } from "@/components/ui/typography";
 import { getCalendar } from "@/server/functions";
 import type { CalendarDay } from "@/types";
 
@@ -40,9 +41,11 @@ function HomePage() {
 
 	return (
 		<div>
-			<h1 className="mb-4 text-2xl font-bold">每日放送</h1>
-			<Tabs defaultValue={todayTab}>
-				<TabsList className="mb-4">
+			<Typography variant="h1" className="mb-4">
+				每日放送
+			</Typography>
+			<Tabs defaultValue={todayTab} className="w-full">
+				<TabsList className="mb-4 max-w-full overflow-x-auto">
 					{calendar.map((day) => (
 						<TabsTrigger key={day.weekday.id} value={String(day.weekday.id)}>
 							{day.weekday.cn}

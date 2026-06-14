@@ -5,6 +5,7 @@ import { SubjectCard } from "@/components/subject-card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Typography } from "@/components/ui/typography";
 import {
 	getCharacter,
 	getCharacterPersons,
@@ -39,7 +40,7 @@ export const Route = createFileRoute("/characters/$characterId")({
 		return { character, subjects, persons } satisfies LoaderData;
 	},
 	pendingComponent: () => (
-		<div className="max-w-5xl">
+		<div className="max-w-5xl mx-auto">
 			<div className="flex flex-col gap-6 sm:flex-row">
 				<Skeleton className="aspect-square w-32 shrink-0 self-start rounded-lg" />
 				<div className="min-w-0 flex-1 space-y-3">
@@ -63,7 +64,7 @@ export const Route = createFileRoute("/characters/$characterId")({
 					{Array.from({ length: 6 }).map((_, i) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
 						<div key={`card-${i}`}>
-							<Skeleton className="aspect-[3/4] rounded-lg" />
+							<Skeleton className="aspect-3/4 rounded-lg" />
 							<Skeleton className="mt-2 h-4 w-3/4" />
 						</div>
 					))}
@@ -89,7 +90,7 @@ function CharacterDetailPage() {
 			: null;
 
 	return (
-		<div className="max-w-5xl">
+		<div className="max-w-5xl mx-auto">
 			{/* Header */}
 			<div className="flex flex-col gap-6 sm:flex-row">
 				<div className="w-32 shrink-0 self-start">
@@ -100,7 +101,7 @@ function CharacterDetailPage() {
 					/>
 				</div>
 				<div className="min-w-0 flex-1">
-					<h1 className="text-2xl font-bold">{character.name}</h1>
+					<Typography variant="h1">{character.name}</Typography>
 					<div className="mt-3 flex flex-wrap gap-2">
 						{character.type && (
 							<Badge variant="secondary">

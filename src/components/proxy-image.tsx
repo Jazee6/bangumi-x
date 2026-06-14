@@ -18,11 +18,11 @@ export function ProxyImage({ src, alt, className, ...props }: ProxyImageProps) {
 		return (
 			<div
 				className={cn(
-					"flex items-center justify-center bg-muted text-muted-foreground",
+					"flex items-center justify-center bg-muted text-muted-foreground rounded-xl",
 					className,
 				)}
 			>
-				<ImageIcon className="size-8" />
+				<ImageIcon className="size-6" />
 			</div>
 		);
 	}

@@ -5,7 +5,7 @@ import { cache } from "hono/cache";
 import { proxy } from "hono/proxy";
 import { z } from "zod";
 
-const ALLOWED_HOSTS = ["lain.bgm.tv"];
+const ALLOWED_HOSTS = ["lain.bgm.tv", "bgmimg.anibt.net"];
 
 const imageQuerySchema = z.object({
 	url: z.url().refine((val) => {

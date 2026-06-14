@@ -6,6 +6,7 @@ import {
 	UsersIcon,
 	SunIcon,
 	MoonIcon,
+	TvIcon,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
@@ -14,12 +15,10 @@ import {
 	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
-	SidebarGroupLabel,
 	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
-	SidebarRail,
 } from "@/components/ui/sidebar";
 
 const navItems = [
@@ -35,7 +34,7 @@ export function AppSidebar() {
 	const { theme, setTheme } = useTheme();
 
 	return (
-		<Sidebar collapsible="icon">
+		<Sidebar collapsible="icon" variant="inset">
 			<SidebarHeader>
 				<SidebarMenu>
 					<SidebarMenuItem>
@@ -45,7 +44,7 @@ export function AppSidebar() {
 							tooltip="Bangumi X"
 						>
 							<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-								<FilmIcon className="size-4" />
+								<TvIcon className="size-4" />
 							</div>
 							<span className="text-base font-semibold">Bangumi X</span>
 						</SidebarMenuButton>
@@ -55,7 +54,6 @@ export function AppSidebar() {
 
 			<SidebarContent>
 				<SidebarGroup>
-					<SidebarGroupLabel>导航</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
 							{navItems.map((item) => (
@@ -93,8 +91,6 @@ export function AppSidebar() {
 					</SidebarMenuItem>
 				</SidebarMenu>
 			</SidebarFooter>
-
-			<SidebarRail />
 		</Sidebar>
 	);
 }

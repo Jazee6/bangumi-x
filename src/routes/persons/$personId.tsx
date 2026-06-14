@@ -1,10 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { PersonCard } from "@/components/person-card";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ProxyImage } from "@/components/proxy-image";
 import { SubjectCard } from "@/components/subject-card";
 import { Badge } from "@/components/ui/badge";
+import {
+	Item,
+	ItemActions,
+	ItemContent,
+	ItemDescription,
+	ItemMedia,
+	ItemTitle,
+} from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Typography } from "@/components/ui/typography";
 import {
 	getPerson,
 	getPersonCharacters,
@@ -24,6 +32,13 @@ interface LoaderData {
 	characters: PersonCharacter[];
 }
 
+const characterRelationOrder = ["主角", "配角", "客串", "其他"];
+
+function getRelationScore(relation: string, order: string[]) {
+	const index = order.indexOf(relation);
+	return index === -1 ? order.length : index;
+}
+
 export const Route = createFileRoute("/persons/$personId")({
 	loader: async ({ params }) => {
 		const id = Number(params.personId);
@@ -39,7 +54,7 @@ export const Route = createFileRoute("/persons/$personId")({
 		return { person, subjects, characters } satisfies LoaderData;
 	},
 	pendingComponent: () => (
-		<div className="max-w-5xl">
+		<div className="max-w-5xl mx-auto">
 			<div className="flex flex-col gap-6 sm:flex-row">
 				<Skeleton className="aspect-square w-32 shrink-0 self-start rounded-lg" />
 				<div className="min-w-0 flex-1 space-y-3">
@@ -63,7 +78,7 @@ export const Route = createFileRoute("/persons/$personId")({
 					{Array.from({ length: 6 }).map((_, i) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
 						<div key={`card-${i}`}>
-							<Skeleton className="aspect-[3/4] rounded-lg" />
+							<Skeleton className="aspect-3/4 rounded-lg" />
 							<Skeleton className="mt-2 h-4 w-3/4" />
 						</div>
 					))}
@@ -89,7 +104,7 @@ function PersonDetailPage() {
 			: null;
 
 	return (
-		<div className="max-w-5xl">
+		<div className="max-w-5xl mx-auto">
 			{/* Header */}
 			<div className="flex flex-col gap-6 sm:flex-row">
 				<div className="w-32 shrink-0 self-start">
@@ -100,7 +115,7 @@ function PersonDetailPage() {
 					/>
 				</div>
 				<div className="min-w-0 flex-1">
-					<h1 className="text-2xl font-bold">{person.name}</h1>
+					<Typography variant="h1">{person.name}</Typography>
 					<div className="mt-3 flex flex-wrap gap-2">
 						{person.career?.map((c) => (
 							<Badge key={c} variant="secondary">
@@ -116,7 +131,7 @@ function PersonDetailPage() {
 						{birthday && <Badge variant="outline">{birthday}</Badge>}
 					</div>
 					{person.summary && (
-						<p className="mt-4 line-clamp-4 text-sm leading-relaxed text-muted-foreground">
+						<p className="mt-4 text-sm leading-relaxed text-muted-foreground">
 							{person.summary}
 						</p>
 					)}
@@ -144,7 +159,7 @@ function PersonDetailPage() {
 							<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
 								{subjects.map((s) => (
 									<SubjectCard
-										key={s.id}
+										key={`${s.id}-${s.staff}`}
 										id={s.id}
 										name={s.name}
 										nameCn={s.name_cn}
@@ -162,17 +177,58 @@ function PersonDetailPage() {
 								暂无相关角色
 							</p>
 						) : (
-							<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-								{characters.map((c) => (
-									<PersonCard
-										key={c.id}
-										id={c.id}
-										name={c.name}
-										image={c.images?.large || c.images?.medium}
-										to="/characters/$characterId"
-										subtitle={c.staff || c.subject_name_cn || c.subject_name}
-									/>
-								))}
+							<div className="space-y-6">
+								{Object.entries(
+									characters.reduce<Record<string, typeof characters>>(
+										(acc, c) => {
+											const key = c.staff || "其他";
+											acc[key] ??= [];
+											acc[key].push(c);
+											return acc;
+										},
+										{},
+									),
+								)
+									.sort(
+										([a], [b]) =>
+											getRelationScore(a, characterRelationOrder) -
+											getRelationScore(b, characterRelationOrder),
+									)
+									.map(([relation, items]) => (
+										<div key={relation}>
+											<Typography variant="h3" className="mb-2">
+												{relation}
+											</Typography>
+											<div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+												{items.map((c) => (
+													<Item
+														key={`${c.id}-${c.subject_id}`}
+														variant="outline"
+														render={
+															<Link
+																to="/characters/$characterId"
+																params={{ characterId: String(c.id) }}
+															/>
+														}
+													>
+														<ItemMedia variant="image">
+															<ProxyImage
+																src={c.images?.large || c.images?.medium}
+																alt={c.name}
+															/>
+														</ItemMedia>
+														<ItemContent>
+															<ItemTitle>{c.name}</ItemTitle>
+															<ItemDescription>
+																{c.subject_name_cn || c.subject_name}
+															</ItemDescription>
+														</ItemContent>
+														<ItemActions />
+													</Item>
+												))}
+											</div>
+										</div>
+									))}
 							</div>
 						)}
 					</TabsContent>
