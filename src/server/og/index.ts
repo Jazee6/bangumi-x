@@ -127,6 +127,7 @@ async function buildCharacterCard(id: number): Promise<BuiltCard> {
 		textParts: [
 			character.name,
 			character.summary,
+			character.gender,
 			...subjects.slice(0, 2).flatMap((s) => [s.name, s.name_cn]),
 		],
 	};
@@ -146,6 +147,8 @@ async function buildPersonCard(id: number): Promise<BuiltCard> {
 		textParts: [
 			person.name,
 			person.summary,
+			person.gender,
+			...(person.career ?? []),
 			...subjects.slice(0, 2).flatMap((s) => [s.name, s.name_cn]),
 		],
 	};
