@@ -10,11 +10,32 @@ import {
 	tabsListVariants,
 } from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
+import { serializeJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
+import { buildMeta } from "@/lib/seo/site";
 import { getCalendar } from "@/server/functions";
 import type { CalendarDay } from "@/types";
 
 export const Route = createFileRoute("/")({
 	loader: async () => getCalendar(),
+	headers: () => ({
+		// 首页是低敏数据，可被边缘共享缓存。
+		"Cache-Control":
+			"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+	}),
+	head: () => {
+		const { meta, links } = buildMeta({
+			title: "每日放送",
+			description:
+				"Bangumi X 每日放送：基于番组计划数据，按星期展示当日开播的番剧、评分与简介，覆盖动画、漫画、游戏等条目。",
+			path: "/",
+			ogType: "website",
+		});
+		return {
+			meta,
+			links,
+			...serializeJsonLd(websiteJsonLd()),
+		};
+	},
 	pendingComponent: () => (
 		<div>
 			<Skeleton className="mb-4 h-8 w-32" />
@@ -44,7 +65,7 @@ function HomePage() {
 	const todayTab = String(todayApiId);
 
 	return (
-		<div>
+		<article>
 			<Typography variant="h1" className="mb-4">
 				每日放送
 			</Typography>
@@ -67,22 +88,23 @@ function HomePage() {
 								今日无放送
 							</p>
 						) : (
-							<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+							<ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 list-none p-0 m-0">
 								{day.items.map((item) => (
-									<SubjectCard
-										key={item.id}
-										id={item.id}
-										name={item.name}
-										nameCn={item.name_cn}
-										image={item.images?.large || item.images?.common}
-										score={item.rating?.score ?? 0}
-									/>
+									<li key={item.id}>
+										<SubjectCard
+											id={item.id}
+											name={item.name}
+											nameCn={item.name_cn}
+											image={item.images?.large || item.images?.common}
+											score={item.rating?.score ?? 0}
+										/>
+									</li>
 								))}
-							</div>
+							</ul>
 						)}
 					</TabsContent>
 				))}
 			</Tabs>
-		</div>
+		</article>
 	);
 }

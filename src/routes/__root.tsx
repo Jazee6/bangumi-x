@@ -1,3 +1,4 @@
+import { BProgress } from "@bprogress/core";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import {
@@ -10,8 +11,10 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { FileQuestionIcon } from "lucide-react";
 import { ThemeProvider } from "next-themes";
+import { type ReactNode, useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { EmptyState } from "@/components/empty-state";
+import { Button, buttonVariants } from "@/components/ui/button.tsx";
 import {
 	SidebarInset,
 	SidebarProvider,
@@ -24,12 +27,17 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+	absoluteUrl,
+	SITE_DESCRIPTION,
+	SITE_LOCALE,
+	SITE_NAME,
+	SITE_URL,
+} from "@/lib/seo/site";
+import { setNotFoundStatus } from "@/lib/seo/status";
+import { version } from "../../package.json";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
-import { Button, buttonVariants } from "@/components/ui/button.tsx";
-import { version } from "../../package.json";
-import { BProgress } from "@bprogress/core";
-import { type ReactNode, useEffect } from "react";
 // @ts-expect-error
 import "@bprogress/core/css";
 
@@ -45,8 +53,28 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 	head: () => ({
 		meta: [
 			{ charSet: "utf-8" },
-			{ name: "viewport", content: "width=device-width, initial-scale=1" },
-			{ title: "Bangumi X" },
+			{
+				name: "viewport",
+				content: "width=device-width, initial-scale=1, viewport-fit=cover",
+			},
+			{ title: SITE_NAME },
+			{ name: "description", content: SITE_DESCRIPTION },
+			{ name: "application-name", content: SITE_NAME },
+			{ name: "theme-color", content: "#171717" },
+			{ name: "format-detection", content: "telephone=no" },
+			// Open Graph defaults，子路由 head() 会覆盖。
+			{ property: "og:site_name", content: SITE_NAME },
+			{ property: "og:type", content: "website" },
+			{ property: "og:title", content: SITE_NAME },
+			{ property: "og:description", content: SITE_DESCRIPTION },
+			{ property: "og:url", content: SITE_URL },
+			{ property: "og:locale", content: SITE_LOCALE },
+			{ property: "og:image", content: absoluteUrl("/og-default.png") },
+			// Twitter
+			{ name: "twitter:card", content: "summary_large_image" },
+			{ name: "twitter:title", content: SITE_NAME },
+			{ name: "twitter:description", content: SITE_DESCRIPTION },
+			{ name: "twitter:image", content: absoluteUrl("/og-default.png") },
 		],
 		links: [
 			{ rel: "stylesheet", href: appCss },
@@ -55,20 +83,25 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		],
 	}),
 	shellComponent: RootDocument,
-	notFoundComponent: () => (
-		<div className="flex flex-col items-center gap-4">
-			<EmptyState
-				icon={FileQuestionIcon}
-				title="页面未找到"
-				description="你访问的页面不存在"
-				action={
-					<Link to="/">
-						<Button variant="secondary">返回首页</Button>
-					</Link>
-				}
-			/>
-		</div>
-	),
+	notFoundComponent: () => {
+		// SSR 时把响应状态码设为 404，避免软 404 拖累 SEO。
+		// setNotFoundStatus 在浏览器端是 no-op。
+		setNotFoundStatus();
+		return (
+			<div className="flex flex-col items-center gap-4">
+				<EmptyState
+					icon={FileQuestionIcon}
+					title="页面未找到"
+					description="你访问的页面不存在"
+					action={
+						<Link to="/">
+							<Button variant="secondary">返回首页</Button>
+						</Link>
+					}
+				/>
+			</div>
+		);
+	},
 });
 
 function RootDocument({ children }: { children: ReactNode }) {

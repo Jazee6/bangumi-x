@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { ProxyImage } from "@/components/proxy-image";
 import {
 	Item,
 	ItemActions,
@@ -6,7 +7,6 @@ import {
 	ItemMedia,
 	ItemTitle,
 } from "@/components/ui/item";
-import { ProxyImage } from "@/components/proxy-image";
 import type { RelatedPerson } from "@/types";
 
 export function PersonItem({ person }: { person: RelatedPerson }) {

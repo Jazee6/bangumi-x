@@ -1,30 +1,50 @@
+import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { bgmFetch, buildParams } from "./utils";
-import {
-	idSchema,
-	subjectIdSchema,
-	characterIdSchema,
-	personIdSchema,
-	browseSubjectsSchema,
-	searchSubjectsSchema,
-	searchCharactersSchema,
-	searchPersonsSchema,
-} from "./schemas";
 import type {
 	CalendarDay,
-	Subject,
+	Character,
+	CharacterPerson,
 	Episode,
 	EpisodeDetail,
-	Character,
+	PagedResponse,
 	Person,
+	PersonCharacter,
 	PersonDetail,
 	RelatedCharacter,
 	RelatedPerson,
 	RelatedSubject,
-	CharacterPerson,
-	PersonCharacter,
-	PagedResponse,
+	Subject,
 } from "@/types";
+import {
+	browseSubjectsSchema,
+	characterIdSchema,
+	idSchema,
+	personIdSchema,
+	searchCharactersSchema,
+	searchPersonsSchema,
+	searchSubjectsSchema,
+	subjectIdSchema,
+} from "./schemas";
+import { BgmHttpError, bgmFetch, buildParams } from "./utils";
+
+/**
+ * 把上游 404 转成 TanStack Start 的 notFound()，
+ * loader 不必关心错误形态，会直接渲染 notFoundComponent + 返回 status 404。
+ * 其他错误原样抛出（5xx 走错误边界）。
+ */
+async function fetchOrNotFound<T>(
+	path: string,
+	init?: Parameters<typeof bgmFetch>[1],
+): Promise<T> {
+	try {
+		return await bgmFetch<T>(path, init);
+	} catch (err) {
+		if (err instanceof BgmHttpError && err.status === 404) {
+			throw notFound();
+		}
+		throw err;
+	}
+}
 
 // ─── Calendar ─────────────────────────────────────────────
 
@@ -37,7 +57,9 @@ export const getCalendar = createServerFn().handler(async () => {
 export const getSubject = createServerFn()
 	.validator(idSchema)
 	.handler(async ({ data }) => {
-		return bgmFetch<Subject>(`/v0/subjects/${data.id}`, { cacheTtl: 3600 });
+		return fetchOrNotFound<Subject>(`/v0/subjects/${data.id}`, {
+			cacheTtl: 3600,
+		});
 	});
 
 export const browseSubjects = createServerFn()
@@ -96,7 +118,7 @@ export const getSubjectPersons = createServerFn()
 export const getEpisode = createServerFn()
 	.validator(idSchema)
 	.handler(async ({ data }) => {
-		return bgmFetch<EpisodeDetail>(`/v0/episodes/${data.id}`, {
+		return fetchOrNotFound<EpisodeDetail>(`/v0/episodes/${data.id}`, {
 			cacheTtl: 3600,
 		});
 	});
@@ -106,7 +128,9 @@ export const getEpisode = createServerFn()
 export const getCharacter = createServerFn()
 	.validator(idSchema)
 	.handler(async ({ data }) => {
-		return bgmFetch<Character>(`/v0/characters/${data.id}`, { cacheTtl: 3600 });
+		return fetchOrNotFound<Character>(`/v0/characters/${data.id}`, {
+			cacheTtl: 3600,
+		});
 	});
 
 export const searchCharacters = createServerFn({ method: "POST" })
@@ -150,7 +174,9 @@ export const getCharacterPersons = createServerFn()
 export const getPerson = createServerFn()
 	.validator(idSchema)
 	.handler(async ({ data }) => {
-		return bgmFetch<PersonDetail>(`/v0/persons/${data.id}`, { cacheTtl: 3600 });
+		return fetchOrNotFound<PersonDetail>(`/v0/persons/${data.id}`, {
+			cacheTtl: 3600,
+		});
 	});
 
 export const searchPersons = createServerFn({ method: "POST" })

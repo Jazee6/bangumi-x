@@ -1,7 +1,7 @@
-import { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
 import { zValidator } from "@hono/zod-validator";
+import { Hono } from "hono";
 import { cache } from "hono/cache";
+import { HTTPException } from "hono/http-exception";
 import { proxy } from "hono/proxy";
 import { z } from "zod";
 

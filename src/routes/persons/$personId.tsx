@@ -21,6 +21,13 @@ import {
 } from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 import {
+	breadcrumbJsonLd,
+	personJsonLd,
+	relatedSubjectsItemList,
+	serializeJsonLd,
+} from "@/lib/seo/json-ld";
+import { buildMeta } from "@/lib/seo/site";
+import {
 	getPerson,
 	getPersonCharacters,
 	getPersonSubjects,
@@ -47,6 +54,10 @@ function getRelationScore(relation: string, order: string[]) {
 }
 
 export const Route = createFileRoute("/persons/$personId")({
+	headers: () => ({
+		"Cache-Control":
+			"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+	}),
 	loader: async ({ params }) => {
 		const id = Number(params.personId);
 		const [person, subjects, characters] = await Promise.all([
@@ -59,6 +70,64 @@ export const Route = createFileRoute("/persons/$personId")({
 			>,
 		]);
 		return { person, subjects, characters } satisfies LoaderData;
+	},
+	head: ({ loaderData, params }) => {
+		const data = loaderData as LoaderData | undefined;
+		if (!data?.person) {
+			return {
+				meta: buildMeta({
+					title: "人物",
+					path: `/persons/${params.personId}`,
+				}).meta,
+			};
+		}
+		const { person, subjects } = data;
+		const careers = person.career?.map((c) => CareerLabel[c] ?? c).join("、");
+
+		const facts: string[] = [];
+		if (careers) facts.push(careers);
+		if (person.gender) facts.push(person.gender);
+		if (person.birth_year) {
+			const m = person.birth_mon ? `${person.birth_mon}月` : "";
+			const d = person.birth_day ? `${person.birth_day}日` : "";
+			facts.push(`${person.birth_year}年${m}${d}生`);
+		}
+		const factsLine = facts.length ? `${facts.join(" · ")}。` : "";
+		const subjLine = subjects.length
+			? `代表作品：${subjects
+					.slice(0, 5)
+					.map((s) => s.name_cn || s.name)
+					.join("、")}。`
+			: "";
+		const description = `${person.name}。${factsLine}${subjLine}${
+			person.summary ?? ""
+		}`;
+
+		const image = person.images?.large || person.images?.medium;
+
+		const { meta, links } = buildMeta({
+			title: careers ? `${person.name} - ${careers}` : person.name,
+			description,
+			path: `/persons/${person.id}`,
+			ogType: "profile",
+			image,
+		});
+
+		const itemList = relatedSubjectsItemList(subjects);
+
+		return {
+			meta,
+			links,
+			...serializeJsonLd([
+				breadcrumbJsonLd([
+					{ name: "首页", path: "/" },
+					{ name: "人物", path: "/persons" },
+					{ name: person.name, path: `/persons/${person.id}` },
+				]),
+				personJsonLd(person),
+				...(itemList ? [itemList] : []),
+			]),
+		};
 	},
 	pendingComponent: () => (
 		<div className="max-w-5xl mx-auto">
@@ -108,9 +177,9 @@ function PersonDetailPage() {
 			: null;
 
 	return (
-		<div className="max-w-5xl mx-auto">
+		<article className="max-w-5xl mx-auto">
 			{/* Header */}
-			<div className="flex flex-col gap-6 sm:flex-row">
+			<header className="flex flex-col gap-6 sm:flex-row">
 				<div className="w-32 shrink-0 self-start">
 					<ProxyImage
 						src={person.images?.large || person.images?.medium}
@@ -140,10 +209,10 @@ function PersonDetailPage() {
 						</p>
 					)}
 				</div>
-			</div>
+			</header>
 
 			{/* Tabs */}
-			<div className="mt-8">
+			<section className="mt-8">
 				<Tabs defaultValue="subjects">
 					<TabsList>
 						<TabsTrigger value="subjects">
@@ -160,18 +229,19 @@ function PersonDetailPage() {
 								暂无相关条目
 							</p>
 						) : (
-							<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+							<ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 list-none p-0 m-0">
 								{subjects.map((s) => (
-									<SubjectCard
-										key={`${s.id}-${s.staff}`}
-										id={s.id}
-										name={s.name}
-										nameCn={s.name_cn}
-										image={s.image}
-										score={0}
-									/>
+									<li key={`${s.id}-${s.staff}`}>
+										<SubjectCard
+											id={s.id}
+											name={s.name}
+											nameCn={s.name_cn}
+											image={s.image}
+											score={0}
+										/>
+									</li>
 								))}
-							</div>
+							</ul>
 						)}
 					</TabsContent>
 
@@ -199,45 +269,46 @@ function PersonDetailPage() {
 											getRelationScore(b, characterRelationOrder),
 									)
 									.map(([relation, items]) => (
-										<div key={relation}>
+										<section key={relation}>
 											<Typography variant="h3" className="mb-2">
 												{relation}
 											</Typography>
-											<div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+											<ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
 												{items.map((c) => (
-													<Item
-														key={`${c.id}-${c.subject_id}`}
-														variant="outline"
-														render={
-															<Link
-																to="/characters/$characterId"
-																params={{ characterId: String(c.id) }}
-															/>
-														}
-													>
-														<ItemMedia variant="image">
-															<ProxyImage
-																src={c.images?.large || c.images?.medium}
-																alt={c.name}
-															/>
-														</ItemMedia>
-														<ItemContent>
-															<ItemTitle>{c.name}</ItemTitle>
-															<ItemDescription>
-																{c.subject_name_cn || c.subject_name}
-															</ItemDescription>
-														</ItemContent>
-														<ItemActions />
-													</Item>
+													<li key={`${c.id}-${c.subject_id}`}>
+														<Item
+															variant="outline"
+															render={
+																<Link
+																	to="/characters/$characterId"
+																	params={{ characterId: String(c.id) }}
+																/>
+															}
+														>
+															<ItemMedia variant="image">
+																<ProxyImage
+																	src={c.images?.large || c.images?.medium}
+																	alt={c.name}
+																/>
+															</ItemMedia>
+															<ItemContent>
+																<ItemTitle>{c.name}</ItemTitle>
+																<ItemDescription>
+																	{c.subject_name_cn || c.subject_name}
+																</ItemDescription>
+															</ItemContent>
+															<ItemActions />
+														</Item>
+													</li>
 												))}
-											</div>
-										</div>
+											</ul>
+										</section>
 									))}
 							</div>
 						)}
 					</TabsContent>
 				</Tabs>
-			</div>
-		</div>
+			</section>
+		</article>
 	);
 }

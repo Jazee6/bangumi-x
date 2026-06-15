@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Typography } from "@/components/ui/typography";
+import { breadcrumbJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
+import { buildMeta } from "@/lib/seo/site";
 import { browseSubjects, searchSubjects } from "@/server/functions";
 import type { PagedResponse, Subject } from "@/types";
 import { SubjectType, SubjectTypeLabel } from "@/types";
@@ -44,10 +46,25 @@ export const Route = createFileRoute("/subjects/")({
 		keyword: search.keyword ?? "",
 		type: search.type ?? ALL_LABEL,
 	}),
+	headers: ({ match }) => {
+		const search = match.search as
+			| { keyword?: string; type?: string }
+			| undefined;
+		const keyword = search?.keyword ?? "";
+		const isSearch = keyword.trim().length > 0;
+		// 默认主列表（无关键词）可被边缘共享缓存；带关键词的搜索结果不缓存。
+		return {
+			"Cache-Control": isSearch
+				? "private, no-store"
+				: "public, max-age=0, s-maxage=1800, stale-while-revalidate=86400",
+		};
+	},
 	loader: async ({ deps }) => {
 		const typeValue = typeLabelToValue[deps.type];
 		const isAll = typeValue === "all";
-		if (deps.keyword.trim()) {
+		const isSearch = deps.keyword.trim().length > 0;
+
+		if (isSearch) {
 			return searchSubjects({
 				data: {
 					keyword: deps.keyword,
@@ -66,6 +83,42 @@ export const Route = createFileRoute("/subjects/")({
 				limit: PAGE_SIZE,
 			},
 		});
+	},
+	head: ({ match }) => {
+		const search = match.search as
+			| { keyword?: string; type?: string }
+			| undefined;
+		const keyword = search?.keyword ?? "";
+		const type = search?.type ?? ALL_LABEL;
+		const isSearch = keyword.trim().length > 0;
+
+		const title = keyword.trim()
+			? `搜索「${keyword}」 - 条目`
+			: type !== ALL_LABEL
+				? `${type}条目排行`
+				: "条目排行";
+		const description = keyword.trim()
+			? `在 Bangumi X 上搜索「${keyword}」相关的条目，包含动画、漫画、游戏、音乐等。`
+			: `Bangumi X ${type !== ALL_LABEL ? type : "动画"}排行：基于番组计划数据按排名展示热门条目，支持按类型筛选与全文检索。`;
+
+		// keyword 搜索结果 noindex（避免无限组合参数收录）；纯类型筛选页可索引。
+		const { meta, links } = buildMeta({
+			title,
+			description,
+			path: "/subjects",
+			noindex: isSearch,
+		});
+
+		return {
+			meta,
+			links,
+			...serializeJsonLd(
+				breadcrumbJsonLd([
+					{ name: "首页", path: "/" },
+					{ name: "条目", path: "/subjects" },
+				]),
+			),
+		};
 	},
 	pendingComponent: () => (
 		<div>
@@ -159,7 +212,7 @@ function SubjectsPage() {
 	);
 
 	return (
-		<div>
+		<article>
 			<Typography variant="h1" className="mb-4">
 				条目
 			</Typography>
@@ -204,18 +257,19 @@ function SubjectsPage() {
 				/>
 			) : (
 				<>
-					<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+					<ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 list-none p-0 m-0">
 						{subjects.map((s) => (
-							<SubjectCard
-								key={s.id}
-								id={s.id}
-								name={s.name}
-								nameCn={s.name_cn}
-								image={s.images?.large || s.images?.common}
-								score={s.rating?.score ?? 0}
-							/>
+							<li key={s.id}>
+								<SubjectCard
+									id={s.id}
+									name={s.name}
+									nameCn={s.name_cn}
+									image={s.images?.large || s.images?.common}
+									score={s.rating?.score ?? 0}
+								/>
+							</li>
 						))}
-					</div>
+					</ul>
 					<InfiniteScroll
 						hasMore={hasNextPage}
 						loading={isFetchingNextPage}
@@ -223,6 +277,6 @@ function SubjectsPage() {
 					/>
 				</>
 			)}
-		</div>
+		</article>
 	);
 }

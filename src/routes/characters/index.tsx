@@ -8,6 +8,8 @@ import { PersonCard } from "@/components/person-card";
 import { SearchInput } from "@/components/search-input";
 import { PersonCardSkeleton } from "@/components/skeletons/person-card-skeleton";
 import { Typography } from "@/components/ui/typography";
+import { breadcrumbJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
+import { buildMeta } from "@/lib/seo/site";
 import { searchCharacters } from "@/server/functions";
 import type { Character, PagedResponse } from "@/types";
 
@@ -18,7 +20,33 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/characters/")({
-	validateSearch: (search) => searchSchema.parse(search),
+	validateSearch: searchSchema,
+	// 角色搜索页本身 noindex，缓存设私有禁存（每用户搜索不同）。
+	headers: () => ({ "Cache-Control": "private, no-store" }),
+	head: ({ match }) => {
+		const keyword =
+			(match.search as { keyword?: string } | undefined)?.keyword ?? "";
+		const title = keyword ? `搜索「${keyword}」 - 角色` : "角色搜索";
+		const description = keyword
+			? `在 Bangumi X 上搜索「${keyword}」相关角色。`
+			: "Bangumi X 角色搜索：按关键词查询动画、漫画、游戏中的虚拟角色资料。";
+		const { meta, links } = buildMeta({
+			title,
+			description,
+			path: "/characters",
+			noindex: true,
+		});
+		return {
+			meta,
+			links,
+			...serializeJsonLd(
+				breadcrumbJsonLd([
+					{ name: "首页", path: "/" },
+					{ name: "角色", path: "/characters" },
+				]),
+			),
+		};
+	},
 	component: CharactersPage,
 });
 
@@ -55,7 +83,7 @@ function CharactersPage() {
 	);
 
 	return (
-		<div>
+		<article>
 			<Typography variant="h1" className="mb-4">
 				角色
 			</Typography>
@@ -81,18 +109,19 @@ function CharactersPage() {
 				<EmptyState title="没有找到角色" description="请尝试其他关键词" />
 			) : (
 				<>
-					<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+					<ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
 						{characters.map((c) => (
-							<PersonCard
-								key={c.id}
-								id={c.id}
-								name={c.name}
-								image={c.images?.large || c.images?.medium}
-								to="/characters/$characterId"
-								subtitle={c.summary?.slice(0, 40)}
-							/>
+							<li key={c.id}>
+								<PersonCard
+									id={c.id}
+									name={c.name}
+									image={c.images?.large || c.images?.medium}
+									to="/characters/$characterId"
+									subtitle={c.summary?.slice(0, 40)}
+								/>
+							</li>
 						))}
-					</div>
+					</ul>
 					<InfiniteScroll
 						hasMore={hasNextPage}
 						loading={isFetchingNextPage}
@@ -100,6 +129,6 @@ function CharactersPage() {
 					/>
 				</>
 			)}
-		</div>
+		</article>
 	);
 }

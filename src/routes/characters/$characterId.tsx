@@ -14,6 +14,13 @@ import {
 } from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 import {
+	breadcrumbJsonLd,
+	characterJsonLd,
+	relatedSubjectsItemList,
+	serializeJsonLd,
+} from "@/lib/seo/json-ld";
+import { buildMeta } from "@/lib/seo/site";
+import {
 	getCharacter,
 	getCharacterPersons,
 	getCharacterSubjects,
@@ -33,6 +40,10 @@ interface LoaderData {
 }
 
 export const Route = createFileRoute("/characters/$characterId")({
+	headers: () => ({
+		"Cache-Control":
+			"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+	}),
 	loader: async ({ params }) => {
 		const id = Number(params.characterId);
 		const [character, subjects, persons] = await Promise.all([
@@ -45,6 +56,68 @@ export const Route = createFileRoute("/characters/$characterId")({
 			>,
 		]);
 		return { character, subjects, persons } satisfies LoaderData;
+	},
+	head: ({ loaderData, params }) => {
+		const data = loaderData as LoaderData | undefined;
+		if (!data?.character) {
+			return {
+				meta: buildMeta({
+					title: "角色",
+					path: `/characters/${params.characterId}`,
+				}).meta,
+			};
+		}
+		const { character, subjects } = data;
+		const typeLabel = character.type
+			? CharacterTypeLabel[character.type]
+			: "角色";
+
+		const facts: string[] = [];
+		if (character.gender) facts.push(character.gender);
+		if (character.blood_type)
+			facts.push(`血型 ${BloodTypeLabel[character.blood_type]}`);
+		if (character.birth_year || character.birth_mon || character.birth_day) {
+			const y = character.birth_year ? `${character.birth_year}年` : "";
+			const m = character.birth_mon ? `${character.birth_mon}月` : "";
+			const d = character.birth_day ? `${character.birth_day}日` : "";
+			facts.push(`${y}${m}${d}`);
+		}
+		const factsLine = facts.length ? `${facts.join(" · ")}。` : "";
+		const seriesLine = subjects.length
+			? `登场作品：${subjects
+					.slice(0, 5)
+					.map((s) => s.name_cn || s.name)
+					.join("、")}。`
+			: "";
+		const description = `${character.name}${typeLabel ? `（${typeLabel}）` : ""}。${factsLine}${seriesLine}${
+			character.summary ?? ""
+		}`;
+
+		const image = character.images?.large || character.images?.medium;
+
+		const { meta, links } = buildMeta({
+			title: `${character.name} - ${typeLabel}`,
+			description,
+			path: `/characters/${character.id}`,
+			ogType: "profile",
+			image,
+		});
+
+		const itemList = relatedSubjectsItemList(subjects);
+
+		return {
+			meta,
+			links,
+			...serializeJsonLd([
+				breadcrumbJsonLd([
+					{ name: "首页", path: "/" },
+					{ name: "角色", path: "/characters" },
+					{ name: character.name, path: `/characters/${character.id}` },
+				]),
+				characterJsonLd(character),
+				...(itemList ? [itemList] : []),
+			]),
+		};
 	},
 	pendingComponent: () => (
 		<div className="max-w-5xl mx-auto">
@@ -94,9 +167,9 @@ function CharacterDetailPage() {
 			: null;
 
 	return (
-		<div className="max-w-5xl mx-auto">
+		<article className="max-w-5xl mx-auto">
 			{/* Header */}
-			<div className="flex flex-col gap-6 sm:flex-row">
+			<header className="flex flex-col gap-6 sm:flex-row">
 				<div className="w-32 shrink-0 self-start">
 					<ProxyImage
 						src={character.images?.large || character.images?.medium}
@@ -128,10 +201,10 @@ function CharacterDetailPage() {
 						</p>
 					)}
 				</div>
-			</div>
+			</header>
 
 			{/* Tabs */}
-			<div className="mt-8">
+			<section className="mt-8">
 				<Tabs defaultValue="subjects">
 					<TabsList>
 						<TabsTrigger value="subjects">
@@ -148,18 +221,19 @@ function CharacterDetailPage() {
 								暂无相关条目
 							</p>
 						) : (
-							<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+							<ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 list-none p-0 m-0">
 								{subjects.map((s) => (
-									<SubjectCard
-										key={s.id}
-										id={s.id}
-										name={s.name}
-										nameCn={s.name_cn}
-										image={s.image}
-										score={0}
-									/>
+									<li key={s.id}>
+										<SubjectCard
+											id={s.id}
+											name={s.name}
+											nameCn={s.name_cn}
+											image={s.image}
+											score={0}
+										/>
+									</li>
 								))}
-							</div>
+							</ul>
 						)}
 					</TabsContent>
 
@@ -169,22 +243,23 @@ function CharacterDetailPage() {
 								暂无相关人物
 							</p>
 						) : (
-							<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+							<ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
 								{persons.map((p) => (
-									<PersonCard
-										key={p.id}
-										id={p.id}
-										name={p.name}
-										image={p.images?.large || p.images?.medium}
-										to="/persons/$personId"
-										subtitle={p.staff || p.subject_name_cn || p.subject_name}
-									/>
+									<li key={p.id}>
+										<PersonCard
+											id={p.id}
+											name={p.name}
+											image={p.images?.large || p.images?.medium}
+											to="/persons/$personId"
+											subtitle={p.staff || p.subject_name_cn || p.subject_name}
+										/>
+									</li>
 								))}
-							</div>
+							</ul>
 						)}
 					</TabsContent>
 				</Tabs>
-			</div>
-		</div>
+			</section>
+		</article>
 	);
 }

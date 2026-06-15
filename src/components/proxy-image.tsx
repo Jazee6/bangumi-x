@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
-import { cn } from "@/lib/utils";
 import { ImageIcon } from "lucide-react";
+import { useCallback, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface ProxyImageProps extends React.ComponentProps<"img"> {
 	src: string | undefined;

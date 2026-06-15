@@ -13,6 +13,23 @@ async function sha256(text: string): Promise<string> {
 		.join("");
 }
 
+/**
+ * 上游 bangumi API 抛错时携带 HTTP 状态码，便于 loader 区分 404 / 5xx。
+ *
+ * Loader 拿到 BgmHttpError 后可：
+ *   if (err.status === 404) throw notFound();
+ */
+export class BgmHttpError extends Error {
+	readonly status: number;
+	readonly path: string;
+	constructor(status: number, statusText: string, path: string) {
+		super(`Bangumi API error: ${status} ${statusText} (${path})`);
+		this.name = "BgmHttpError";
+		this.status = status;
+		this.path = path;
+	}
+}
+
 export function buildParams(
 	params: Record<string, string | number | boolean | undefined>,
 ): URLSearchParams {
@@ -63,9 +80,7 @@ export async function bgmFetch<T = unknown>(
 	});
 
 	if (!res.ok) {
-		throw new Error(
-			`Bangumi API error: ${res.status} ${res.statusText} (${path})`,
-		);
+		throw new BgmHttpError(res.status, res.statusText, path);
 	}
 
 	if (ttl && cacheKey) {

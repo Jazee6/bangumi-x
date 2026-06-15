@@ -1,12 +1,12 @@
 import { Link, useMatches } from "@tanstack/react-router";
 import {
-	HomeIcon,
 	FilmIcon,
+	HomeIcon,
+	MoonIcon,
+	SunIcon,
+	TvIcon,
 	UserRoundIcon,
 	UsersIcon,
-	SunIcon,
-	MoonIcon,
-	TvIcon,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import {

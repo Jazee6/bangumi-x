@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
 import { SearchIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
 
 interface SearchInputProps {
 	value: string;

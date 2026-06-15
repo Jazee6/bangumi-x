@@ -15,6 +15,13 @@ import {
 } from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 import {
+	breadcrumbJsonLd,
+	ogTypeForSubject,
+	serializeJsonLd,
+	subjectJsonLd,
+} from "@/lib/seo/json-ld";
+import { buildMeta } from "@/lib/seo/site";
+import {
 	getSubject,
 	getSubjectCharacters,
 	getSubjectEpisodes,
@@ -64,6 +71,12 @@ function getRelationScore(relation: string, order: string[]) {
 }
 
 export const Route = createFileRoute("/subjects/$subjectId")({
+	// 详情页可被边缘共享缓存。loader 抛 notFound() 会被根路由 notFoundComponent
+	// 接住并设 404；headers() 仅在 200 路径生效，所以无需特殊处理。
+	headers: () => ({
+		"Cache-Control":
+			"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+	}),
 	loader: async ({ params }) => {
 		const id = Number(params.subjectId);
 		const [subject, episodesRes, characters, persons] = await Promise.all([
@@ -78,6 +91,68 @@ export const Route = createFileRoute("/subjects/$subjectId")({
 			characters: characters as RelatedCharacter[],
 			persons: persons as RelatedPerson[],
 		} satisfies LoaderData;
+	},
+	head: ({ loaderData, params }) => {
+		const data = loaderData as LoaderData | undefined;
+		if (!data?.subject) {
+			return {
+				meta: buildMeta({
+					title: "条目",
+					path: `/subjects/${params.subjectId}`,
+				}).meta,
+			};
+		}
+		const { subject } = data;
+		const typeLabel = SubjectTypeLabel[subject.type] ?? "条目";
+		const title = subject.name_cn || subject.name;
+
+		// description 拼接关键事实，AI 引擎更易摘要。
+		const facts: string[] = [];
+		if (subject.date) facts.push(`首播 ${subject.date}`);
+		if (typeLabel) facts.push(typeLabel);
+		if (subject.eps && subject.eps > 0) facts.push(`共 ${subject.eps} 话`);
+		if (subject.platform) facts.push(subject.platform);
+		if (subject.rating?.score && subject.rating.total > 0) {
+			facts.push(
+				`Bangumi 评分 ${subject.rating.score.toFixed(1)}（${subject.rating.total} 人）`,
+			);
+		}
+		const factsLine = facts.length ? `${facts.join(" · ")}。` : "";
+		const description = `${title}${subject.name && subject.name !== title ? `（${subject.name}）` : ""}${
+			factsLine ? ` ${factsLine}` : "。"
+		}${subject.summary ? subject.summary : ""}`;
+
+		const image =
+			subject.images?.large || subject.images?.common || subject.images?.medium;
+
+		const keywords = [
+			title,
+			subject.name,
+			typeLabel,
+			...(subject.tags?.slice(0, 8).map((t) => t.name) ?? []),
+		].filter(Boolean) as string[];
+
+		const { meta, links } = buildMeta({
+			title: `${title} - ${typeLabel}`,
+			description,
+			path: `/subjects/${subject.id}`,
+			image,
+			ogType: ogTypeForSubject(subject.type),
+			keywords,
+		});
+
+		return {
+			meta,
+			links,
+			...serializeJsonLd([
+				breadcrumbJsonLd([
+					{ name: "首页", path: "/" },
+					{ name: "条目", path: "/subjects" },
+					{ name: title, path: `/subjects/${subject.id}` },
+				]),
+				subjectJsonLd(subject),
+			]),
+		};
 	},
 	pendingComponent: () => (
 		<div className="max-w-5xl mx-auto">
@@ -119,9 +194,9 @@ function SubjectDetailPage() {
 		Route.useLoaderData() as LoaderData;
 
 	return (
-		<div className="max-w-5xl mx-auto">
+		<article className="max-w-5xl mx-auto">
 			{/* Header */}
-			<div className="flex flex-col gap-6 sm:flex-row">
+			<header className="flex flex-col gap-6 sm:flex-row">
 				<div className="w-40 shrink-0 self-start">
 					<ProxyImage
 						src={subject.images?.large || subject.images?.common}
@@ -170,10 +245,10 @@ function SubjectDetailPage() {
 						</div>
 					)}
 				</div>
-			</div>
+			</header>
 
 			{/* Tabs */}
-			<div className="mt-8">
+			<section className="mt-8">
 				<Tabs defaultValue="episodes">
 					<TabsList>
 						<TabsTrigger value="episodes">章节 ({episodes.length})</TabsTrigger>
@@ -187,11 +262,13 @@ function SubjectDetailPage() {
 						{episodes.length === 0 ? (
 							<p className="py-8 text-center text-muted-foreground">暂无章节</p>
 						) : (
-							<div className="space-y-2">
+							<ul className="space-y-2 list-none p-0 m-0">
 								{episodes.map((ep) => (
-									<EpisodeItem key={ep.id} episode={ep} />
+									<li key={ep.id}>
+										<EpisodeItem episode={ep} />
+									</li>
 								))}
-							</div>
+							</ul>
 						)}
 					</TabsContent>
 
@@ -217,16 +294,18 @@ function SubjectDetailPage() {
 											getRelationScore(b, characterRelationOrder),
 									)
 									.map(([relation, items]) => (
-										<div key={relation}>
+										<section key={relation}>
 											<Typography variant="h3" className="mb-2">
 												{relation}
 											</Typography>
-											<div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+											<ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
 												{items.map((c) => (
-													<CharacterItem key={c.id} character={c} />
+													<li key={c.id}>
+														<CharacterItem character={c} />
+													</li>
 												))}
-											</div>
-										</div>
+											</ul>
+										</section>
 									))}
 							</div>
 						)}
@@ -251,22 +330,24 @@ function SubjectDetailPage() {
 											getRelationScore(b, personRelationOrder),
 									)
 									.map(([relation, items]) => (
-										<div key={relation}>
+										<section key={relation}>
 											<Typography variant="h3" className="mb-2">
 												{relation}
 											</Typography>
-											<div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+											<ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
 												{items.map((p) => (
-													<PersonItem key={p.id} person={p} />
+													<li key={p.id}>
+														<PersonItem person={p} />
+													</li>
 												))}
-											</div>
-										</div>
+											</ul>
+										</section>
 									))}
 							</div>
 						)}
 					</TabsContent>
 				</Tabs>
-			</div>
-		</div>
+			</section>
+		</article>
 	);
 }

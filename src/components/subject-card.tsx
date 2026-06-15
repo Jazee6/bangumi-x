@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@/components/ui/badge";
 import { ProxyImage } from "@/components/proxy-image";
+import { Badge } from "@/components/ui/badge";
 
 interface SubjectCardProps {
 	id: number;
