@@ -66,6 +66,7 @@ export const Route = createFileRoute("/episodes/$episodeId")({
 			path: `/episodes/${episode.id}`,
 			ogType: "video.episode",
 			image: subject?.images?.large || subject?.images?.common || undefined,
+			dynamicOg: { type: "episode", id: episode.id },
 		});
 
 		return {

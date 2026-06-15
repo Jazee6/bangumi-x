@@ -47,6 +47,15 @@ export interface BuildMetaInput {
 	path: string;
 	/** OG 图片路径或绝对 URL；不传走站点默认。 */
 	image?: string;
+	/**
+	 * 详情页传这个走动态 OG 图（`/api/og/:type/:id.png`），
+	 * 优先级高于 `image`。社交平台预览拿动态 1200×630 PNG，
+	 * 而 JSON-LD 等仍可用 `image` 字段独立指向原始封面。
+	 */
+	dynamicOg?: {
+		type: "subject" | "character" | "person" | "episode";
+		id: number;
+	};
 	/** og:type，默认 website。详情页可用 article / video.tv_show 等。 */
 	ogType?: string;
 	/** 是否禁止索引。带搜索参数的列表页设 true。 */
@@ -77,9 +86,11 @@ export function buildMeta(input: BuildMetaInput): {
 	const fullTitle = input.title ? `${input.title} - ${SITE_NAME}` : SITE_NAME;
 	const description = clampText(input.description ?? SITE_DESCRIPTION, 160);
 	const canonical = absoluteUrl(input.path);
-	const image = input.image
-		? absoluteUrl(input.image)
-		: absoluteUrl("/og-default.png");
+	const image = input.dynamicOg
+		? absoluteUrl(`/api/og/${input.dynamicOg.type}/${input.dynamicOg.id}.png`)
+		: input.image
+			? absoluteUrl(input.image)
+			: absoluteUrl("/og-default.png");
 	const ogType = input.ogType ?? "website";
 	const keywords = (input.keywords ?? SITE_KEYWORDS).join(",");
 

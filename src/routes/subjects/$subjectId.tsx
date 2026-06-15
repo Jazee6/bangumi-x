@@ -137,6 +137,7 @@ export const Route = createFileRoute("/subjects/$subjectId")({
 			description,
 			path: `/subjects/${subject.id}`,
 			image,
+			dynamicOg: { type: "subject", id: subject.id },
 			ogType: ogTypeForSubject(subject.type),
 			keywords,
 		});

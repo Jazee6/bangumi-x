@@ -111,6 +111,7 @@ export const Route = createFileRoute("/persons/$personId")({
 			path: `/persons/${person.id}`,
 			ogType: "profile",
 			image,
+			dynamicOg: { type: "person", id: person.id },
 		});
 
 		const itemList = relatedSubjectsItemList(subjects);
