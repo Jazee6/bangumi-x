@@ -14,17 +14,17 @@ import {
 } from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 import {
+	characterPersonsQueryOptions,
+	characterQueryOptions,
+	characterSubjectsQueryOptions,
+} from "@/lib/queries/characters";
+import {
 	breadcrumbJsonLd,
 	characterJsonLd,
 	relatedSubjectsItemList,
 	serializeJsonLd,
 } from "@/lib/seo/json-ld";
 import { buildMeta } from "@/lib/seo/site";
-import {
-	getCharacter,
-	getCharacterPersons,
-	getCharacterSubjects,
-} from "@/server/functions";
 import {
 	BloodTypeLabel,
 	type Character,
@@ -42,18 +42,14 @@ interface LoaderData {
 export const Route = createFileRoute("/characters/$characterId")({
 	headers: () => ({
 		"Cache-Control":
-			"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+			"public, max-age=300, s-maxage=28800, stale-while-revalidate=86400",
 	}),
-	loader: async ({ params }) => {
+	loader: async ({ context, params }) => {
 		const id = Number(params.characterId);
 		const [character, subjects, persons] = await Promise.all([
-			getCharacter({ data: { id } }) as Promise<Character>,
-			getCharacterSubjects({ data: { characterId: id } }) as Promise<
-				RelatedSubject[]
-			>,
-			getCharacterPersons({ data: { characterId: id } }) as Promise<
-				CharacterPerson[]
-			>,
+			context.queryClient.ensureQueryData(characterQueryOptions(id)),
+			context.queryClient.ensureQueryData(characterSubjectsQueryOptions(id)),
+			context.queryClient.ensureQueryData(characterPersonsQueryOptions(id)),
 		]);
 		return { character, subjects, persons } satisfies LoaderData;
 	},

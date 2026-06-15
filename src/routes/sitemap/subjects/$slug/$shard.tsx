@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { runWithConcurrency } from "@/lib/concurrency";
 import { SITE_URL } from "@/lib/seo/site";
 import {
 	buildSitemap,
 	SITEMAP_SHARD_SIZE,
 	type SitemapEntry,
 } from "@/lib/seo/sitemap";
-import { bgmFetch } from "@/server/utils";
+import { BgmHttpError, bgmFetch } from "@/server/utils";
 import { type Subject, SubjectType } from "@/types";
 
 /**
@@ -34,6 +35,8 @@ const SLUG_TO_TYPE: Record<string, SubjectType> = {
 };
 
 const PAGE_LIMIT = 50; // bangumi /v0/subjects 单页上限
+const CONCURRENCY = 5;
+const RETRY_DELAY_MS = 300;
 
 async function fetchPage(
 	type: SubjectType,
@@ -43,6 +46,32 @@ async function fetchPage(
 		`/v0/subjects?type=${type}&sort=date&limit=${PAGE_LIMIT}&offset=${offset}`,
 		{ cacheTtl: 86400 },
 	);
+}
+
+async function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** 单页获取，带一次按状态码区分的重试。 */
+async function fetchPageWithRetry(
+	type: SubjectType,
+	offset: number,
+): Promise<SubjectsPage | null> {
+	try {
+		return await fetchPage(type, offset);
+	} catch (err) {
+		const status = err instanceof BgmHttpError ? err.status : 0;
+		const shouldRetry = status >= 500 || status === 429;
+		if (!shouldRetry) return null;
+
+		if (status === 429) await sleep(RETRY_DELAY_MS);
+
+		try {
+			return await fetchPage(type, offset);
+		} catch {
+			return null;
+		}
+	}
 }
 
 export const Route = createFileRoute("/sitemap/subjects/$slug/$shard")({
@@ -81,9 +110,10 @@ export const Route = createFileRoute("/sitemap/subjects/$slug/$shard")({
 				}
 
 				// 受 Worker 子请求数限制，单分片最多触发
-				// SITEMAP_SHARD_SIZE / PAGE_LIMIT = 40 个子请求；并发执行以缩短延迟。
-				const pages = await Promise.all(
-					pageOffsets.map((o) => fetchPage(type, o).catch(() => null)),
+				// SITEMAP_SHARD_SIZE / PAGE_LIMIT = 40 个子请求；用并发池控制同时请求数。
+				const pages = await runWithConcurrency(
+					pageOffsets.map((offset) => () => fetchPageWithRetry(type, offset)),
+					CONCURRENCY,
 				);
 
 				for (const page of pages) {

@@ -21,8 +21,11 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/characters/")({
 	validateSearch: searchSchema,
-	// 角色搜索页本身 noindex，缓存设私有禁存（每用户搜索不同）。
-	headers: () => ({ "Cache-Control": "private, no-store" }),
+	// 角色搜索页本身 noindex，搜索结果按用户私有缓存 5 分钟。
+	headers: () => ({
+		"Cache-Control":
+			"private, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+	}),
 	head: ({ match }) => {
 		const keyword =
 			(match.search as { keyword?: string } | undefined)?.keyword ?? "";
@@ -57,7 +60,11 @@ function CharactersPage() {
 
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
 		useInfiniteQuery({
-			queryKey: ["characters", keyword],
+			queryKey: [
+				"characters",
+				"search",
+				{ keyword, limit: PAGE_SIZE },
+			] as const,
 			queryFn: ({ pageParam = 0 }) =>
 				searchCharacters({
 					data: { keyword, limit: PAGE_SIZE, offset: pageParam },

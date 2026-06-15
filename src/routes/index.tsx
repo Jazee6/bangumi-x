@@ -10,17 +10,18 @@ import {
 	tabsListVariants,
 } from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
+import { calendarQueryOptions } from "@/lib/queries/calendar";
 import { serializeJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
 import { buildMeta } from "@/lib/seo/site";
-import { getCalendar } from "@/server/functions";
 import type { CalendarDay } from "@/types";
 
 export const Route = createFileRoute("/")({
-	loader: async () => getCalendar(),
+	loader: async ({ context }) =>
+		context.queryClient.ensureQueryData(calendarQueryOptions()),
 	headers: () => ({
-		// 首页是低敏数据，可被边缘共享缓存。
+		// 首页是低敏数据，可被边缘共享缓存；浏览器本地缓存 5 分钟。
 		"Cache-Control":
-			"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+			"public, max-age=300, s-maxage=21600, stale-while-revalidate=86400",
 	}),
 	head: () => {
 		const { meta, links } = buildMeta({

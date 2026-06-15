@@ -21,17 +21,17 @@ import {
 } from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 import {
+	personCharactersQueryOptions,
+	personQueryOptions,
+	personSubjectsQueryOptions,
+} from "@/lib/queries/persons";
+import {
 	breadcrumbJsonLd,
 	personJsonLd,
 	relatedSubjectsItemList,
 	serializeJsonLd,
 } from "@/lib/seo/json-ld";
 import { buildMeta } from "@/lib/seo/site";
-import {
-	getPerson,
-	getPersonCharacters,
-	getPersonSubjects,
-} from "@/server/functions";
 import {
 	BloodTypeLabel,
 	CareerLabel,
@@ -56,18 +56,14 @@ function getRelationScore(relation: string, order: string[]) {
 export const Route = createFileRoute("/persons/$personId")({
 	headers: () => ({
 		"Cache-Control":
-			"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+			"public, max-age=300, s-maxage=28800, stale-while-revalidate=86400",
 	}),
-	loader: async ({ params }) => {
+	loader: async ({ context, params }) => {
 		const id = Number(params.personId);
 		const [person, subjects, characters] = await Promise.all([
-			getPerson({ data: { id } }) as Promise<PersonDetail>,
-			getPersonSubjects({ data: { personId: id } }) as Promise<
-				RelatedSubject[]
-			>,
-			getPersonCharacters({ data: { personId: id } }) as Promise<
-				PersonCharacter[]
-			>,
+			context.queryClient.ensureQueryData(personQueryOptions(id)),
+			context.queryClient.ensureQueryData(personSubjectsQueryOptions(id)),
+			context.queryClient.ensureQueryData(personCharactersQueryOptions(id)),
 		]);
 		return { person, subjects, characters } satisfies LoaderData;
 	},

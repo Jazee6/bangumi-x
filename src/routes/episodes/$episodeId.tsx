@@ -4,13 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Typography } from "@/components/ui/typography";
+import { episodeQueryOptions } from "@/lib/queries/episodes";
+import { subjectQueryOptions } from "@/lib/queries/subjects";
 import {
 	breadcrumbJsonLd,
 	episodeJsonLd,
 	serializeJsonLd,
 } from "@/lib/seo/json-ld";
 import { buildMeta } from "@/lib/seo/site";
-import { getEpisode, getSubject } from "@/server/functions";
 import { type EpisodeDetail, EpTypeLabel, type Subject } from "@/types";
 
 interface LoaderData {
@@ -21,17 +22,19 @@ interface LoaderData {
 export const Route = createFileRoute("/episodes/$episodeId")({
 	headers: () => ({
 		"Cache-Control":
-			"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+			"public, max-age=300, s-maxage=14400, stale-while-revalidate=86400",
 	}),
-	loader: async ({ params }) => {
+	loader: async ({ context, params }) => {
 		const id = Number(params.episodeId);
-		const episode = (await getEpisode({ data: { id } })) as EpisodeDetail;
+		const episode = await context.queryClient.ensureQueryData(
+			episodeQueryOptions(id),
+		);
 		// 拉父番剧用于 breadcrumb / JSON-LD partOfSeries.name；失败容忍。
 		let subject: Subject | null = null;
 		try {
-			subject = (await getSubject({
-				data: { id: episode.subject_id },
-			})) as Subject;
+			subject = await context.queryClient.ensureQueryData(
+				subjectQueryOptions(episode.subject_id),
+			);
 		} catch {
 			subject = null;
 		}

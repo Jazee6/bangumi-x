@@ -15,18 +15,18 @@ import {
 } from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 import {
+	subjectCharactersQueryOptions,
+	subjectEpisodesQueryOptions,
+	subjectPersonsQueryOptions,
+	subjectQueryOptions,
+} from "@/lib/queries/subjects";
+import {
 	breadcrumbJsonLd,
 	ogTypeForSubject,
 	serializeJsonLd,
 	subjectJsonLd,
 } from "@/lib/seo/json-ld";
 import { buildMeta } from "@/lib/seo/site";
-import {
-	getSubject,
-	getSubjectCharacters,
-	getSubjectEpisodes,
-	getSubjectPersons,
-} from "@/server/functions";
 import {
 	type Episode,
 	type PagedResponse,
@@ -71,25 +71,26 @@ function getRelationScore(relation: string, order: string[]) {
 }
 
 export const Route = createFileRoute("/subjects/$subjectId")({
-	// 详情页可被边缘共享缓存。loader 抛 notFound() 会被根路由 notFoundComponent
+	// 详情页可被边缘共享缓存；浏览器本地缓存 5 分钟。
+	// loader 抛 notFound() 会被根路由 notFoundComponent
 	// 接住并设 404；headers() 仅在 200 路径生效，所以无需特殊处理。
 	headers: () => ({
 		"Cache-Control":
-			"public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+			"public, max-age=300, s-maxage=14400, stale-while-revalidate=86400",
 	}),
-	loader: async ({ params }) => {
+	loader: async ({ context, params }) => {
 		const id = Number(params.subjectId);
 		const [subject, episodesRes, characters, persons] = await Promise.all([
-			getSubject({ data: { id } }),
-			getSubjectEpisodes({ data: { subjectId: id } }),
-			getSubjectCharacters({ data: { subjectId: id } }),
-			getSubjectPersons({ data: { subjectId: id } }),
+			context.queryClient.ensureQueryData(subjectQueryOptions(id)),
+			context.queryClient.ensureQueryData(subjectEpisodesQueryOptions(id)),
+			context.queryClient.ensureQueryData(subjectCharactersQueryOptions(id)),
+			context.queryClient.ensureQueryData(subjectPersonsQueryOptions(id)),
 		]);
 		return {
-			subject: subject as Subject,
+			subject,
 			episodes: (episodesRes as PagedResponse<Episode>).data ?? [],
-			characters: characters as RelatedCharacter[],
-			persons: persons as RelatedPerson[],
+			characters,
+			persons,
 		} satisfies LoaderData;
 	},
 	head: ({ loaderData, params }) => {

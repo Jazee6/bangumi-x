@@ -36,8 +36,8 @@ interface ProbeResponse {
 	offset: number;
 }
 
-/** 探针：调一个 limit=1 的请求拿 total，决定分片数。 */
-async function probeTotal(type: SubjectType): Promise<number> {
+/** 探针：调一个 limit=1 的请求拿 total，决定分片数。失败返回 null。 */
+async function probeTotal(type: SubjectType): Promise<number | null> {
 	try {
 		const res = await bgmFetch<ProbeResponse>(
 			`/v0/subjects?type=${type}&sort=date&limit=1`,
@@ -45,7 +45,7 @@ async function probeTotal(type: SubjectType): Promise<number> {
 		);
 		return res.total ?? 0;
 	} catch {
-		return 0;
+		return null;
 	}
 }
 
@@ -62,8 +62,9 @@ export const Route = createFileRoute("/sitemap.xml")({
 				);
 
 				SUBJECT_TYPES_FOR_SITEMAP.forEach((s, i) => {
-					const total = totals[i] ?? 0;
-					const shardCount = Math.max(1, Math.ceil(total / SITEMAP_SHARD_SIZE));
+					const total = totals[i];
+					if (total == null || total <= 0) return;
+					const shardCount = Math.ceil(total / SITEMAP_SHARD_SIZE);
 					for (let shard = 1; shard <= shardCount; shard++) {
 						entries.push({
 							loc: `${SITE_URL}/sitemap/subjects/${s.slug}/${shard}.xml`,

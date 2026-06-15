@@ -16,6 +16,10 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Typography } from "@/components/ui/typography";
+import {
+	browseSubjectsQueryOptions,
+	searchSubjectsQueryOptions,
+} from "@/lib/queries/subjects";
 import { breadcrumbJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
 import { buildMeta } from "@/lib/seo/site";
 import { browseSubjects, searchSubjects } from "@/server/functions";
@@ -52,37 +56,37 @@ export const Route = createFileRoute("/subjects/")({
 			| undefined;
 		const keyword = search?.keyword ?? "";
 		const isSearch = keyword.trim().length > 0;
-		// 默认主列表（无关键词）可被边缘共享缓存；带关键词的搜索结果不缓存。
+		// 默认主列表（无关键词）可被边缘共享缓存；带关键词的搜索结果私有缓存 5 分钟。
 		return {
 			"Cache-Control": isSearch
-				? "private, no-store"
-				: "public, max-age=0, s-maxage=1800, stale-while-revalidate=86400",
+				? "private, max-age=0, s-maxage=300, stale-while-revalidate=3600"
+				: "public, max-age=120, s-maxage=1800, stale-while-revalidate=7200",
 		};
 	},
-	loader: async ({ deps }) => {
+	loader: async ({ context, deps }) => {
 		const typeValue = typeLabelToValue[deps.type];
 		const isAll = typeValue === "all";
 		const isSearch = deps.keyword.trim().length > 0;
 
 		if (isSearch) {
-			return searchSubjects({
-				data: {
+			return context.queryClient.ensureQueryData(
+				searchSubjectsQueryOptions({
 					keyword: deps.keyword,
 					sort: "rank",
 					filter: !isAll
 						? { type: [Number(typeValue) as SubjectType] }
 						: undefined,
 					limit: PAGE_SIZE,
-				},
-			});
+				}),
+			);
 		}
-		return browseSubjects({
-			data: {
+		return context.queryClient.ensureQueryData(
+			browseSubjectsQueryOptions({
 				type: (!isAll ? Number(typeValue) : SubjectType.Anime) as SubjectType,
 				sort: "rank",
 				limit: PAGE_SIZE,
-			},
-		});
+			}),
+		);
 	},
 	head: ({ match }) => {
 		const search = match.search as
@@ -160,21 +164,34 @@ function SubjectsPage() {
 	);
 
 	const isSearching = keyword.trim().length > 0;
+	const typeValue = typeLabelToValue[type];
+	const isAll = typeValue === "all";
+	const filter = !isAll
+		? { type: [Number(typeValue) as SubjectType] }
+		: undefined;
+
+	const queryKey = isSearching
+		? ([
+				"subjects",
+				"search",
+				{ keyword, sort: "rank", filter, limit: PAGE_SIZE },
+			] as const)
+		: ([
+				"subjects",
+				"browse",
+				{ type: typeValue, sort: "rank", limit: PAGE_SIZE },
+			] as const);
 
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
 		useInfiniteQuery({
-			queryKey: ["subjects", keyword, type],
+			queryKey,
 			queryFn: async ({ pageParam = 0 }) => {
-				const typeValue = typeLabelToValue[type];
-				const isAll = typeValue === "all";
 				if (isSearching) {
 					return searchSubjects({
 						data: {
 							keyword,
 							sort: "rank",
-							filter: !isAll
-								? { type: [Number(typeValue) as SubjectType] }
-								: undefined,
+							filter,
 							limit: PAGE_SIZE,
 							offset: pageParam,
 						},
