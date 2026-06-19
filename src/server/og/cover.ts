@@ -15,7 +15,9 @@ const ALLOWED_HOSTS = new Set(["lain.bgm.tv", "bgmimg.anibt.net"]);
 export async function loadCoverDataUri(rawUrl: string): Promise<string> {
 	const url = normalizeBgmUrl(rawUrl);
 	const cache = caches.default;
-	const cacheKey = new Request(`https://og.cache/cover/${encodeURIComponent(url)}`);
+	const cacheKey = new Request(
+		`https://og.cache/cover/${encodeURIComponent(url)}`,
+	);
 
 	const cached = await cache.match(cacheKey);
 	if (cached) {

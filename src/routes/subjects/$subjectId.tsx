@@ -29,7 +29,6 @@ import {
 import { buildMeta } from "@/lib/seo/site";
 import {
 	type Episode,
-	type PagedResponse,
 	type RelatedCharacter,
 	type RelatedPerson,
 	type Subject,
@@ -78,7 +77,7 @@ export const Route = createFileRoute("/subjects/$subjectId")({
 		"Cache-Control":
 			"public, max-age=300, s-maxage=14400, stale-while-revalidate=86400",
 	}),
-	loader: async ({ context, params }) => {
+	loader: async ({ context, params }): Promise<LoaderData> => {
 		const id = Number(params.subjectId);
 		const [subject, episodesRes, characters, persons] = await Promise.all([
 			context.queryClient.ensureQueryData(subjectQueryOptions(id)),
@@ -88,14 +87,13 @@ export const Route = createFileRoute("/subjects/$subjectId")({
 		]);
 		return {
 			subject,
-			episodes: (episodesRes as PagedResponse<Episode>).data ?? [],
+			episodes: episodesRes.data ?? [],
 			characters,
 			persons,
-		} satisfies LoaderData;
+		};
 	},
 	head: ({ loaderData, params }) => {
-		const data = loaderData as LoaderData | undefined;
-		if (!data?.subject) {
+		if (!loaderData?.subject) {
 			return {
 				meta: buildMeta({
 					title: "条目",
@@ -103,7 +101,7 @@ export const Route = createFileRoute("/subjects/$subjectId")({
 				}).meta,
 			};
 		}
-		const { subject } = data;
+		const { subject } = loaderData;
 		const typeLabel = SubjectTypeLabel[subject.type] ?? "条目";
 		const title = subject.name_cn || subject.name;
 
@@ -192,8 +190,7 @@ export const Route = createFileRoute("/subjects/$subjectId")({
 });
 
 function SubjectDetailPage() {
-	const { subject, episodes, characters, persons } =
-		Route.useLoaderData() as LoaderData;
+	const { subject, episodes, characters, persons } = Route.useLoaderData();
 
 	return (
 		<article className="max-w-5xl mx-auto">

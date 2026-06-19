@@ -288,7 +288,9 @@ export function CharacterCard({
 		.slice(0, 2)
 		.map((s) => s.name_cn || s.name)
 		.filter(Boolean);
-	const subline = series.length ? `登场作品 · ${series.join(" / ")}` : undefined;
+	const subline = series.length
+		? `登场作品 · ${series.join(" / ")}`
+		: undefined;
 
 	return (
 		<FrameView
@@ -348,8 +350,7 @@ export function EpisodeCard({
 	subject: Subject | null;
 	cover?: string;
 }): ReactElement {
-	const epName =
-		episode.name_cn || episode.name || `第 ${episode.sort} 话`;
+	const epName = episode.name_cn || episode.name || `第 ${episode.sort} 话`;
 	const titleMain = `第 ${episode.sort} 话 ${epName}`;
 	const titleSub = subject ? subject.name_cn || subject.name : undefined;
 
@@ -370,7 +371,10 @@ export function EpisodeCard({
 
 // ─── helpers ───────────────────────────────────────────
 
-function clamp(input: string | undefined | null, max: number): string | undefined {
+function clamp(
+	input: string | undefined | null,
+	max: number,
+): string | undefined {
 	if (!input) return undefined;
 	const cleaned = input.replace(/\s+/g, " ").trim();
 	if (!cleaned) return undefined;

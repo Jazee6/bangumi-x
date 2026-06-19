@@ -44,18 +44,17 @@ export const Route = createFileRoute("/characters/$characterId")({
 		"Cache-Control":
 			"public, max-age=300, s-maxage=28800, stale-while-revalidate=86400",
 	}),
-	loader: async ({ context, params }) => {
+	loader: async ({ context, params }): Promise<LoaderData> => {
 		const id = Number(params.characterId);
 		const [character, subjects, persons] = await Promise.all([
 			context.queryClient.ensureQueryData(characterQueryOptions(id)),
 			context.queryClient.ensureQueryData(characterSubjectsQueryOptions(id)),
 			context.queryClient.ensureQueryData(characterPersonsQueryOptions(id)),
 		]);
-		return { character, subjects, persons } satisfies LoaderData;
+		return { character, subjects, persons };
 	},
 	head: ({ loaderData, params }) => {
-		const data = loaderData as LoaderData | undefined;
-		if (!data?.character) {
+		if (!loaderData?.character) {
 			return {
 				meta: buildMeta({
 					title: "角色",
@@ -63,7 +62,7 @@ export const Route = createFileRoute("/characters/$characterId")({
 				}).meta,
 			};
 		}
-		const { character, subjects } = data;
+		const { character, subjects } = loaderData;
 		const typeLabel = character.type
 			? CharacterTypeLabel[character.type]
 			: "角色";
@@ -150,7 +149,7 @@ export const Route = createFileRoute("/characters/$characterId")({
 });
 
 function CharacterDetailPage() {
-	const { character, subjects, persons } = Route.useLoaderData() as LoaderData;
+	const { character, subjects, persons } = Route.useLoaderData();
 
 	const birthday =
 		character.birth_year || character.birth_mon || character.birth_day

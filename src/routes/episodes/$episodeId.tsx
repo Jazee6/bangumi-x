@@ -24,7 +24,7 @@ export const Route = createFileRoute("/episodes/$episodeId")({
 		"Cache-Control":
 			"public, max-age=300, s-maxage=14400, stale-while-revalidate=86400",
 	}),
-	loader: async ({ context, params }) => {
+	loader: async ({ context, params }): Promise<LoaderData> => {
 		const id = Number(params.episodeId);
 		const episode = await context.queryClient.ensureQueryData(
 			episodeQueryOptions(id),
@@ -38,11 +38,10 @@ export const Route = createFileRoute("/episodes/$episodeId")({
 		} catch {
 			subject = null;
 		}
-		return { episode, subject } satisfies LoaderData;
+		return { episode, subject };
 	},
 	head: ({ loaderData, params }) => {
-		const data = loaderData as LoaderData | undefined;
-		if (!data?.episode) {
+		if (!loaderData?.episode) {
 			return {
 				meta: buildMeta({
 					title: "章节",
@@ -50,7 +49,7 @@ export const Route = createFileRoute("/episodes/$episodeId")({
 				}).meta,
 			};
 		}
-		const { episode, subject } = data;
+		const { episode, subject } = loaderData;
 		const epName = episode.name_cn || episode.name || `第 ${episode.sort} 话`;
 		const seriesName = subject?.name_cn || subject?.name;
 		const title = seriesName
@@ -118,7 +117,7 @@ export const Route = createFileRoute("/episodes/$episodeId")({
 });
 
 function EpisodeDetailPage() {
-	const { episode } = Route.useLoaderData() as LoaderData;
+	const { episode } = Route.useLoaderData();
 
 	return (
 		<article className="max-w-5xl mx-auto">

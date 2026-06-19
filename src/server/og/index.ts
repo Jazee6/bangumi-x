@@ -163,7 +163,9 @@ async function buildEpisodeCard(id: number): Promise<BuiltCard> {
 		subject = null;
 	}
 	const coverUrl =
-		subject?.images?.large || subject?.images?.common || subject?.images?.medium;
+		subject?.images?.large ||
+		subject?.images?.common ||
+		subject?.images?.medium;
 	const cover = coverUrl ? await tryLoadCover(coverUrl) : undefined;
 	return {
 		element: EpisodeCard({ episode, subject, cover }),

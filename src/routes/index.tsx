@@ -13,7 +13,6 @@ import { Typography } from "@/components/ui/typography";
 import { calendarQueryOptions } from "@/lib/queries/calendar";
 import { serializeJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
 import { buildMeta } from "@/lib/seo/site";
-import type { CalendarDay } from "@/types";
 
 export const Route = createFileRoute("/")({
 	loader: async ({ context }) =>
@@ -58,7 +57,7 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-	const calendar = Route.useLoaderData() as CalendarDay[];
+	const calendar = Route.useLoaderData();
 
 	// Today's weekday ID (JS: 0=Sunday, API: 1=Monday..7=Sunday)
 	const todayJsDay = new Date().getDay();

@@ -27,8 +27,8 @@ export const Route = createFileRoute("/characters/")({
 			"private, max-age=0, s-maxage=300, stale-while-revalidate=3600",
 	}),
 	head: ({ match }) => {
-		const keyword =
-			(match.search as { keyword?: string } | undefined)?.keyword ?? "";
+		const { keyword: kw } = searchSchema.parse(match.search);
+		const keyword = kw ?? "";
 		const title = keyword ? `搜索「${keyword}」 - 角色` : "角色搜索";
 		const description = keyword
 			? `在 Bangumi X 上搜索「${keyword}」相关角色。`
@@ -65,10 +65,10 @@ function CharactersPage() {
 				"search",
 				{ keyword, limit: PAGE_SIZE },
 			] as const,
-			queryFn: ({ pageParam = 0 }) =>
+			queryFn: async ({ pageParam = 0 }): Promise<PagedResponse<Character>> =>
 				searchCharacters({
 					data: { keyword, limit: PAGE_SIZE, offset: pageParam },
-				}) as Promise<PagedResponse<Character>>,
+				}),
 			initialPageParam: 0,
 			getNextPageParam: (lastPage) => {
 				const nextOffset = lastPage.offset + lastPage.limit;

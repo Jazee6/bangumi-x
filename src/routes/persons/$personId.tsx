@@ -58,18 +58,17 @@ export const Route = createFileRoute("/persons/$personId")({
 		"Cache-Control":
 			"public, max-age=300, s-maxage=28800, stale-while-revalidate=86400",
 	}),
-	loader: async ({ context, params }) => {
+	loader: async ({ context, params }): Promise<LoaderData> => {
 		const id = Number(params.personId);
 		const [person, subjects, characters] = await Promise.all([
 			context.queryClient.ensureQueryData(personQueryOptions(id)),
 			context.queryClient.ensureQueryData(personSubjectsQueryOptions(id)),
 			context.queryClient.ensureQueryData(personCharactersQueryOptions(id)),
 		]);
-		return { person, subjects, characters } satisfies LoaderData;
+		return { person, subjects, characters };
 	},
 	head: ({ loaderData, params }) => {
-		const data = loaderData as LoaderData | undefined;
-		if (!data?.person) {
+		if (!loaderData?.person) {
 			return {
 				meta: buildMeta({
 					title: "人物",
@@ -77,7 +76,7 @@ export const Route = createFileRoute("/persons/$personId")({
 				}).meta,
 			};
 		}
-		const { person, subjects } = data;
+		const { person, subjects } = loaderData;
 		const careers = person.career?.map((c) => CareerLabel[c] ?? c).join("、");
 
 		const facts: string[] = [];
@@ -160,7 +159,7 @@ export const Route = createFileRoute("/persons/$personId")({
 });
 
 function PersonDetailPage() {
-	const { person, subjects, characters } = Route.useLoaderData() as LoaderData;
+	const { person, subjects, characters } = Route.useLoaderData();
 
 	const birthday =
 		person.birth_year || person.birth_mon || person.birth_day

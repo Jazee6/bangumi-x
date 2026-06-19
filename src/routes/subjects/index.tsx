@@ -23,7 +23,6 @@ import {
 import { breadcrumbJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
 import { buildMeta } from "@/lib/seo/site";
 import { browseSubjects, searchSubjects } from "@/server/functions";
-import type { PagedResponse, Subject } from "@/types";
 import { SubjectType, SubjectTypeLabel } from "@/types";
 
 const ALL_LABEL = "全部";
@@ -51,10 +50,8 @@ export const Route = createFileRoute("/subjects/")({
 		type: search.type ?? ALL_LABEL,
 	}),
 	headers: ({ match }) => {
-		const search = match.search as
-			| { keyword?: string; type?: string }
-			| undefined;
-		const keyword = search?.keyword ?? "";
+		const search = searchSchema.parse(match.search);
+		const keyword = search.keyword ?? "";
 		const isSearch = keyword.trim().length > 0;
 		// 默认主列表（无关键词）可被边缘共享缓存；带关键词的搜索结果私有缓存 5 分钟。
 		return {
@@ -89,11 +86,9 @@ export const Route = createFileRoute("/subjects/")({
 		);
 	},
 	head: ({ match }) => {
-		const search = match.search as
-			| { keyword?: string; type?: string }
-			| undefined;
-		const keyword = search?.keyword ?? "";
-		const type = search?.type ?? ALL_LABEL;
+		const search = searchSchema.parse(match.search);
+		const keyword = search.keyword ?? "";
+		const type = search.type ?? ALL_LABEL;
 		const isSearch = keyword.trim().length > 0;
 
 		const title = keyword.trim()
@@ -143,7 +138,7 @@ export const Route = createFileRoute("/subjects/")({
 });
 
 function SubjectsPage() {
-	const initialData = Route.useLoaderData() as PagedResponse<Subject>;
+	const initialData = Route.useLoaderData();
 	const search = Route.useSearch();
 	const keyword = search.keyword ?? "";
 	const type = search.type ?? ALL_LABEL;

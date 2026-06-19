@@ -14,6 +14,7 @@ import { ThemeProvider } from "next-themes";
 import { type ReactNode, useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { EmptyState } from "@/components/empty-state";
+import { OfflineBanner } from "@/components/offline-banner";
 import { Button, buttonVariants } from "@/components/ui/button.tsx";
 import {
 	SidebarInset,
@@ -38,7 +39,6 @@ import { setNotFoundStatus } from "@/lib/seo/status";
 import { version } from "../../package.json";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
-// @ts-expect-error
 import "@bprogress/core/css";
 
 interface MyRouterContext {
@@ -62,6 +62,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			{ name: "application-name", content: SITE_NAME },
 			{ name: "theme-color", content: "#171717" },
 			{ name: "format-detection", content: "telephone=no" },
+			{ name: "apple-mobile-web-app-capable", content: "yes" },
+			{
+				name: "apple-mobile-web-app-status-bar-style",
+				content: "black-translucent",
+			},
 			// Open Graph defaults，子路由 head() 会覆盖。
 			{ property: "og:site_name", content: SITE_NAME },
 			{ property: "og:type", content: "website" },
@@ -79,7 +84,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		links: [
 			{ rel: "stylesheet", href: appCss },
 			{ rel: "icon", type: "image/svg+xml", href: "/icon.svg" },
-			{ rel: "manifest", href: "/manifest.json" },
+			{ rel: "apple-touch-icon", href: "/icon-192.png" },
 		],
 	}),
 	shellComponent: RootDocument,
@@ -121,6 +126,7 @@ function RootDocument({ children }: { children: ReactNode }) {
 				<HeadContent />
 			</head>
 			<body>
+				<OfflineBanner />
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 					<TooltipProvider>
 						<SidebarProvider>
