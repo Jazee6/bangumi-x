@@ -9,8 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SitemapStaticDotxmlRouteImport } from './routes/sitemap-static[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as IndexRouteImport } from './routes/index'
@@ -22,18 +20,7 @@ import { Route as PersonsPersonIdRouteImport } from './routes/persons/$personId'
 import { Route as EpisodesEpisodeIdRouteImport } from './routes/episodes/$episodeId'
 import { Route as CharactersCharacterIdRouteImport } from './routes/characters/$characterId'
 import { Route as ApiSplatRouteImport } from './routes/api/$'
-import { Route as SitemapSubjectsSlugShardRouteImport } from './routes/sitemap/subjects/$slug/$shard'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapStaticDotxmlRoute = SitemapStaticDotxmlRouteImport.update({
-  id: '/sitemap-static.xml',
-  path: '/sitemap-static.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
@@ -89,19 +76,11 @@ const ApiSplatRoute = ApiSplatRouteImport.update({
   path: '/api/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SitemapSubjectsSlugShardRoute =
-  SitemapSubjectsSlugShardRouteImport.update({
-    id: '/sitemap/subjects/$slug/$shard',
-    path: '/sitemap/subjects/$slug/$shard',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
-  '/sitemap-static.xml': typeof SitemapStaticDotxmlRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/$': typeof ApiSplatRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
@@ -110,14 +89,11 @@ export interface FileRoutesByFullPath {
   '/characters/': typeof CharactersIndexRoute
   '/persons/': typeof PersonsIndexRoute
   '/subjects/': typeof SubjectsIndexRoute
-  '/sitemap/subjects/$slug/$shard': typeof SitemapSubjectsSlugShardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
-  '/sitemap-static.xml': typeof SitemapStaticDotxmlRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/$': typeof ApiSplatRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
@@ -126,15 +102,12 @@ export interface FileRoutesByTo {
   '/characters': typeof CharactersIndexRoute
   '/persons': typeof PersonsIndexRoute
   '/subjects': typeof SubjectsIndexRoute
-  '/sitemap/subjects/$slug/$shard': typeof SitemapSubjectsSlugShardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
-  '/sitemap-static.xml': typeof SitemapStaticDotxmlRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/$': typeof ApiSplatRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
@@ -143,7 +116,6 @@ export interface FileRoutesById {
   '/characters/': typeof CharactersIndexRoute
   '/persons/': typeof PersonsIndexRoute
   '/subjects/': typeof SubjectsIndexRoute
-  '/sitemap/subjects/$slug/$shard': typeof SitemapSubjectsSlugShardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,8 +123,6 @@ export interface FileRouteTypes {
     | '/'
     | '/llms.txt'
     | '/robots.txt'
-    | '/sitemap-static.xml'
-    | '/sitemap.xml'
     | '/api/$'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
@@ -161,14 +131,11 @@ export interface FileRouteTypes {
     | '/characters/'
     | '/persons/'
     | '/subjects/'
-    | '/sitemap/subjects/$slug/$shard'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/llms.txt'
     | '/robots.txt'
-    | '/sitemap-static.xml'
-    | '/sitemap.xml'
     | '/api/$'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
@@ -177,14 +144,11 @@ export interface FileRouteTypes {
     | '/characters'
     | '/persons'
     | '/subjects'
-    | '/sitemap/subjects/$slug/$shard'
   id:
     | '__root__'
     | '/'
     | '/llms.txt'
     | '/robots.txt'
-    | '/sitemap-static.xml'
-    | '/sitemap.xml'
     | '/api/$'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
@@ -193,15 +157,12 @@ export interface FileRouteTypes {
     | '/characters/'
     | '/persons/'
     | '/subjects/'
-    | '/sitemap/subjects/$slug/$shard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
-  SitemapStaticDotxmlRoute: typeof SitemapStaticDotxmlRoute
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiSplatRoute: typeof ApiSplatRoute
   CharactersCharacterIdRoute: typeof CharactersCharacterIdRoute
   EpisodesEpisodeIdRoute: typeof EpisodesEpisodeIdRoute
@@ -210,25 +171,10 @@ export interface RootRouteChildren {
   CharactersIndexRoute: typeof CharactersIndexRoute
   PersonsIndexRoute: typeof PersonsIndexRoute
   SubjectsIndexRoute: typeof SubjectsIndexRoute
-  SitemapSubjectsSlugShardRoute: typeof SitemapSubjectsSlugShardRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap-static.xml': {
-      id: '/sitemap-static.xml'
-      path: '/sitemap-static.xml'
-      fullPath: '/sitemap-static.xml'
-      preLoaderRoute: typeof SitemapStaticDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/robots.txt': {
       id: '/robots.txt'
       path: '/robots.txt'
@@ -306,13 +252,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sitemap/subjects/$slug/$shard': {
-      id: '/sitemap/subjects/$slug/$shard'
-      path: '/sitemap/subjects/$slug/$shard'
-      fullPath: '/sitemap/subjects/$slug/$shard'
-      preLoaderRoute: typeof SitemapSubjectsSlugShardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -320,8 +259,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
-  SitemapStaticDotxmlRoute: SitemapStaticDotxmlRoute,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiSplatRoute: ApiSplatRoute,
   CharactersCharacterIdRoute: CharactersCharacterIdRoute,
   EpisodesEpisodeIdRoute: EpisodesEpisodeIdRoute,
@@ -330,7 +267,6 @@ const rootRouteChildren: RootRouteChildren = {
   CharactersIndexRoute: CharactersIndexRoute,
   PersonsIndexRoute: PersonsIndexRoute,
   SubjectsIndexRoute: SubjectsIndexRoute,
-  SitemapSubjectsSlugShardRoute: SitemapSubjectsSlugShardRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

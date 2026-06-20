@@ -6,8 +6,7 @@ import { proxy } from "hono/proxy";
 import { z } from "zod";
 import { absoluteUrl } from "@/lib/seo/site";
 import { NotFoundError, renderOg } from "./og";
-
-const ALLOWED_HOSTS = ["lain.bgm.tv", "bgmimg.anibt.net"];
+import { BGM_IMAGE_HOSTS } from "./utils";
 
 const OG_TYPES = ["subject", "character", "person", "episode"] as const;
 const ogParamSchema = z.object({
@@ -18,7 +17,7 @@ const ogParamSchema = z.object({
 const imageQuerySchema = z.object({
 	url: z.url().refine((val) => {
 		try {
-			return ALLOWED_HOSTS.includes(new URL(val).hostname);
+			return BGM_IMAGE_HOSTS.includes(new URL(val).hostname);
 		} catch {
 			return false;
 		}
@@ -64,7 +63,8 @@ app.get("/api/og/:type/:id{[0-9]+\\.png}", async (c) => {
 	const { type, id } = parsed.data;
 
 	try {
-		const { png } = await renderOg({ type, id });
+		const origin = new URL(c.req.url).origin;
+		const { png } = await renderOg({ type, id, origin });
 		return new Response(png as unknown as ArrayBuffer, {
 			headers: {
 				"Content-Type": "image/png",

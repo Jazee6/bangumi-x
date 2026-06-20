@@ -1,3 +1,5 @@
+import { bgmImageHostSet } from "@/server/utils";
+
 /**
  * OG 路由内的封面 fetch：从 lain.bgm.tv（带 hotlink 防护）拿原图，
  * 转成 base64 data URI 直接塞进 satori，避免它在内部再 fetch（拿不到）。
@@ -7,7 +9,6 @@
 declare const caches: { default: Cache } & CacheStorage;
 
 const COVER_CACHE_TTL = 60 * 60 * 24 * 7; // 7d
-const ALLOWED_HOSTS = new Set(["lain.bgm.tv", "bgmimg.anibt.net"]);
 
 /**
  * @returns base64 data URI 形如 `data:image/jpeg;base64,...`，失败抛错。
@@ -59,7 +60,7 @@ function normalizeBgmUrl(raw: string): string {
 	} catch {
 		throw new Error(`invalid cover url: ${raw}`);
 	}
-	if (!ALLOWED_HOSTS.has(host)) {
+	if (!bgmImageHostSet.has(host)) {
 		throw new Error(`cover host not allowed: ${host}`);
 	}
 	return raw;

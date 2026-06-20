@@ -5,6 +5,16 @@ declare const caches: { default: Cache } & CacheStorage;
 const BASE_URL = process.env.BGM_API_URL ?? "https://api.bgm.tv";
 const USER_AGENT = `Jazee6/bangumi-x/${pkg.version}(https://github.com/Jazee6/bangumi-x)`;
 
+/**
+ * bangumi 图片 CDN 的合法 host。封面代理 / OG 封面拉取都只允许这两个，
+ * 防止 SSRF 把任意 URL 当图片代理出去。
+ */
+export const BGM_IMAGE_HOSTS: readonly string[] = [
+	"lain.bgm.tv",
+	"bgmimg.anibt.net",
+];
+export const bgmImageHostSet = new Set<string>(BGM_IMAGE_HOSTS);
+
 async function sha256(text: string): Promise<string> {
 	const data = new TextEncoder().encode(text);
 	const hash = await crypto.subtle.digest("SHA-256", data);

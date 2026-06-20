@@ -28,6 +28,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { registerSW } from "@/lib/pwa";
 import {
 	absoluteUrl,
 	SITE_DESCRIPTION,
@@ -85,6 +86,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			{ rel: "stylesheet", href: appCss },
 			{ rel: "icon", type: "image/svg+xml", href: "/icon.svg" },
 			{ rel: "apple-touch-icon", href: "/icon-192.png" },
+			{ rel: "manifest", href: "/manifest.webmanifest" },
 		],
 	}),
 	shellComponent: RootDocument,
@@ -119,6 +121,10 @@ function RootDocument({ children }: { children: ReactNode }) {
 			BProgress.done();
 		}
 	}, [isLoading]);
+
+	useEffect(() => {
+		registerSW();
+	}, []);
 
 	return (
 		<html lang="zh-CN" suppressHydrationWarning>

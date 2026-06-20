@@ -1,6 +1,6 @@
 /**
  * OG 渲染管线主入口。串起：
- *   bgmFetch 数据 → 拉封面 → 拼字符串 → 拉字体 → satori → resvg
+ *   bgmFetch 数据 → 拉封面 → 拉静态字体 → satori → resvg
  *
  * 三档降级：
  *   1. 完整：封面 + 文字
@@ -9,7 +9,7 @@
  */
 import { Resvg } from "@resvg/resvg-wasm";
 import satori from "satori/standalone";
-import { bgmFetch, BgmHttpError } from "@/server/utils";
+import { BgmHttpError, bgmFetch } from "@/server/utils";
 import type {
 	Character,
 	EpisodeDetail,
@@ -21,7 +21,6 @@ import { loadCoverDataUri } from "./cover";
 import { loadOgFonts } from "./fonts";
 import {
 	CharacterCard,
-	collectCardText,
 	EpisodeCard,
 	PersonCard,
 	SubjectCard,
@@ -33,6 +32,8 @@ export type OgType = "subject" | "character" | "person" | "episode";
 export interface RenderInput {
 	type: OgType;
 	id: number;
+	/** Worker 自身 origin，用于拉静态字体子集。 */
+	origin: string;
 }
 
 export interface RenderResult {
@@ -49,10 +50,7 @@ export async function renderOg(input: RenderInput): Promise<RenderResult> {
 	await initOgWasm();
 
 	const card = await buildCard(input);
-
-	// 把所有可能渲染的字符串拼起来给字体子集。
-	const text = collectCardText(...card.textParts);
-	const fonts = await loadOgFonts(text);
+	const fonts = await loadOgFonts(input.origin);
 
 	const svg = await satori(card.element, {
 		...SATORI_OPTS,
@@ -68,7 +66,6 @@ export async function renderOg(input: RenderInput): Promise<RenderResult> {
 
 interface BuiltCard {
 	element: import("react").ReactElement;
-	textParts: Array<string | undefined>;
 }
 
 async function buildCard(input: RenderInput): Promise<BuiltCard> {
@@ -93,16 +90,7 @@ async function buildSubjectCard(id: number): Promise<BuiltCard> {
 	const coverUrl =
 		subject.images?.large || subject.images?.common || subject.images?.medium;
 	const cover = coverUrl ? await tryLoadCover(coverUrl) : undefined;
-	return {
-		element: SubjectCard({ subject, cover }),
-		textParts: [
-			subject.name,
-			subject.name_cn,
-			subject.platform,
-			subject.summary,
-			subject.date,
-		],
-	};
+	return { element: SubjectCard({ subject, cover }) };
 }
 
 async function buildCharacterCard(id: number): Promise<BuiltCard> {
@@ -114,15 +102,7 @@ async function buildCharacterCard(id: number): Promise<BuiltCard> {
 	]);
 	const coverUrl = character.images?.large || character.images?.medium;
 	const cover = coverUrl ? await tryLoadCover(coverUrl) : undefined;
-	return {
-		element: CharacterCard({ character, cover, subjects }),
-		textParts: [
-			character.name,
-			character.summary,
-			character.gender,
-			...subjects.slice(0, 2).flatMap((s) => [s.name, s.name_cn]),
-		],
-	};
+	return { element: CharacterCard({ character, cover, subjects }) };
 }
 
 async function buildPersonCard(id: number): Promise<BuiltCard> {
@@ -134,16 +114,7 @@ async function buildPersonCard(id: number): Promise<BuiltCard> {
 	]);
 	const coverUrl = person.images?.large || person.images?.medium;
 	const cover = coverUrl ? await tryLoadCover(coverUrl) : undefined;
-	return {
-		element: PersonCard({ person, cover, subjects }),
-		textParts: [
-			person.name,
-			person.summary,
-			person.gender,
-			...(person.career ?? []),
-			...subjects.slice(0, 2).flatMap((s) => [s.name, s.name_cn]),
-		],
-	};
+	return { element: PersonCard({ person, cover, subjects }) };
 }
 
 async function buildEpisodeCard(id: number): Promise<BuiltCard> {
@@ -159,18 +130,7 @@ async function buildEpisodeCard(id: number): Promise<BuiltCard> {
 		subject?.images?.common ||
 		subject?.images?.medium;
 	const cover = coverUrl ? await tryLoadCover(coverUrl) : undefined;
-	return {
-		element: EpisodeCard({ episode, subject, cover }),
-		textParts: [
-			episode.name,
-			episode.name_cn,
-			episode.desc,
-			episode.airdate,
-			episode.duration,
-			subject?.name,
-			subject?.name_cn,
-		],
-	};
+	return { element: EpisodeCard({ episode, subject, cover }) };
 }
 
 // ─── helpers ────────────────────────────────────────────
