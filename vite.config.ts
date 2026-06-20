@@ -44,12 +44,7 @@ const config = defineConfig({
 		devtools(),
 		cloudflare({ viteEnvironment: { name: "ssr" } }),
 		tailwindcss(),
-		tanstackStart({
-			sitemap: {
-				enabled: true,
-				host: "https://bgmx.jaze.top",
-			},
-		}),
+		tanstackStart(),
 		viteReact(),
 		babel({ presets: [reactCompilerPreset()] }),
 		pwaInjectSW(),

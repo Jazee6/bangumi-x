@@ -32,7 +32,7 @@ Bangumi 番组计划及其原始贡献者，本站仅作为现代化阅读界面
 
 ## 索引
 
-- [Sitemap (XML)](${SITE_URL}/sitemap.xml) - 完整的可索引 URL 列表，按内容类型分片
+- [Sitemap (XML)](${SITE_URL}/sitemap.xml) - 站点地图
 - [robots.txt](${SITE_URL}/robots.txt) - 抓取策略（对所有合规 bot 全量开放）
 
 ## 数据来源

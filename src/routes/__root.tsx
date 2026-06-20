@@ -14,7 +14,6 @@ import { ThemeProvider } from "next-themes";
 import { type ReactNode, useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { EmptyState } from "@/components/empty-state";
-import { OfflineBanner } from "@/components/offline-banner";
 import { Button, buttonVariants } from "@/components/ui/button.tsx";
 import {
 	SidebarInset,
@@ -132,7 +131,6 @@ function RootDocument({ children }: { children: ReactNode }) {
 				<HeadContent />
 			</head>
 			<body>
-				<OfflineBanner />
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 					<TooltipProvider>
 						<SidebarProvider>

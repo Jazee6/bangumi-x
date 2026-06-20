@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as IndexRouteImport } from './routes/index'
@@ -21,6 +22,11 @@ import { Route as EpisodesEpisodeIdRouteImport } from './routes/episodes/$episod
 import { Route as CharactersCharacterIdRouteImport } from './routes/characters/$characterId'
 import { Route as ApiSplatRouteImport } from './routes/api/$'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/$': typeof ApiSplatRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/$': typeof ApiSplatRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/$': typeof ApiSplatRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/llms.txt'
     | '/robots.txt'
+    | '/sitemap.xml'
     | '/api/$'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/llms.txt'
     | '/robots.txt'
+    | '/sitemap.xml'
     | '/api/$'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/llms.txt'
     | '/robots.txt'
+    | '/sitemap.xml'
     | '/api/$'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
@@ -163,6 +175,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiSplatRoute: typeof ApiSplatRoute
   CharactersCharacterIdRoute: typeof CharactersCharacterIdRoute
   EpisodesEpisodeIdRoute: typeof EpisodesEpisodeIdRoute
@@ -175,6 +188,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/robots.txt': {
       id: '/robots.txt'
       path: '/robots.txt'
@@ -259,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiSplatRoute: ApiSplatRoute,
   CharactersCharacterIdRoute: CharactersCharacterIdRoute,
   EpisodesEpisodeIdRoute: EpisodesEpisodeIdRoute,
