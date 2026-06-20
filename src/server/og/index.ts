@@ -45,10 +45,7 @@ const SATORI_OPTS = { width: 1200, height: 630 } as const;
 /**
  * 给定 type/id，返回 SVG 与 PNG。debug=true 时只算到 SVG，跳过 resvg 节省时间。
  */
-export async function renderOg(
-	input: RenderInput,
-	opts: { debug?: boolean } = {},
-): Promise<RenderResult> {
+export async function renderOg(input: RenderInput): Promise<RenderResult> {
 	await initOgWasm();
 
 	const card = await buildCard(input);
@@ -61,11 +58,6 @@ export async function renderOg(
 		...SATORI_OPTS,
 		fonts,
 	});
-
-	if (opts.debug) {
-		// 跳过 resvg；返回空 PNG 占位。
-		return { svg, png: new Uint8Array() };
-	}
 
 	const resvg = new Resvg(svg, { fitTo: { mode: "width", value: 1200 } });
 	const png = resvg.render().asPng();

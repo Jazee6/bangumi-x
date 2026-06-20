@@ -16,13 +16,10 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Typography } from "@/components/ui/typography";
-import {
-	browseSubjectsQueryOptions,
-	searchSubjectsQueryOptions,
-} from "@/lib/queries/subjects";
 import { breadcrumbJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
 import { buildMeta } from "@/lib/seo/site";
 import { browseSubjects, searchSubjects } from "@/server/functions";
+import type { PagedResponse, Subject } from "@/types";
 import { SubjectType, SubjectTypeLabel } from "@/types";
 
 const ALL_LABEL = "全部";
@@ -60,30 +57,30 @@ export const Route = createFileRoute("/subjects/")({
 				: "public, max-age=120, s-maxage=1800, stale-while-revalidate=7200",
 		};
 	},
-	loader: async ({ context, deps }) => {
+	loader: async ({ deps }) => {
 		const typeValue = typeLabelToValue[deps.type];
 		const isAll = typeValue === "all";
 		const isSearch = deps.keyword.trim().length > 0;
 
 		if (isSearch) {
-			return context.queryClient.ensureQueryData(
-				searchSubjectsQueryOptions({
+			return searchSubjects({
+				data: {
 					keyword: deps.keyword,
 					sort: "rank",
 					filter: !isAll
 						? { type: [Number(typeValue) as SubjectType] }
 						: undefined,
 					limit: PAGE_SIZE,
-				}),
-			);
+				},
+			});
 		}
-		return context.queryClient.ensureQueryData(
-			browseSubjectsQueryOptions({
+		return browseSubjects({
+			data: {
 				type: (!isAll ? Number(typeValue) : SubjectType.Anime) as SubjectType,
 				sort: "rank",
 				limit: PAGE_SIZE,
-			}),
-		);
+			},
+		});
 	},
 	head: ({ match }) => {
 		const search = searchSchema.parse(match.search);
@@ -180,7 +177,7 @@ function SubjectsPage() {
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
 		useInfiniteQuery({
 			queryKey,
-			queryFn: async ({ pageParam = 0 }) => {
+			queryFn: async ({ pageParam = 0 }): Promise<PagedResponse<Subject>> => {
 				if (isSearching) {
 					return searchSubjects({
 						data: {
@@ -208,10 +205,9 @@ function SubjectsPage() {
 				const nextOffset = lastPage.offset + lastPage.limit;
 				return nextOffset < lastPage.total ? nextOffset : undefined;
 			},
-			initialData: {
-				pages: [initialData],
-				pageParams: [0],
-			},
+			initialData: initialData
+				? { pages: [initialData], pageParams: [0] }
+				: undefined,
 		});
 
 	const subjects = data?.pages.flatMap((page) => page.data) ?? [];

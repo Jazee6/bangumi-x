@@ -77,7 +77,7 @@ function PersonsPage() {
 
 	const handleSearch = useCallback(
 		(value: string) => {
-			navigate({
+			void navigate({
 				to: ".",
 				search: { keyword: value || undefined },
 			});

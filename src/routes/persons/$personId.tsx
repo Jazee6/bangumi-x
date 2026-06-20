@@ -21,17 +21,17 @@ import {
 } from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 import {
-	personCharactersQueryOptions,
-	personQueryOptions,
-	personSubjectsQueryOptions,
-} from "@/lib/queries/persons";
-import {
 	breadcrumbJsonLd,
 	personJsonLd,
 	relatedSubjectsItemList,
 	serializeJsonLd,
 } from "@/lib/seo/json-ld";
 import { buildMeta } from "@/lib/seo/site";
+import {
+	getPerson,
+	getPersonCharacters,
+	getPersonSubjects,
+} from "@/server/functions";
 import {
 	BloodTypeLabel,
 	CareerLabel,
@@ -58,12 +58,12 @@ export const Route = createFileRoute("/persons/$personId")({
 		"Cache-Control":
 			"public, max-age=300, s-maxage=28800, stale-while-revalidate=86400",
 	}),
-	loader: async ({ context, params }): Promise<LoaderData> => {
+	loader: async ({ params }): Promise<LoaderData> => {
 		const id = Number(params.personId);
 		const [person, subjects, characters] = await Promise.all([
-			context.queryClient.ensureQueryData(personQueryOptions(id)),
-			context.queryClient.ensureQueryData(personSubjectsQueryOptions(id)),
-			context.queryClient.ensureQueryData(personCharactersQueryOptions(id)),
+			getPerson({ data: { id } }),
+			getPersonSubjects({ data: { personId: id } }),
+			getPersonCharacters({ data: { personId: id } }),
 		]);
 		return { person, subjects, characters };
 	},

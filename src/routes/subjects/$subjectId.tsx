@@ -15,18 +15,18 @@ import {
 } from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 import {
-	subjectCharactersQueryOptions,
-	subjectEpisodesQueryOptions,
-	subjectPersonsQueryOptions,
-	subjectQueryOptions,
-} from "@/lib/queries/subjects";
-import {
 	breadcrumbJsonLd,
 	ogTypeForSubject,
 	serializeJsonLd,
 	subjectJsonLd,
 } from "@/lib/seo/json-ld";
 import { buildMeta } from "@/lib/seo/site";
+import {
+	getSubject,
+	getSubjectCharacters,
+	getSubjectEpisodes,
+	getSubjectPersons,
+} from "@/server/functions";
 import {
 	type Episode,
 	type RelatedCharacter,
@@ -77,13 +77,13 @@ export const Route = createFileRoute("/subjects/$subjectId")({
 		"Cache-Control":
 			"public, max-age=300, s-maxage=14400, stale-while-revalidate=86400",
 	}),
-	loader: async ({ context, params }): Promise<LoaderData> => {
+	loader: async ({ params }): Promise<LoaderData> => {
 		const id = Number(params.subjectId);
 		const [subject, episodesRes, characters, persons] = await Promise.all([
-			context.queryClient.ensureQueryData(subjectQueryOptions(id)),
-			context.queryClient.ensureQueryData(subjectEpisodesQueryOptions(id)),
-			context.queryClient.ensureQueryData(subjectCharactersQueryOptions(id)),
-			context.queryClient.ensureQueryData(subjectPersonsQueryOptions(id)),
+			getSubject({ data: { id } }),
+			getSubjectEpisodes({ data: { subjectId: id } }),
+			getSubjectCharacters({ data: { subjectId: id } }),
+			getSubjectPersons({ data: { subjectId: id } }),
 		]);
 		return {
 			subject,

@@ -6,6 +6,7 @@ import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { VitePWA } from "vite-plugin-pwa";
+import type { VitePWAOptions } from "vite-plugin-pwa";
 import type { Plugin } from "vite";
 import { resolve } from "node:path";
 
@@ -24,9 +25,7 @@ function pwaGenerateSW(): Plugin {
 				const clientDir = resolve(process.cwd(), "dist/client");
 				await generateSW({
 					globDirectory: clientDir,
-					globPatterns: [
-						"**/*.{js,css,html,ico,png,svg,webmanifest}",
-					],
+					globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
 					swDest: resolve(clientDir, "sw.js"),
 					navigateFallback: "/index.html",
 					skipWaiting: true,
@@ -37,7 +36,7 @@ function pwaGenerateSW(): Plugin {
 	};
 }
 
-const pwaOptions = {
+const pwaOptions: Partial<VitePWAOptions> = {
 	registerType: "autoUpdate",
 	manifest: {
 		name: "Bangumi X",
@@ -66,7 +65,7 @@ const pwaOptions = {
 		navigateFallback: "/index.html",
 		globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
 	},
-} as const;
+};
 
 const config = defineConfig({
 	resolve: { tsconfigPaths: true },
@@ -74,7 +73,12 @@ const config = defineConfig({
 		devtools(),
 		cloudflare({ viteEnvironment: { name: "ssr" } }),
 		tailwindcss(),
-		tanstackStart(),
+		tanstackStart({
+			sitemap: {
+				enabled: true,
+				host: "https://bgmx.jaze.top",
+			},
+		}),
 		viteReact(),
 		babel({ presets: [reactCompilerPreset()] }),
 		VitePWA(pwaOptions),

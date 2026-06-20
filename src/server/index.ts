@@ -62,19 +62,10 @@ app.get("/api/og/:type/:id{[0-9]+\\.png}", async (c) => {
 		return c.notFound();
 	}
 	const { type, id } = parsed.data;
-	const debug = c.req.query("debug") === "1";
 
 	try {
-		const { svg, png } = await renderOg({ type, id }, { debug });
-		if (debug) {
-			return new Response(svg, {
-				headers: {
-					"Content-Type": "image/svg+xml; charset=utf-8",
-					"Cache-Control": "no-store",
-				},
-			});
-		}
-		return new Response(png, {
+		const { png } = await renderOg({ type, id });
+		return new Response(png as unknown as ArrayBuffer, {
 			headers: {
 				"Content-Type": "image/png",
 				"Cache-Control":
