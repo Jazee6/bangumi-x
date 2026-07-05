@@ -10,7 +10,7 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
-        const staticPaths = ["/", "/subjects", "/characters", "/persons"];
+        const staticPaths = ["/", "/subjects"];
         const calendar = await getCalendar();
         const subjectPaths = calendar.flatMap((day) => day.items.map((s) => `/subjects/${s.id}`));
         const paths = [...staticPaths, ...subjectPaths];

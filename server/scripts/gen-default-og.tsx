@@ -21,27 +21,25 @@ async function main() {
   ]);
 
   const svg = await satori(
-    (
-      <div
-        style={{
-          width: `${WIDTH}px`,
-          height: `${HEIGHT}px`,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "32px",
-          backgroundColor: "#0a0a0a",
-          color: "#fafafa",
-          fontFamily: "Noto Sans SC",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-          <img src={ICON_DATA_URI} width={80} height={80} />
-          <div style={{ fontSize: "80px", fontWeight: 700, color: "#fafafa" }}>Bangumi X</div>
-        </div>
+    <div
+      style={{
+        width: `${WIDTH}px`,
+        height: `${HEIGHT}px`,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "32px",
+        backgroundColor: "#0a0a0a",
+        color: "#fafafa",
+        fontFamily: "Noto Sans SC",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+        <img src={ICON_DATA_URI} width={80} height={80} />
+        <div style={{ fontSize: "80px", fontWeight: 700, color: "#fafafa" }}>Bangumi X</div>
       </div>
-    ),
+    </div>,
     {
       width: WIDTH,
       height: HEIGHT,

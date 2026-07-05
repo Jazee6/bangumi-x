@@ -17,15 +17,16 @@ import {
 } from "@/server/functions.ts";
 
 export const Route = createFileRoute("/api/$type/$id")({
-  headers: () => ({
-    "Content-Type": "application/ld+json; charset=utf-8",
-    "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
-  }),
   server: {
     handlers: {
       GET: async ({ params }) => {
         const id = Number(params.id);
         const type = params.type as "subjects" | "characters" | "persons" | "episodes";
+
+        const headers = {
+          "Content-Type": "application/ld+json; charset=utf-8",
+          "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
+        };
 
         let jsonLd: Record<string, unknown>;
 
@@ -60,9 +61,7 @@ export const Route = createFileRoute("/api/$type/$id")({
 
         const path = `/${type}/${id}`;
         const body = JSON.stringify([jsonLd, breadcrumbJsonLd(path)]);
-        return new Response(body, {
-          headers: { "Content-Type": "application/ld+json; charset=utf-8" },
-        });
+        return new Response(body, { headers });
       },
     },
   },

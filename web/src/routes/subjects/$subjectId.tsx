@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/tabs.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
 import { buildMeta, breadcrumbJsonLd, ogImageUrl, subjectJsonLd } from "@/lib/seo/site.ts";
-import { characterRelationOrder, getRelationScore, personRelationOrder } from "@/lib/relation.ts";
+import { characterRelationOrder, groupByRelation, personRelationOrder } from "@/lib/relation.ts";
 import {
   getSubject,
   getSubjectCharacters,
@@ -227,33 +227,20 @@ function SubjectDetailPage() {
               <p className="py-8 text-center text-muted-foreground">暂无角色</p>
             ) : (
               <div className="space-y-6">
-                {Object.entries(
-                  characters.reduce<Record<string, typeof characters>>((acc, c) => {
-                    const key = c.relation || "其他";
-                    acc[key] ??= [];
-                    acc[key].push(c);
-                    return acc;
-                  }, {}),
-                )
-                  .sort(
-                    ([a], [b]) =>
-                      getRelationScore(a, characterRelationOrder) -
-                      getRelationScore(b, characterRelationOrder),
-                  )
-                  .map(([relation, items]) => (
-                    <section key={relation}>
-                      <Typography variant="h3" className="mb-2">
-                        {relation}
-                      </Typography>
-                      <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
-                        {items.map((c) => (
-                          <li key={c.id}>
-                            <CharacterItem character={c} />
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
-                  ))}
+                {groupByRelation(characters, characterRelationOrder).map(([relation, items]) => (
+                  <section key={relation}>
+                    <Typography variant="h3" className="mb-2">
+                      {relation}
+                    </Typography>
+                    <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
+                      {items.map((c) => (
+                        <li key={c.id}>
+                          <CharacterItem character={c} />
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
               </div>
             )}
           </TabsContent>
@@ -263,33 +250,20 @@ function SubjectDetailPage() {
               <p className="py-8 text-center text-muted-foreground">暂无人物</p>
             ) : (
               <div className="space-y-6">
-                {Object.entries(
-                  persons.reduce<Record<string, typeof persons>>((acc, p) => {
-                    const key = p.relation || "其他";
-                    acc[key] ??= [];
-                    acc[key].push(p);
-                    return acc;
-                  }, {}),
-                )
-                  .sort(
-                    ([a], [b]) =>
-                      getRelationScore(a, personRelationOrder) -
-                      getRelationScore(b, personRelationOrder),
-                  )
-                  .map(([relation, items]) => (
-                    <section key={relation}>
-                      <Typography variant="h3" className="mb-2">
-                        {relation}
-                      </Typography>
-                      <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
-                        {items.map((p) => (
-                          <li key={p.id}>
-                            <PersonItem person={p} />
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
-                  ))}
+                {groupByRelation(persons, personRelationOrder).map(([relation, items]) => (
+                  <section key={relation}>
+                    <Typography variant="h3" className="mb-2">
+                      {relation}
+                    </Typography>
+                    <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
+                      {items.map((p) => (
+                        <li key={p.id}>
+                          <PersonItem person={p} />
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
               </div>
             )}
           </TabsContent>

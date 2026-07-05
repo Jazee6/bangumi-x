@@ -135,7 +135,7 @@ export function subjectJsonLd(
   persons: RelatedPerson[] = [],
 ): Record<string, unknown> {
   const url = absUrl(`/subjects/${s.id}`);
-  const image = workerImage(s.images?.large || s.images?.common);
+  const image = workerImage(s.images.large || s.images.common);
 
   const actors = persons
     .filter((p) => p.relation === "声优")

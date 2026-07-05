@@ -96,7 +96,7 @@ async function loadOgData(type: string, id: number): Promise<OgData | null> {
 }
 
 function subjectTypeLabel(t: number): string {
-  return { 1: "书籍", 2: "动画", 3: "音乐", 4: "游戏", 6: "三次实" }[t] ?? "条目";
+  return { 1: "书籍", 2: "动画", 3: "音乐", 4: "游戏", 6: "三次元" }[t] ?? "条目";
 }
 function characterTypeLabel(t: number): string {
   return { 1: "角色", 2: "机体", 3: "舰船", 4: "组织" }[t] ?? "角色";
@@ -161,7 +161,9 @@ app.get(
           const mime = imgRes.headers.get("content-type") ?? "image/jpeg";
           imageData = { base64: bufToBase64(buf), mime };
         }
-      } catch {}
+      } catch (err) {
+        console.warn("og image fetch failed", err);
+      }
     }
 
     const tSize = titleFontSize(data.title);
@@ -174,8 +176,8 @@ app.get(
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-            backgroundColor: "#0a0a0a",
-            color: "#fafafa",
+          backgroundColor: "#0a0a0a",
+          color: "#fafafa",
           padding: "60px",
           fontFamily: "Noto Sans SC",
         }}
@@ -197,66 +199,66 @@ app.get(
               style={{
                 width: "300px",
                 height: "400px",
-                  borderRadius: "16px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "12px",
-                  backgroundColor: "#262626",
-                }}
+                borderRadius: "16px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "12px",
+                backgroundColor: "#262626",
+              }}
             >
               <div style={{ fontSize: "96px", fontWeight: 700, color: "#525252" }}>B</div>
               <div style={{ fontSize: "20px", color: "#737373" }}>Bangumi X</div>
             </div>
           )}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px",
+              flex: "1",
+              minWidth: 0,
+            }}
+          >
             <div
               style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "20px",
-                flex: "1",
-                minWidth: 0,
+                fontSize: `${tSize}px`,
+                fontWeight: 700,
+                lineHeight: 1.2,
+                color: "#fafafa",
               }}
             >
-              <div
-                style={{
-                  fontSize: `${tSize}px`,
-                  fontWeight: 700,
-                  lineHeight: 1.2,
-                  color: "#fafafa",
-                }}
-              >
-                {data.title}
+              {data.title}
+            </div>
+            {data.score !== null && (
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Star size={32} color="#737373" />
+                <span style={{ fontSize: "44px", fontWeight: 700, color: "#fafafa" }}>
+                  {data.score.toFixed(1)}
+                </span>
               </div>
-              {data.score !== null && (
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <Star size={32} color="#737373" />
-                  <span style={{ fontSize: "44px", fontWeight: 700, color: "#fafafa" }}>
-                    {data.score.toFixed(1)}
-                  </span>
-                </div>
-              )}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
-                {data.badges.map((b) => (
-                  <Badge key={b}>{b}</Badge>
-                ))}
-              </div>
+            )}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+              {data.badges.map((b) => (
+                <Badge key={b}>{b}</Badge>
+              ))}
             </div>
           </div>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              }}
-            >
-              <img src={ICON_DATA_URI} width={30} height={30} />
-              <div style={{ fontSize: "30px", fontWeight: 700, color: "#fafafa" }}>Bangumi X</div>
-            </div>
+        </div>
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+            }}
+          >
+            <img src={ICON_DATA_URI} width={30} height={30} />
+            <div style={{ fontSize: "30px", fontWeight: 700, color: "#fafafa" }}>Bangumi X</div>
           </div>
-        </div>,
+        </div>
+      </div>,
       {
         width: WIDTH,
         height: HEIGHT,

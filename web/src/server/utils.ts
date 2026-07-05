@@ -1,4 +1,4 @@
-const API_URL = process.env.VITE_API_URL ?? "http://localhost:8787";
+const API_URL = process.env.VITE_API_URL ?? "https://s.bgmx.jaze.top";
 
 export async function bgmFetch<T>(
   path: string,

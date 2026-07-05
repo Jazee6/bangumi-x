@@ -31,7 +31,7 @@ export function ProxyImage({ src, alt, className, ...props }: ProxyImageProps) {
     );
   }
 
-  const apiBase = (import.meta.env.VITE_API_URL ?? "http://localhost:8787").replace(/\/$/, "");
+  const apiBase = (import.meta.env.VITE_API_URL ?? "https://s.bgmx.jaze.top").replace(/\/$/, "");
   const proxiedSrc = `${apiBase}/bgm/image?url=${encodeURIComponent(src)}`;
 
   return (

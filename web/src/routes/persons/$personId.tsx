@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/tabs.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
 import { buildMeta, breadcrumbJsonLd, ogImageUrl, personJsonLd } from "@/lib/seo/site.ts";
-import { characterRelationOrder, getRelationScore } from "@/lib/relation.ts";
+import { characterRelationOrder, groupByRelation } from "@/lib/relation.ts";
 import { getPerson, getPersonCharacters, getPersonSubjects } from "@/server/functions.ts";
 import {
   BloodTypeLabel,
@@ -193,20 +193,8 @@ function PersonDetailPage() {
               <p className="py-8 text-center text-muted-foreground">暂无相关角色</p>
             ) : (
               <div className="space-y-6">
-                {Object.entries(
-                  characters.reduce<Record<string, typeof characters>>((acc, c) => {
-                    const key = c.staff || "其他";
-                    acc[key] ??= [];
-                    acc[key].push(c);
-                    return acc;
-                  }, {}),
-                )
-                  .sort(
-                    ([a], [b]) =>
-                      getRelationScore(a, characterRelationOrder) -
-                      getRelationScore(b, characterRelationOrder),
-                  )
-                  .map(([relation, items]) => (
+                {groupByRelation(characters, characterRelationOrder, (c) => c.staff).map(
+                  ([relation, items]) => (
                     <section key={relation}>
                       <Typography variant="h3" className="mb-2">
                         {relation}
@@ -241,7 +229,8 @@ function PersonDetailPage() {
                         ))}
                       </ul>
                     </section>
-                  ))}
+                  ),
+                )}
               </div>
             )}
           </TabsContent>

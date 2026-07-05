@@ -47,8 +47,7 @@ export const Route = createFileRoute("/subjects/")({
     type: search.type ?? ALL_SLUG,
   }),
   headers: ({ match }) => {
-    const search = v.parse(searchSchema, match.search);
-    const keyword = search.keyword ?? "";
+    const keyword = match.search.keyword ?? "";
     const isSearch = keyword.trim().length > 0;
     return {
       "Cache-Control": isSearch
@@ -80,9 +79,8 @@ export const Route = createFileRoute("/subjects/")({
     });
   },
   head: ({ loaderData, match }) => {
-    const search = v.parse(searchSchema, match.search);
-    const keyword = search.keyword ?? "";
-    const option = typeSlugToOption[search.type ?? ALL_SLUG] ?? typeSlugToOption[ALL_SLUG];
+    const keyword = match.search.keyword ?? "";
+    const option = typeSlugToOption[match.search.type ?? ALL_SLUG] ?? typeSlugToOption[ALL_SLUG];
     const isSearch = keyword.trim().length > 0;
 
     const title = keyword.trim()

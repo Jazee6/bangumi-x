@@ -24,8 +24,7 @@ export const Route = createFileRoute("/characters/")({
     "Cache-Control": "private, max-age=0, s-maxage=300, stale-while-revalidate=3600",
   }),
   head: ({ match }) => {
-    const { keyword: kw } = v.parse(searchSchema, match.search);
-    const keyword = kw ?? "";
+    const keyword = match.search.keyword ?? "";
     const title = keyword ? `搜索「${keyword}」 - 角色` : "角色搜索";
     const description = keyword
       ? `在 Bangumi X 上搜索「${keyword}」相关角色。`

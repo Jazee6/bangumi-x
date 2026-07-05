@@ -83,8 +83,8 @@ export const searchSubjects = createServerFn({ method: "POST" })
 
 export const getSubjectEpisodes = createServerFn()
   .validator(subjectEpisodesParamSchema)
-  .handler(async ({ data }) => {
-    return bgmFetch<PagedResponse<Episode>>("/v0/episodes", {
+  .handler(async ({ data }): Promise<PagedResponse<Episode>> => {
+    const result = await bgmFetch<PagedResponse<Episode> | null>("/v0/episodes", {
       query: {
         subject_id: data.subjectId,
         type: data.type,
@@ -92,6 +92,7 @@ export const getSubjectEpisodes = createServerFn()
         offset: data.offset,
       },
     });
+    return result ?? { total: 0, limit: data.limit, offset: data.offset, data: [] };
   });
 
 export const getSubjectCharacters = createServerFn()

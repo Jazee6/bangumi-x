@@ -24,3 +24,19 @@ export function getRelationScore(relation: string, order: string[]) {
   const index = order.indexOf(relation);
   return index === -1 ? order.length : index;
 }
+
+export function groupByRelation<T>(
+  items: T[],
+  order: string[],
+  getKey: (item: T) => string | undefined = (item) => (item as { relation?: string }).relation,
+): Array<[string, T[]]> {
+  const groups = items.reduce<Record<string, T[]>>((acc, item) => {
+    const relation = getKey(item) ?? "其他";
+    acc[relation] ??= [];
+    acc[relation].push(item);
+    return acc;
+  }, {});
+  return Object.entries(groups).sort(
+    ([a], [b]) => getRelationScore(a, order) - getRelationScore(b, order),
+  );
+}

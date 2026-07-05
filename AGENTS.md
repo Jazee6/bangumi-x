@@ -27,3 +27,11 @@ Default vocabulary — `needs-triage`, `needs-info`, `ready-for-agent`, `ready-f
 ### Domain docs
 
 Single-context — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+## Verification
+
+Before finishing a task, run from the repo root:
+
+- Lint: `bun run lint`
+- Typecheck web: `cd web && ./node_modules/.bin/tsc --noEmit`
+- Typecheck server: `cd server && ./node_modules/.bin/tsc --noEmit`
