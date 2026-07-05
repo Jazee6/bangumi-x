@@ -47,9 +47,8 @@ export const searchSubjects = createServerFn({ method: "POST" })
   .validator(searchSubjectsSchema)
   .handler(async ({ data }) => {
     return bgmFetch<PagedResponse<Subject>>("/v0/search/subjects", {
-      query: { limit: data.limit, offset: data.offset },
       method: "POST",
-      body: { keyword: data.keyword, sort: data.sort, filter: data.filter },
+      body: { keyword: data.keyword, sort: data.sort, filter: data.filter, limit: data.limit, offset: data.offset },
     });
   });
 
@@ -94,9 +93,8 @@ export const searchCharacters = createServerFn({ method: "POST" })
   .validator(searchCharactersSchema)
   .handler(async ({ data }) => {
     return bgmFetch<PagedResponse<Character>>("/v0/search/characters", {
-      query: { limit: data.limit, offset: data.offset },
       method: "POST",
-      body: { keyword: data.keyword, filter: data.filter },
+      body: { keyword: data.keyword, filter: data.filter, limit: data.limit, offset: data.offset },
     });
   });
 
@@ -122,9 +120,8 @@ export const searchPersons = createServerFn({ method: "POST" })
   .validator(searchPersonsSchema)
   .handler(async ({ data }) => {
     return bgmFetch<PagedResponse<Person>>("/v0/search/persons", {
-      query: { limit: data.limit, offset: data.offset },
       method: "POST",
-      body: { keyword: data.keyword },
+      body: { keyword: data.keyword, limit: data.limit, offset: data.offset },
     });
   });
 
