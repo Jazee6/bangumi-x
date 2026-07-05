@@ -7,7 +7,8 @@
     "@/*": "./src/*"
   },
   "scripts": {
-    "dev": "vite dev --port 3000"
+    "dev": "vite dev --port 3000",
+    "build": "vite build"
   },
   "dependencies": {
     "@bangumi-x/share": "workspace:*",
