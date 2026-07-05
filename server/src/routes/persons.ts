@@ -25,7 +25,6 @@ app.post("/v0/search/persons", sValidator("json", searchPersonsSchema), (c) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         keyword: body.keyword,
-        filter: body.filter,
       }),
     },
   );

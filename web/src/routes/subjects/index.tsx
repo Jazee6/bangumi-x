@@ -22,13 +22,12 @@ import type { PagedResponse, Subject } from "@/types";
 import { SubjectType, SubjectTypeLabel } from "@/types";
 
 const ALL_LABEL = "全部";
-const typeValueToLabel: Record<string, string> = {
-  all: ALL_LABEL,
-  ...Object.fromEntries(Object.entries(SubjectTypeLabel).map(([v, l]) => [v, l])),
-};
-const typeLabelToValue: Record<string, string> = Object.fromEntries(
-  Object.entries(typeValueToLabel).map(([v, l]) => [l, v]),
-);
+const ALL_VALUE = "all";
+const typeOptions = [
+  { value: ALL_VALUE, label: ALL_LABEL },
+  ...Object.entries(SubjectTypeLabel).map(([v, l]) => ({ value: v, label: l })),
+];
+const typeValueToLabel = Object.fromEntries(typeOptions.map((o) => [o.value, o.label]));
 
 const PAGE_SIZE = 20;
 
@@ -41,7 +40,7 @@ export const Route = createFileRoute("/subjects/")({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
     keyword: search.keyword ?? "",
-    type: search.type ?? ALL_LABEL,
+    type: search.type ?? ALL_VALUE,
   }),
   headers: ({ match }) => {
     const search = v.parse(searchSchema, match.search);
@@ -54,8 +53,8 @@ export const Route = createFileRoute("/subjects/")({
     };
   },
   loader: async ({ deps }) => {
-    const typeValue = typeLabelToValue[deps.type];
-    const isAll = typeValue === "all";
+    const typeValue = deps.type;
+    const isAll = typeValue === ALL_VALUE;
     const isSearch = deps.keyword.trim().length > 0;
 
     if (isSearch) {
@@ -79,17 +78,18 @@ export const Route = createFileRoute("/subjects/")({
   head: ({ match }) => {
     const search = v.parse(searchSchema, match.search);
     const keyword = search.keyword ?? "";
-    const type = search.type ?? ALL_LABEL;
+    const typeValue = search.type ?? ALL_VALUE;
+    const typeLabel = typeValueToLabel[typeValue] ?? ALL_LABEL;
     const isSearch = keyword.trim().length > 0;
 
     const title = keyword.trim()
       ? `搜索「${keyword}」 - 条目`
-      : type !== ALL_LABEL
-        ? `${type}条目排行`
+      : typeValue !== ALL_VALUE
+        ? `${typeLabel}条目排行`
         : "条目排行";
     const description = keyword.trim()
       ? `在 Bangumi X 上搜索「${keyword}」相关的条目，包含动画、漫画、游戏、音乐等。`
-      : `Bangumi X ${type !== ALL_LABEL ? type : "动画"}排行：基于番组计划数据按排名展示热门条目，支持按类型筛选与全文检索。`;
+      : `Bangumi X ${typeValue !== ALL_VALUE ? typeLabel : "动画"}排行：基于番组计划数据按排名展示热门条目，支持按类型筛选与全文检索。`;
 
     return {
       meta: buildMeta({
@@ -120,26 +120,25 @@ function SubjectsPage() {
   const initialData = Route.useLoaderData();
   const search = Route.useSearch();
   const keyword = search.keyword ?? "";
-  const type = search.type ?? ALL_LABEL;
+  const typeValue = search.type ?? ALL_VALUE;
   const navigate = useNavigate();
 
   const updateSearch = useCallback(
     (updates: Partial<{ keyword: string; type: string }>) => {
-      const next = { keyword, type, ...updates };
+      const next = { keyword, type: typeValue, ...updates };
       navigate({
         to: ".",
         search: {
           keyword: next.keyword || undefined,
-          type: next.type === ALL_LABEL ? undefined : next.type,
+          type: next.type === ALL_VALUE ? undefined : next.type,
         },
       });
     },
-    [navigate, keyword, type],
+    [navigate, keyword, typeValue],
   );
 
   const isSearching = keyword.trim().length > 0;
-  const typeValue = typeLabelToValue[type];
-  const isAll = typeValue === "all";
+  const isAll = typeValue === ALL_VALUE;
   const filter = !isAll ? { type: [Number(typeValue) as SubjectType] } : undefined;
 
   const queryKey = isSearching
@@ -196,15 +195,14 @@ function SubjectsPage() {
         <div className="flex-1">
           <SearchInput value={keyword} onSearch={handleSearch} placeholder="搜索条目..." />
         </div>
-        <Select value={type} onValueChange={(v) => updateSearch({ type: v ?? ALL_LABEL })}>
+        <Select value={typeValue} onValueChange={(v) => updateSearch({ type: v ?? ALL_VALUE })}>
           <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="类型" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL_LABEL}>{ALL_LABEL}</SelectItem>
-            {Object.entries(SubjectTypeLabel).map(([value, label]) => (
-              <SelectItem key={value} value={label}>
-                {label}
+            {typeOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
               </SelectItem>
             ))}
           </SelectContent>

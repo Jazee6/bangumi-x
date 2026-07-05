@@ -17,6 +17,7 @@ export async function bgmFetch<T>(
     headers: opts.body !== undefined ? { "Content-Type": "application/json" } : undefined,
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
   });
+  if (res.status === 404) return null as T;
   if (!res.ok) throw new Error(`bgmFetch ${path} failed: ${res.status}`);
-  return (await res.json()) as Promise<T>;
+  return (await res.json()) as T;
 }

@@ -1,6 +1,8 @@
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { CharacterItem } from "@/components/character-item.tsx";
 import { EpisodeItem } from "@/components/episode-item.tsx";
+import { InfiniteScroll } from "@/components/infinite-scroll.tsx";
 import { PersonItem } from "@/components/person-item.tsx";
 import { ProxyImage } from "@/components/proxy-image.tsx";
 import { EpisodeItemSkeleton } from "@/components/skeletons/episode-item-skeleton.tsx";
@@ -24,15 +26,18 @@ import {
 } from "@/server/functions.ts";
 import {
   type Episode,
+  type PagedResponse,
   type RelatedCharacter,
   type RelatedPerson,
   type Subject,
   SubjectTypeLabel,
 } from "@/types";
 
+const EPISODE_PAGE_SIZE = 20;
+
 interface LoaderData {
   subject: Subject | null;
-  episodes: Episode[];
+  episodes: PagedResponse<Episode> | null;
   characters: RelatedCharacter[];
   persons: RelatedPerson[];
 }
@@ -45,16 +50,16 @@ export const Route = createFileRoute("/subjects/$subjectId")({
     const id = Number(params.subjectId);
     const subject = await getSubject({ data: { id } });
     if (!subject) {
-      return { subject, episodes: [], characters: [], persons: [] };
+      return { subject, episodes: null, characters: [], persons: [] };
     }
-    const [episodesRes, characters, persons] = await Promise.all([
-      getSubjectEpisodes({ data: { subjectId: id } }),
+    const [episodes, characters, persons] = await Promise.all([
+      getSubjectEpisodes({ data: { subjectId: id, limit: EPISODE_PAGE_SIZE } }),
       getSubjectCharacters({ data: { subjectId: id } }),
       getSubjectPersons({ data: { subjectId: id } }),
     ]);
     return {
       subject,
-      episodes: episodesRes?.data ?? [],
+      episodes,
       characters,
       persons,
     };
@@ -126,8 +131,26 @@ export const Route = createFileRoute("/subjects/$subjectId")({
 });
 
 function SubjectDetailPage() {
-  const { subject, episodes, characters, persons } = Route.useLoaderData();
+  const { subject, episodes: initialEpisodes, characters, persons } = Route.useLoaderData();
+  const subjectId = Number(Route.useParams().subjectId);
   if (!subject) return null;
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ["subject", subjectId, "episodes", { limit: EPISODE_PAGE_SIZE }] as const,
+    queryFn: async ({ pageParam = 0 }): Promise<PagedResponse<Episode>> =>
+      getSubjectEpisodes({
+        data: { subjectId, limit: EPISODE_PAGE_SIZE, offset: pageParam },
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      const nextOffset = lastPage.offset + lastPage.limit;
+      return nextOffset < lastPage.total ? nextOffset : undefined;
+    },
+    initialData: initialEpisodes ? { pages: [initialEpisodes], pageParams: [0] } : undefined,
+  });
+
+  const episodes = data?.pages.flatMap((page) => page.data) ?? [];
+  const episodeTotal = initialEpisodes?.total ?? episodes.length;
 
   return (
     <article className="max-w-5xl mx-auto">
@@ -175,7 +198,7 @@ function SubjectDetailPage() {
       <section className="mt-8">
         <Tabs defaultValue="episodes">
           <TabsList>
-            <TabsTrigger value="episodes">章节 ({episodes.length})</TabsTrigger>
+            <TabsTrigger value="episodes">章节 ({episodeTotal})</TabsTrigger>
             <TabsTrigger value="characters">角色 ({characters.length})</TabsTrigger>
             <TabsTrigger value="persons">人物 ({persons.length})</TabsTrigger>
           </TabsList>
@@ -184,13 +207,20 @@ function SubjectDetailPage() {
             {episodes.length === 0 ? (
               <p className="py-8 text-center text-muted-foreground">暂无章节</p>
             ) : (
-              <ul className="space-y-2 list-none p-0 m-0">
-                {episodes.map((ep) => (
-                  <li key={ep.id}>
-                    <EpisodeItem episode={ep} />
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul className="space-y-2 list-none p-0 m-0">
+                  {episodes.map((ep) => (
+                    <li key={ep.id}>
+                      <EpisodeItem episode={ep} />
+                    </li>
+                  ))}
+                </ul>
+                <InfiniteScroll
+                  hasMore={hasNextPage}
+                  loading={isFetchingNextPage}
+                  onLoadMore={() => fetchNextPage()}
+                />
+              </>
             )}
           </TabsContent>
 

@@ -20,6 +20,7 @@ import {
   searchCharactersSchema,
   searchPersonsSchema,
   searchSubjectsSchema,
+  subjectEpisodesParamSchema,
   subjectIdParamSchema,
 } from "@bangumi-x/share";
 import { bgmFetch } from "./utils";
@@ -53,10 +54,15 @@ export const searchSubjects = createServerFn({ method: "POST" })
   });
 
 export const getSubjectEpisodes = createServerFn()
-  .validator(subjectIdParamSchema)
+  .validator(subjectEpisodesParamSchema)
   .handler(async ({ data }) => {
     return bgmFetch<PagedResponse<Episode>>("/v0/episodes", {
-      query: { subject_id: data.subjectId },
+      query: {
+        subject_id: data.subjectId,
+        type: data.type,
+        limit: data.limit,
+        offset: data.offset,
+      },
     });
   });
 
@@ -118,7 +124,7 @@ export const searchPersons = createServerFn({ method: "POST" })
     return bgmFetch<PagedResponse<Person>>("/v0/search/persons", {
       query: { limit: data.limit, offset: data.offset },
       method: "POST",
-      body: { keyword: data.keyword, filter: data.filter },
+      body: { keyword: data.keyword },
     });
   });
 

@@ -235,7 +235,7 @@ function PersonDetailPage() {
                               </ItemMedia>
                               <ItemContent>
                                 <ItemTitle>{c.name}</ItemTitle>
-                                <ItemDescription>
+                                <ItemDescription className="line-clamp-1">
                                   {c.subject_name_cn || c.subject_name}
                                 </ItemDescription>
                               </ItemContent>

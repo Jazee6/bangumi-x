@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PersonCard } from "@/components/person-card.tsx";
+import { CharacterPersonCard } from "@/components/character-person-card.tsx";
 import { ProxyImage } from "@/components/proxy-image.tsx";
 import { SubjectCardSkeleton } from "@/components/skeletons/subject-card-skeleton.tsx";
 import { SubjectCard } from "@/components/subject-card.tsx";
@@ -194,7 +194,7 @@ function CharacterDetailPage() {
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
                 {persons.map((p) => (
                   <li key={p.id}>
-                    <PersonCard
+                    <CharacterPersonCard
                       id={p.id}
                       name={p.name}
                       image={p.images?.large || p.images?.medium}

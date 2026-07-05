@@ -17,6 +17,13 @@ export const subjectIdParamSchema = v.object({ subjectId: idSchema });
 export const characterIdParamSchema = v.object({ characterId: idSchema });
 export const personIdParamSchema = v.object({ personId: idSchema });
 
+export const subjectEpisodesParamSchema = v.object({
+  subjectId: idSchema,
+  type: v.optional(v.pipe(numericParam, v.minValue(0), v.maxValue(6)), 0),
+  limit: v.optional(limitSchema, 20),
+  offset: v.optional(offsetSchema, 0),
+});
+
 const subjectSortSchema = v.picklist(["rank"]);
 
 export const browseSubjectsSchema = v.object({
@@ -41,8 +48,6 @@ const charactersFilterSchema = v.object({
   type: v.optional(v.array(v.pipe(numericParam, v.minValue(1), v.maxValue(4)))),
 });
 
-const personsFilterSchema = v.object({});
-
 export const searchSubjectsSchema = v.object({
   keyword: v.pipe(v.string(), v.minLength(1)),
   sort: v.optional(subjectSortSchema, "rank"),
@@ -60,7 +65,6 @@ export const searchCharactersSchema = v.object({
 
 export const searchPersonsSchema = v.object({
   keyword: v.pipe(v.string(), v.minLength(1)),
-  filter: v.optional(personsFilterSchema),
   limit: v.optional(limitSchema, 20),
   offset: v.optional(offsetSchema, 0),
 });

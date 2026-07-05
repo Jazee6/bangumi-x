@@ -9,7 +9,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item.tsx";
 
-interface PersonCardProps {
+interface CharacterPersonCardProps {
   id: number;
   name: string;
   image: string | undefined;
@@ -17,7 +17,7 @@ interface PersonCardProps {
   subtitle?: string;
 }
 
-export function PersonCard({ id, name, image, to, subtitle }: PersonCardProps) {
+export function CharacterPersonCard({ id, name, image, to, subtitle }: CharacterPersonCardProps) {
   const params =
     to === "/characters/$characterId" ? { characterId: String(id) } : { personId: String(id) };
 

@@ -4,9 +4,9 @@ import { useCallback } from "react";
 import * as v from "valibot";
 import { EmptyState } from "@/components/empty-state.tsx";
 import { InfiniteScroll } from "@/components/infinite-scroll.tsx";
-import { PersonCard } from "@/components/person-card.tsx";
+import { CharacterPersonCard } from "@/components/character-person-card.tsx";
 import { SearchInput } from "@/components/search-input.tsx";
-import { PersonCardSkeleton } from "@/components/skeletons/person-card-skeleton.tsx";
+import { CharacterPersonCardSkeleton } from "@/components/skeletons/character-person-card-skeleton.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
 import { buildMeta } from "@/lib/seo/site.ts";
 import { searchPersons } from "@/server/functions.ts";
@@ -87,7 +87,7 @@ function PersonsPage() {
       ) : isLoading ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 8 }).map((_, i) => (
-            <PersonCardSkeleton key={`sk-${i}`} />
+            <CharacterPersonCardSkeleton key={`sk-${i}`} />
           ))}
         </div>
       ) : persons.length === 0 ? (
@@ -97,7 +97,7 @@ function PersonsPage() {
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 list-none p-0 m-0">
             {persons.map((p) => (
               <li key={p.id}>
-                <PersonCard
+                <CharacterPersonCard
                   id={p.id}
                   name={p.name}
                   image={p.images?.large || p.images?.medium}

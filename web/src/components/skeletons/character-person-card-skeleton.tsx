@@ -1,7 +1,7 @@
 import { Item, ItemContent, ItemMedia } from "@/components/ui/item.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 
-export function PersonCardSkeleton() {
+export function CharacterPersonCardSkeleton() {
   return (
     <Item variant="outline">
       <ItemMedia variant="image">

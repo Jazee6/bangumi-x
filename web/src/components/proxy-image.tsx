@@ -1,5 +1,5 @@
 import { ImageIcon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils.ts";
 
 interface ProxyImageProps extends React.ComponentProps<"img"> {
@@ -9,6 +9,10 @@ interface ProxyImageProps extends React.ComponentProps<"img"> {
 
 export function ProxyImage({ src, alt, className, ...props }: ProxyImageProps) {
   const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
 
   const handleError = useCallback(() => {
     setHasError(true);

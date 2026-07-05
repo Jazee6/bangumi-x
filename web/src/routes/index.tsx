@@ -12,6 +12,7 @@ import {
 import { Typography } from "@/components/ui/typography.tsx";
 import { buildMeta } from "@/lib/seo/site.ts";
 import { getCalendar } from "@/server/functions.ts";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/")({
   loader: async () => getCalendar(),
@@ -48,9 +49,13 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const calendar = Route.useLoaderData();
 
-  const todayJsDay = new Date().getDay();
-  const todayApiId = todayJsDay === 0 ? 7 : todayJsDay;
-  const todayTab = String(todayApiId);
+  const [todayTab, setTodayTab] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const todayJsDay = new Date().getDay();
+    const todayApiId = todayJsDay === 0 ? 7 : todayJsDay;
+    setTodayTab(String(todayApiId));
+  }, []);
 
   return (
     <article>
