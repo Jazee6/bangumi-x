@@ -1,7 +1,10 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "server",
+  "name": "bangumi-x",
   "main": "src/index.ts",
   "compatibility_date": "2026-06-21",
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  "cache": {
+    "enabled": true
+  }
 }
