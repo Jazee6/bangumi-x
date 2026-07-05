@@ -18,7 +18,6 @@ import { Route as SitemapXmlRouteImport } from './routes/sitemap.xml'
 import { Route as PersonsPersonIdRouteImport } from './routes/persons/$personId'
 import { Route as EpisodesEpisodeIdRouteImport } from './routes/episodes/$episodeId'
 import { Route as CharactersCharacterIdRouteImport } from './routes/characters/$characterId'
-import { Route as OgTypeIdRouteImport } from './routes/og.$type.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -65,11 +64,6 @@ const CharactersCharacterIdRoute = CharactersCharacterIdRouteImport.update({
   path: '/characters/$characterId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OgTypeIdRoute = OgTypeIdRouteImport.update({
-  id: '/og/$type/$id',
-  path: '/og/$type/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -81,7 +75,6 @@ export interface FileRoutesByFullPath {
   '/characters/': typeof CharactersIndexRoute
   '/persons/': typeof PersonsIndexRoute
   '/subjects/': typeof SubjectsIndexRoute
-  '/og/$type/$id': typeof OgTypeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,7 +86,6 @@ export interface FileRoutesByTo {
   '/characters': typeof CharactersIndexRoute
   '/persons': typeof PersonsIndexRoute
   '/subjects': typeof SubjectsIndexRoute
-  '/og/$type/$id': typeof OgTypeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,7 +98,6 @@ export interface FileRoutesById {
   '/characters/': typeof CharactersIndexRoute
   '/persons/': typeof PersonsIndexRoute
   '/subjects/': typeof SubjectsIndexRoute
-  '/og/$type/$id': typeof OgTypeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,7 +111,6 @@ export interface FileRouteTypes {
     | '/characters/'
     | '/persons/'
     | '/subjects/'
-    | '/og/$type/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -132,7 +122,6 @@ export interface FileRouteTypes {
     | '/characters'
     | '/persons'
     | '/subjects'
-    | '/og/$type/$id'
   id:
     | '__root__'
     | '/'
@@ -144,7 +133,6 @@ export interface FileRouteTypes {
     | '/characters/'
     | '/persons/'
     | '/subjects/'
-    | '/og/$type/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -157,7 +145,6 @@ export interface RootRouteChildren {
   CharactersIndexRoute: typeof CharactersIndexRoute
   PersonsIndexRoute: typeof PersonsIndexRoute
   SubjectsIndexRoute: typeof SubjectsIndexRoute
-  OgTypeIdRoute: typeof OgTypeIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -225,13 +212,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CharactersCharacterIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/og/$type/$id': {
-      id: '/og/$type/$id'
-      path: '/og/$type/$id'
-      fullPath: '/og/$type/$id'
-      preLoaderRoute: typeof OgTypeIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -245,7 +225,6 @@ const rootRouteChildren: RootRouteChildren = {
   CharactersIndexRoute: CharactersIndexRoute,
   PersonsIndexRoute: PersonsIndexRoute,
   SubjectsIndexRoute: SubjectsIndexRoute,
-  OgTypeIdRoute: OgTypeIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -11,31 +11,10 @@ import {
 } from "@/components/ui/tabs.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
 import { buildMeta } from "@/lib/seo/site.ts";
-import { getCalendar } from "@/server/functions.ts";
-import { getRequestHeader } from "@tanstack/react-start/server";
+import { getCalendar, getTimezone } from "@/server/functions.ts";
 import { useEffect, useState } from "react";
 
 const TIMEZONE_COOKIE = "tz";
-const DEFAULT_TZ = "Asia/Shanghai";
-
-function readTimezoneFromCookie(): string {
-  const header = getRequestHeader("cookie");
-  if (!header) return DEFAULT_TZ;
-  for (const part of header.split(/;\s*/)) {
-    const eq = part.indexOf("=");
-    if (eq === -1) continue;
-    if (part.slice(0, eq) === TIMEZONE_COOKIE) {
-      const tz = part.slice(eq + 1);
-      try {
-        Intl.DateTimeFormat("en-US", { timeZone: tz });
-        return tz;
-      } catch {
-        return DEFAULT_TZ;
-      }
-    }
-  }
-  return DEFAULT_TZ;
-}
 
 function getTodayTabId(timezone: string): string {
   const now = new Date();
@@ -58,7 +37,7 @@ function getTodayTabId(timezone: string): string {
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    const tz = readTimezoneFromCookie();
+    const tz = await getTimezone();
     return { calendar: await getCalendar(), todayTab: getTodayTabId(tz), tz };
   },
   headers: () => ({

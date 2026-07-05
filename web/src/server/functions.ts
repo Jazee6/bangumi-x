@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/react-start/server";
 import {
   type CalendarDay,
   type Character,
@@ -24,6 +25,28 @@ import {
   subjectIdParamSchema,
 } from "@bangumi-x/share";
 import { bgmFetch } from "./utils";
+
+const TIMEZONE_COOKIE = "tz";
+const DEFAULT_TZ = "Asia/Shanghai";
+
+export const getTimezone = createServerFn().handler(async () => {
+  const header = getRequestHeader("cookie");
+  if (!header) return DEFAULT_TZ;
+  for (const part of header.split(/;\s*/)) {
+    const eq = part.indexOf("=");
+    if (eq === -1) continue;
+    if (part.slice(0, eq) === TIMEZONE_COOKIE) {
+      const tz = part.slice(eq + 1);
+      try {
+        Intl.DateTimeFormat("en-US", { timeZone: tz });
+        return tz;
+      } catch {
+        return DEFAULT_TZ;
+      }
+    }
+  }
+  return DEFAULT_TZ;
+});
 
 export const getCalendar = createServerFn().handler(async () => {
   return bgmFetch<CalendarDay[]>("/calendar");

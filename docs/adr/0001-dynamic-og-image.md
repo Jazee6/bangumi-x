@@ -1,5 +1,5 @@
-# 动态生成 OG 图（Satori + resvg-js）
+# OG 图：server 包动态生成（Satori + resvg-wasm）
 
-社交分享预览图由 web 包 server route `/og/<type>/<id>` 动态生成，用 Satori 把条目封面 + 标题 + 评分拼成 SVG 再转 PNG，而非直接把条目封面图作为 `og:image`。原因：封面图是纯海报，不含标题/评分等上下文，社交平台信息流里缺乏辨识度；动态图能带站点品牌名，提升点击率。
+社交分享预览图由 server 包（Cloudflare Worker）路由 `/og/<type>/<id>` 动态生成，用 Satori 把条目封面 + 标题 + 评分拼成 SVG，再用 @resvg/resvg-wasm（WASM 版，非 native）转 PNG。web 包 `og:image` 指向 `https://s.bgmx.jaze.top/og/<type>/<id>`。
 
-代价是引入 `satori` + `@resvg/resvg-js` 两个依赖，且 resvg-js 含原生二进制，EdgeOne Edge Function 的兼容性需运行时验证。回退方案：若 EdgeOne 不支持原生模块，回退到 Worker 代理的封面图 URL 作为 `og:image`。
+最初尝试在 web 包（EdgeOne Edge Function）用 @resvg/resvg-js（native 版），但 EdgeOne 构建时报 `No loader is configured for .node files`，无法部署原生二进制。改为放在 server 包并使用 WASM 版规避此限制。

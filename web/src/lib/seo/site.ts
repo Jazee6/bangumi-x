@@ -75,11 +75,8 @@ export function buildMeta(opts: BuildMetaOpts) {
   return result;
 }
 
-export function ogImageUrl(
-  type: "subjects" | "characters" | "persons",
-  id: number | string,
-): string {
-  return absUrl(`/og/${type}/${id}`);
+export function ogImageUrl(type: "subjects" | "characters" | "persons", id: number | string): string {
+  return `${WORKER_URL}/og/${type}/${id}`;
 }
 
 export function subjectJsonLd(s: Subject): Record<string, unknown> {

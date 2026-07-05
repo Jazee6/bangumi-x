@@ -5,6 +5,7 @@ import calendar from "./routes/calendar";
 import characters from "./routes/characters";
 import episodes from "./routes/episodes";
 import image from "./routes/image";
+import og from "./routes/og";
 import persons from "./routes/persons";
 import subjects from "./routes/subjects";
 
@@ -25,6 +26,7 @@ app.route("/bgm", episodes);
 app.route("/bgm", characters);
 app.route("/bgm", persons);
 app.route("/bgm", image);
+app.route("/og", og);
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) {
