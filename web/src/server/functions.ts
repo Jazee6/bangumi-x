@@ -48,7 +48,13 @@ export const searchSubjects = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     return bgmFetch<PagedResponse<Subject>>("/v0/search/subjects", {
       method: "POST",
-      body: { keyword: data.keyword, sort: data.sort, filter: data.filter, limit: data.limit, offset: data.offset },
+      body: {
+        keyword: data.keyword,
+        sort: data.sort,
+        filter: data.filter,
+        limit: data.limit,
+        offset: data.offset,
+      },
     });
   });
 

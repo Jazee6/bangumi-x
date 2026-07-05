@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ProxyImage } from "@/components/proxy-image.tsx";
 import { SubjectCardSkeleton } from "@/components/skeletons/subject-card-skeleton.tsx";
 import { SubjectCard } from "@/components/subject-card.tsx";
@@ -20,19 +20,20 @@ import {
   tabsListVariants,
 } from "@/components/ui/tabs.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
-import { buildMeta } from "@/lib/seo/site.ts";
+import { buildMeta, ogImageUrl, personJsonLd } from "@/lib/seo/site.ts";
 import { characterRelationOrder, getRelationScore } from "@/lib/relation.ts";
 import { getPerson, getPersonCharacters, getPersonSubjects } from "@/server/functions.ts";
 import {
   BloodTypeLabel,
   CareerLabel,
+  type PersonCareer,
   type PersonCharacter,
   type PersonDetail,
   type RelatedSubject,
 } from "@/types";
 
 interface LoaderData {
-  person: PersonDetail | null;
+  person: PersonDetail;
   subjects: RelatedSubject[];
   characters: PersonCharacter[];
 }
@@ -45,7 +46,7 @@ export const Route = createFileRoute("/persons/$personId")({
     const id = Number(params.personId);
     const person = await getPerson({ data: { id } });
     if (!person) {
-      return { person, subjects: [], characters: [] };
+      throw notFound();
     }
     const [subjects, characters] = await Promise.all([
       getPersonSubjects({ data: { personId: id } }),
@@ -53,16 +54,9 @@ export const Route = createFileRoute("/persons/$personId")({
     ]);
     return { person, subjects, characters };
   },
-  head: ({ loaderData }) => {
-    if (!loaderData?.person) {
-      return {
-        meta: buildMeta({
-          title: "人物",
-        }),
-      };
-    }
-    const { person, subjects } = loaderData;
-    const careers = person.career?.map((c) => CareerLabel[c] ?? c).join("、");
+  head: ({ loaderData, params }) => {
+    const { person, subjects } = loaderData!;
+    const careers = person.career?.map((c: PersonCareer) => CareerLabel[c] ?? c).join("、");
 
     const facts: string[] = [];
     if (careers) facts.push(careers);
@@ -81,12 +75,14 @@ export const Route = createFileRoute("/persons/$personId")({
       : "";
     const description = `${person.name}。${factsLine}${subjLine}${person.summary ?? ""}`;
 
-    return {
-      meta: buildMeta({
-        title: careers ? `${person.name} - ${careers}` : person.name,
-        description,
-      }),
-    };
+    return buildMeta({
+      title: careers ? `${person.name} - ${careers}` : person.name,
+      description,
+      image: ogImageUrl("persons", params.personId),
+      url: `/persons/${params.personId}`,
+      type: "article",
+      jsonLd: personJsonLd(person),
+    });
   },
   pendingComponent: () => (
     <div className="max-w-5xl mx-auto">

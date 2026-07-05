@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /subjects?keyword=
+Disallow: /characters?keyword=
+Disallow: /persons?keyword=
+
+Sitemap: https://bgmx.jaze.top/sitemap.xml

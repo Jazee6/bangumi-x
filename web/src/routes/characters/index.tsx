@@ -30,13 +30,12 @@ export const Route = createFileRoute("/characters/")({
     const description = keyword
       ? `在 Bangumi X 上搜索「${keyword}」相关角色。`
       : "Bangumi X 角色搜索：按关键词查询动画、漫画、游戏中的虚拟角色资料。";
-    return {
-      meta: buildMeta({
-        title,
-        description,
-        noindex: true,
-      }),
-    };
+    return buildMeta({
+      title,
+      description,
+      url: "/characters",
+      noindex: true,
+    });
   },
   component: CharactersPage,
 });

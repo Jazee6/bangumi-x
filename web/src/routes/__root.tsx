@@ -23,7 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip.tsx";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo/site.ts";
+import { buildMeta, SITE_DESCRIPTION, SITE_NAME, SITE_URL, websiteJsonLd } from "@/lib/seo/site.ts";
 import { version } from "../../package.json";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools.tsx";
 import appCss from "../styles.css?url";
@@ -45,8 +45,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         name: "viewport",
         content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
-      { title: SITE_NAME },
-      { name: "description", content: SITE_DESCRIPTION },
+      ...buildMeta({
+        title: "番组计划数据浏览",
+        description: SITE_DESCRIPTION,
+        url: "/",
+        jsonLd: websiteJsonLd(),
+      }).meta,
       { name: "application-name", content: SITE_NAME },
       { name: "theme-color", content: "#171717" },
       { name: "format-detection", content: "telephone=no" },
@@ -54,6 +58,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "icon", type: "image/svg+xml", href: "/icon.svg" },
+      { rel: "alternate", hreflang: "zh-CN", href: SITE_URL },
+      { rel: "alternate", hreflang: "x-default", href: SITE_URL },
     ],
   }),
   shellComponent: RootDocument,

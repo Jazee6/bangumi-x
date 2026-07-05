@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CharacterItem } from "@/components/character-item.tsx";
 import { EpisodeItem } from "@/components/episode-item.tsx";
 import { InfiniteScroll } from "@/components/infinite-scroll.tsx";
@@ -16,7 +16,7 @@ import {
   tabsListVariants,
 } from "@/components/ui/tabs.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
-import { buildMeta } from "@/lib/seo/site.ts";
+import { buildMeta, ogImageUrl, subjectJsonLd } from "@/lib/seo/site.ts";
 import { characterRelationOrder, getRelationScore, personRelationOrder } from "@/lib/relation.ts";
 import {
   getSubject,
@@ -36,7 +36,7 @@ import {
 const EPISODE_PAGE_SIZE = 20;
 
 interface LoaderData {
-  subject: Subject | null;
+  subject: Subject;
   episodes: PagedResponse<Episode> | null;
   characters: RelatedCharacter[];
   persons: RelatedPerson[];
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/subjects/$subjectId")({
     const id = Number(params.subjectId);
     const subject = await getSubject({ data: { id } });
     if (!subject) {
-      return { subject, episodes: null, characters: [], persons: [] };
+      throw notFound();
     }
     const [episodes, characters, persons] = await Promise.all([
       getSubjectEpisodes({ data: { subjectId: id, limit: EPISODE_PAGE_SIZE } }),
@@ -65,14 +65,7 @@ export const Route = createFileRoute("/subjects/$subjectId")({
     };
   },
   head: ({ loaderData }) => {
-    if (!loaderData?.subject) {
-      return {
-        meta: buildMeta({
-          title: "条目",
-        }),
-      };
-    }
-    const { subject } = loaderData;
+    const subject = loaderData!.subject;
     const typeLabel = SubjectTypeLabel[subject.type] ?? "条目";
     const title = subject.name_cn || subject.name;
 
@@ -89,12 +82,14 @@ export const Route = createFileRoute("/subjects/$subjectId")({
       factsLine ? ` ${factsLine}` : "。"
     }${subject.summary ? subject.summary : ""}`;
 
-    return {
-      meta: buildMeta({
-        title: `${title} - ${typeLabel}`,
-        description,
-      }),
-    };
+    return buildMeta({
+      title: `${title} - ${typeLabel}`,
+      description,
+      image: ogImageUrl("subjects", subject.id),
+      url: `/subjects/${subject.id}`,
+      type: "article",
+      jsonLd: subjectJsonLd(subject),
+    });
   },
   pendingComponent: () => (
     <div className="max-w-5xl mx-auto">

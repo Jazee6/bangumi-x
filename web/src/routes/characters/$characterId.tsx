@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CharacterPersonCard } from "@/components/character-person-card.tsx";
 import { ProxyImage } from "@/components/proxy-image.tsx";
 import { SubjectCardSkeleton } from "@/components/skeletons/subject-card-skeleton.tsx";
@@ -13,7 +13,7 @@ import {
   tabsListVariants,
 } from "@/components/ui/tabs.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
-import { buildMeta } from "@/lib/seo/site.ts";
+import { buildMeta, characterJsonLd, ogImageUrl } from "@/lib/seo/site.ts";
 import { getCharacter, getCharacterPersons, getCharacterSubjects } from "@/server/functions.ts";
 import {
   BloodTypeLabel,
@@ -24,7 +24,7 @@ import {
 } from "@/types";
 
 interface LoaderData {
-  character: Character | null;
+  character: Character;
   subjects: RelatedSubject[];
   persons: CharacterPerson[];
 }
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/characters/$characterId")({
     const id = Number(params.characterId);
     const character = await getCharacter({ data: { id } });
     if (!character) {
-      return { character, subjects: [], persons: [] };
+      throw notFound();
     }
     const [subjects, persons] = await Promise.all([
       getCharacterSubjects({ data: { characterId: id } }),
@@ -45,15 +45,8 @@ export const Route = createFileRoute("/characters/$characterId")({
     ]);
     return { character, subjects, persons };
   },
-  head: ({ loaderData }) => {
-    if (!loaderData?.character) {
-      return {
-        meta: buildMeta({
-          title: "角色",
-        }),
-      };
-    }
-    const { character, subjects } = loaderData;
+  head: ({ loaderData, params }) => {
+    const { character, subjects } = loaderData!;
     const typeLabel = character.type ? CharacterTypeLabel[character.type] : "角色";
 
     const facts: string[] = [];
@@ -76,12 +69,14 @@ export const Route = createFileRoute("/characters/$characterId")({
       character.summary ?? ""
     }`;
 
-    return {
-      meta: buildMeta({
-        title: `${character.name} - ${typeLabel}`,
-        description,
-      }),
-    };
+    return buildMeta({
+      title: `${character.name} - ${typeLabel}`,
+      description,
+      image: ogImageUrl("characters", params.characterId),
+      url: `/characters/${params.characterId}`,
+      type: "article",
+      jsonLd: characterJsonLd(character),
+    });
   },
   pendingComponent: () => (
     <div className="max-w-5xl mx-auto">

@@ -30,13 +30,12 @@ export const Route = createFileRoute("/persons/")({
     const description = keyword
       ? `在 Bangumi X 上搜索「${keyword}」相关人物（声优、制作人、演员、漫画家等）。`
       : "Bangumi X 人物搜索：按关键词查询声优、制作人、漫画家、艺术家等业界人物资料。";
-    return {
-      meta: buildMeta({
-        title,
-        description,
-        noindex: true,
-      }),
-    };
+    return buildMeta({
+      title,
+      description,
+      url: "/persons",
+      noindex: true,
+    });
   },
   component: PersonsPage,
 });

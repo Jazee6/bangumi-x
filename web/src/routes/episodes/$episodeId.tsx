@@ -1,15 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeftIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
-import { buildMeta } from "@/lib/seo/site.ts";
+import { buildMeta, episodeJsonLd } from "@/lib/seo/site.ts";
 import { getEpisode, getSubject } from "@/server/functions.ts";
 import { type EpisodeDetail, EpTypeLabel, type Subject } from "@/types";
 
 interface LoaderData {
-  episode: EpisodeDetail | null;
+  episode: EpisodeDetail;
   subject: Subject | null;
 }
 
@@ -21,20 +21,13 @@ export const Route = createFileRoute("/episodes/$episodeId")({
     const id = Number(params.episodeId);
     const episode = await getEpisode({ data: { id } });
     if (!episode) {
-      return { episode, subject: null };
+      throw notFound();
     }
     const subject = await getSubject({ data: { id: episode.subject_id } });
     return { episode, subject };
   },
-  head: ({ loaderData }) => {
-    if (!loaderData?.episode) {
-      return {
-        meta: buildMeta({
-          title: "章节",
-        }),
-      };
-    }
-    const { episode, subject } = loaderData;
+  head: ({ loaderData, params }) => {
+    const { episode, subject } = loaderData!;
     const epName = episode.name_cn || episode.name || `第 ${episode.sort} 话`;
     const seriesName = subject?.name_cn || subject?.name;
     const title = seriesName
@@ -47,12 +40,14 @@ export const Route = createFileRoute("/episodes/$episodeId")({
     const factsLine = facts.length ? `${facts.join(" · ")}。` : "";
     const description = `${title}。${factsLine}${episode.desc ?? ""}`;
 
-    return {
-      meta: buildMeta({
-        title,
-        description,
-      }),
-    };
+    return buildMeta({
+      title,
+      description,
+      image: subject?.images?.large || subject?.images?.common,
+      url: `/episodes/${params.episodeId}`,
+      type: "article",
+      jsonLd: episodeJsonLd(episode, subject),
+    });
   },
   pendingComponent: () => (
     <div className="max-w-5xl mx-auto">

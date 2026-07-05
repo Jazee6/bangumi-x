@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
-import { buildMeta } from "@/lib/seo/site.ts";
+import { buildMeta, itemListJsonLd } from "@/lib/seo/site.ts";
 import { browseSubjects, searchSubjects } from "@/server/functions.ts";
 import type { PagedResponse, Subject } from "@/types";
 import { SubjectType } from "@/types";
@@ -79,7 +79,7 @@ export const Route = createFileRoute("/subjects/")({
       },
     });
   },
-  head: ({ match }) => {
+  head: ({ loaderData, match }) => {
     const search = v.parse(searchSchema, match.search);
     const keyword = search.keyword ?? "";
     const option = typeSlugToOption[search.type ?? ALL_SLUG] ?? typeSlugToOption[ALL_SLUG];
@@ -94,13 +94,19 @@ export const Route = createFileRoute("/subjects/")({
       ? `在 Bangumi X 上搜索「${keyword}」相关的条目，包含动画、漫画、游戏、音乐等。`
       : `Bangumi X ${option.type !== null ? option.label : "动画"}排行：基于番组计划数据按排名展示热门条目，支持按类型筛选与全文检索。`;
 
-    return {
-      meta: buildMeta({
-        title,
-        description,
-        noindex: isSearch,
-      }),
-    };
+    const items = ((loaderData as PagedResponse<Subject> | undefined)?.data ?? []).map((s) => ({
+      id: s.id,
+      name: s.name_cn || s.name,
+      url: `/subjects/${s.id}`,
+    }));
+
+    return buildMeta({
+      title,
+      description,
+      url: match.pathname,
+      noindex: isSearch,
+      jsonLd: items.length ? itemListJsonLd(items) : undefined,
+    });
   },
   pendingComponent: () => (
     <div>

@@ -65,13 +65,12 @@ export const Route = createFileRoute("/")({
     "Cache-Control": "public, max-age=300, s-maxage=21600, stale-while-revalidate=86400",
   }),
   head: () => {
-    return {
-      meta: buildMeta({
-        title: "每日放送",
-        description:
-          "Bangumi X 每日放送：基于番组计划数据，按星期展示当日开播的番剧、评分与简介，覆盖动画、漫画、游戏等条目。",
-      }),
-    };
+    return buildMeta({
+      title: "每日放送",
+      description:
+        "Bangumi X 每日放送：基于番组计划数据，按星期展示当日开播的番剧、评分与简介，覆盖动画、漫画、游戏等条目。",
+      url: "/",
+    });
   },
   pendingComponent: () => (
     <div>
