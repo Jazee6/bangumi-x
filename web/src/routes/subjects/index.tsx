@@ -19,15 +19,19 @@ import { Typography } from "@/components/ui/typography.tsx";
 import { buildMeta } from "@/lib/seo/site.ts";
 import { browseSubjects, searchSubjects } from "@/server/functions.ts";
 import type { PagedResponse, Subject } from "@/types";
-import { SubjectType, SubjectTypeLabel } from "@/types";
+import { SubjectType } from "@/types";
 
 const ALL_LABEL = "全部";
-const ALL_VALUE = "all";
+const ALL_SLUG = "all";
 const typeOptions = [
-  { value: ALL_VALUE, label: ALL_LABEL },
-  ...Object.entries(SubjectTypeLabel).map(([v, l]) => ({ value: v, label: l })),
+  { value: ALL_SLUG, label: ALL_LABEL, type: null as SubjectType | null },
+  { value: "book", label: "书籍", type: SubjectType.Book },
+  { value: "anime", label: "动画", type: SubjectType.Anime },
+  { value: "music", label: "音乐", type: SubjectType.Music },
+  { value: "game", label: "游戏", type: SubjectType.Game },
+  { value: "real", label: "三次元", type: SubjectType.Real },
 ];
-const typeValueToLabel = Object.fromEntries(typeOptions.map((o) => [o.value, o.label]));
+const typeSlugToOption = Object.fromEntries(typeOptions.map((o) => [o.value, o]));
 
 const PAGE_SIZE = 20;
 
@@ -40,7 +44,7 @@ export const Route = createFileRoute("/subjects/")({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
     keyword: search.keyword ?? "",
-    type: search.type ?? ALL_VALUE,
+    type: search.type ?? ALL_SLUG,
   }),
   headers: ({ match }) => {
     const search = v.parse(searchSchema, match.search);
@@ -53,8 +57,8 @@ export const Route = createFileRoute("/subjects/")({
     };
   },
   loader: async ({ deps }) => {
-    const typeValue = deps.type;
-    const isAll = typeValue === ALL_VALUE;
+    const option = typeSlugToOption[deps.type] ?? typeSlugToOption[ALL_SLUG];
+    const isAll = option.type === null;
     const isSearch = deps.keyword.trim().length > 0;
 
     if (isSearch) {
@@ -62,14 +66,14 @@ export const Route = createFileRoute("/subjects/")({
         data: {
           keyword: deps.keyword,
           sort: "rank",
-          filter: !isAll ? { type: [Number(typeValue) as SubjectType] } : undefined,
+          filter: !isAll ? { type: [option.type as SubjectType] } : undefined,
           limit: PAGE_SIZE,
         },
       });
     }
     return browseSubjects({
       data: {
-        type: (!isAll ? Number(typeValue) : SubjectType.Anime) as SubjectType,
+        type: (option.type ?? SubjectType.Anime) as SubjectType,
         sort: "rank",
         limit: PAGE_SIZE,
       },
@@ -78,18 +82,17 @@ export const Route = createFileRoute("/subjects/")({
   head: ({ match }) => {
     const search = v.parse(searchSchema, match.search);
     const keyword = search.keyword ?? "";
-    const typeValue = search.type ?? ALL_VALUE;
-    const typeLabel = typeValueToLabel[typeValue] ?? ALL_LABEL;
+    const option = typeSlugToOption[search.type ?? ALL_SLUG] ?? typeSlugToOption[ALL_SLUG];
     const isSearch = keyword.trim().length > 0;
 
     const title = keyword.trim()
       ? `搜索「${keyword}」 - 条目`
-      : typeValue !== ALL_VALUE
-        ? `${typeLabel}条目排行`
+      : option.type !== null
+        ? `${option.label}条目排行`
         : "条目排行";
     const description = keyword.trim()
       ? `在 Bangumi X 上搜索「${keyword}」相关的条目，包含动画、漫画、游戏、音乐等。`
-      : `Bangumi X ${typeValue !== ALL_VALUE ? typeLabel : "动画"}排行：基于番组计划数据按排名展示热门条目，支持按类型筛选与全文检索。`;
+      : `Bangumi X ${option.type !== null ? option.label : "动画"}排行：基于番组计划数据按排名展示热门条目，支持按类型筛选与全文检索。`;
 
     return {
       meta: buildMeta({
@@ -120,30 +123,31 @@ function SubjectsPage() {
   const initialData = Route.useLoaderData();
   const search = Route.useSearch();
   const keyword = search.keyword ?? "";
-  const typeValue = search.type ?? ALL_VALUE;
+  const typeSlug = search.type ?? ALL_SLUG;
   const navigate = useNavigate();
 
   const updateSearch = useCallback(
     (updates: Partial<{ keyword: string; type: string }>) => {
-      const next = { keyword, type: typeValue, ...updates };
+      const next = { keyword, type: typeSlug, ...updates };
       navigate({
         to: ".",
         search: {
           keyword: next.keyword || undefined,
-          type: next.type === ALL_VALUE ? undefined : next.type,
+          type: next.type === ALL_SLUG ? undefined : next.type,
         },
       });
     },
-    [navigate, keyword, typeValue],
+    [navigate, keyword, typeSlug],
   );
 
+  const option = typeSlugToOption[typeSlug] ?? typeSlugToOption[ALL_SLUG];
   const isSearching = keyword.trim().length > 0;
-  const isAll = typeValue === ALL_VALUE;
-  const filter = !isAll ? { type: [Number(typeValue) as SubjectType] } : undefined;
+  const isAll = option.type === null;
+  const filter = !isAll ? { type: [option.type as SubjectType] } : undefined;
 
   const queryKey = isSearching
     ? (["subjects", "search", { keyword, sort: "rank", filter, limit: PAGE_SIZE }] as const)
-    : (["subjects", "browse", { type: typeValue, sort: "rank", limit: PAGE_SIZE }] as const);
+    : (["subjects", "browse", { type: typeSlug, sort: "rank", limit: PAGE_SIZE }] as const);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
     queryKey,
@@ -161,7 +165,7 @@ function SubjectsPage() {
       }
       return browseSubjects({
         data: {
-          type: (!isAll ? Number(typeValue) : SubjectType.Anime) as SubjectType,
+          type: (option.type ?? SubjectType.Anime) as SubjectType,
           sort: "rank",
           limit: PAGE_SIZE,
           offset: pageParam,
@@ -195,7 +199,11 @@ function SubjectsPage() {
         <div className="flex-1">
           <SearchInput value={keyword} onSearch={handleSearch} placeholder="搜索条目..." />
         </div>
-        <Select value={typeValue} onValueChange={(v) => updateSearch({ type: v ?? ALL_VALUE })}>
+        <Select
+          value={typeSlug}
+          onValueChange={(v) => updateSearch({ type: v ?? ALL_SLUG })}
+          items={typeOptions}
+        >
           <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="类型" />
           </SelectTrigger>

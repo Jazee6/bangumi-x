@@ -12,10 +12,55 @@ import {
 import { Typography } from "@/components/ui/typography.tsx";
 import { buildMeta } from "@/lib/seo/site.ts";
 import { getCalendar } from "@/server/functions.ts";
+import { getRequestHeader } from "@tanstack/react-start/server";
 import { useEffect, useState } from "react";
 
+const TIMEZONE_COOKIE = "tz";
+const DEFAULT_TZ = "Asia/Shanghai";
+
+function readTimezoneFromCookie(): string {
+  const header = getRequestHeader("cookie");
+  if (!header) return DEFAULT_TZ;
+  for (const part of header.split(/;\s*/)) {
+    const eq = part.indexOf("=");
+    if (eq === -1) continue;
+    if (part.slice(0, eq) === TIMEZONE_COOKIE) {
+      const tz = part.slice(eq + 1);
+      try {
+        Intl.DateTimeFormat("en-US", { timeZone: tz });
+        return tz;
+      } catch {
+        return DEFAULT_TZ;
+      }
+    }
+  }
+  return DEFAULT_TZ;
+}
+
+function getTodayTabId(timezone: string): string {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    weekday: "short",
+  }).formatToParts(now);
+  const weekday = parts.find((p) => p.type === "weekday")?.value;
+  const map: Record<string, number> = {
+    Sun: 7,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+  return String(map[weekday ?? "Mon"] ?? 1);
+}
+
 export const Route = createFileRoute("/")({
-  loader: async () => getCalendar(),
+  loader: async () => {
+    const tz = readTimezoneFromCookie();
+    return { calendar: await getCalendar(), todayTab: getTodayTabId(tz), tz };
+  },
   headers: () => ({
     "Cache-Control": "public, max-age=300, s-maxage=21600, stale-while-revalidate=86400",
   }),
@@ -47,14 +92,12 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  const calendar = Route.useLoaderData();
-
-  const [todayTab, setTodayTab] = useState<string | undefined>(undefined);
+  const { calendar, todayTab } = Route.useLoaderData();
+  const [activeTab, setActiveTab] = useState<string | null>(todayTab);
 
   useEffect(() => {
-    const todayJsDay = new Date().getDay();
-    const todayApiId = todayJsDay === 0 ? 7 : todayJsDay;
-    setTodayTab(String(todayApiId));
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz) document.cookie = `${TIMEZONE_COOKIE}=${tz}; Path=/; Max-Age=31536000; SameSite=Lax`;
   }, []);
 
   return (
@@ -62,7 +105,7 @@ function HomePage() {
       <Typography variant="h1" className="mb-4">
         每日放送
       </Typography>
-      <Tabs defaultValue={todayTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v)} className="w-full">
         <TabsList className="mb-4 max-w-full overflow-x-auto">
           {calendar.map((day) => (
             <TabsTrigger key={day.weekday.id} value={String(day.weekday.id)}>

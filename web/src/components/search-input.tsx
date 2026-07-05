@@ -17,7 +17,8 @@ export function SearchInput({ value, onSearch, placeholder = "搜索..." }: Sear
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      onSearch(localValue);
+      const trimmed = localValue.trim();
+      if (trimmed) onSearch(trimmed);
     }
   };
 

@@ -28,7 +28,7 @@ export function CharacterPersonCard({ id, name, image, to, subtitle }: Character
       </ItemMedia>
       <ItemContent>
         <ItemTitle>{name}</ItemTitle>
-        {subtitle && <ItemDescription>{subtitle}</ItemDescription>}
+        {subtitle && <ItemDescription className="line-clamp-1">{subtitle}</ItemDescription>}
       </ItemContent>
       <ItemActions />
     </Item>
