@@ -159,88 +159,86 @@ app.get(
     const tSize = titleFontSize(data.title);
 
     const svg = await satori(
-      (
-        <div
-          style={{
-            width: `${WIDTH}px`,
-            height: `${HEIGHT}px`,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            backgroundColor: "#0a0a0a",
-            backgroundImage: "linear-gradient(135deg, #1f1f1f 0%, #0a0a0a 100%)",
-            color: "#fafafa",
-            padding: "60px",
-            fontFamily: "Noto Sans SC",
-          }}
-        >
-          <div style={{ display: "flex", gap: "48px", alignItems: "center", flex: "1" }}>
-            {imageData ? (
-              <img
-                src={`data:${imageData.mime};base64,${imageData.base64}`}
-                width={300}
-                height={400}
-                style={{
-                  borderRadius: "16px",
-                  objectFit: "cover",
-                  boxShadow: "0 12px 32px rgba(0,0,0,0.5)",
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: "300px",
-                  height: "400px",
-                  borderRadius: "16px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "12px",
-                  backgroundImage: "linear-gradient(135deg, #262626 0%, #171717 100%)",
-                }}
-              >
-                <div style={{ fontSize: "96px", fontWeight: 700, color: "#525252" }}>B</div>
-                <div style={{ fontSize: "20px", color: "#737373" }}>Bangumi X</div>
-              </div>
-            )}
+      <div
+        style={{
+          width: `${WIDTH}px`,
+          height: `${HEIGHT}px`,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          backgroundColor: "#0a0a0a",
+          backgroundImage: "linear-gradient(135deg, #1f1f1f 0%, #0a0a0a 100%)",
+          color: "#fafafa",
+          padding: "60px",
+          fontFamily: "Noto Sans SC",
+        }}
+      >
+        <div style={{ display: "flex", gap: "48px", alignItems: "center", flex: "1" }}>
+          {imageData ? (
+            <img
+              src={`data:${imageData.mime};base64,${imageData.base64}`}
+              width={300}
+              height={400}
+              style={{
+                borderRadius: "16px",
+                objectFit: "cover",
+                boxShadow: "0 12px 32px rgba(0,0,0,0.5)",
+              }}
+            />
+          ) : (
             <div
               style={{
+                width: "300px",
+                height: "400px",
+                borderRadius: "16px",
                 display: "flex",
                 flexDirection: "column",
-                gap: "24px",
-                flex: "1",
-                minWidth: 0,
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "12px",
+                backgroundImage: "linear-gradient(135deg, #262626 0%, #171717 100%)",
               }}
             >
-              <div
-                style={{
-                  fontSize: `${tSize}px`,
-                  fontWeight: 700,
-                  lineHeight: 1.2,
-                  color: "#fafafa",
-                }}
-              >
-                {data.title}
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center" }}>
-                {data.badges.map((b) => (
-                  <Badge key={b}>{b}</Badge>
-                ))}
-                {data.score !== null && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <Star size={32} color="#737373" />
-                    <span style={{ fontSize: "44px", fontWeight: 700, color: "#fafafa" }}>
-                      {data.score.toFixed(1)}
-                    </span>
-                  </div>
-                )}
-              </div>
+              <div style={{ fontSize: "96px", fontWeight: 700, color: "#525252" }}>B</div>
+              <div style={{ fontSize: "20px", color: "#737373" }}>Bangumi X</div>
+            </div>
+          )}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "24px",
+              flex: "1",
+              minWidth: 0,
+            }}
+          >
+            <div
+              style={{
+                fontSize: `${tSize}px`,
+                fontWeight: 700,
+                lineHeight: 1.2,
+                color: "#fafafa",
+              }}
+            >
+              {data.title}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center" }}>
+              {data.badges.map((b) => (
+                <Badge key={b}>{b}</Badge>
+              ))}
+              {data.score !== null && (
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <Star size={32} color="#737373" />
+                  <span style={{ fontSize: "44px", fontWeight: 700, color: "#fafafa" }}>
+                    {data.score.toFixed(1)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
-          <div style={{ fontSize: "30px", fontWeight: 700, color: "#fafafa" }}>Bangumi X</div>
         </div>
-      ),
+        <div style={{ fontSize: "30px", fontWeight: 700, color: "#fafafa" }}>Bangumi X</div>
+      </div>,
       {
         width: WIDTH,
         height: HEIGHT,

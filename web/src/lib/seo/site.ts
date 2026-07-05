@@ -122,7 +122,10 @@ export function buildMeta(opts: BuildMetaOpts) {
   return result;
 }
 
-export function ogImageUrl(type: "subjects" | "characters" | "persons", id: number | string): string {
+export function ogImageUrl(
+  type: "subjects" | "characters" | "persons",
+  id: number | string,
+): string {
   return absUrl(`/og/${type}/${id}`);
 }
 
@@ -163,7 +166,12 @@ export function subjectJsonLd(
     dateModified: s.date || undefined,
     numberOfEpisodes: s.eps > 0 ? s.eps : undefined,
     genre: SubjectTypeLabel[s.type] ?? undefined,
-    keywords: s.tags?.length ? s.tags.slice(0, 10).map((t) => t.name).join(", ") : undefined,
+    keywords: s.tags?.length
+      ? s.tags
+          .slice(0, 10)
+          .map((t) => t.name)
+          .join(", ")
+      : undefined,
     actor: actors.length ? actors : undefined,
     character: characterList.length ? characterList : undefined,
     aggregateRating:

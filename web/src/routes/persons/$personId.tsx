@@ -81,10 +81,7 @@ export const Route = createFileRoute("/persons/$personId")({
       image: ogImageUrl("persons", params.personId),
       url: `/persons/${params.personId}`,
       type: "article",
-      jsonLd: [
-        personJsonLd(person),
-        breadcrumbJsonLd(`/persons/${params.personId}`),
-      ],
+      jsonLd: [personJsonLd(person), breadcrumbJsonLd(`/persons/${params.personId}`)],
     });
   },
   pendingComponent: () => (

@@ -7,7 +7,13 @@ import {
   subjectJsonLd,
   websiteJsonLd,
 } from "../src/lib/seo/site.ts";
-import { SubjectType, type Subject, type Character, type PersonDetail, type EpisodeDetail } from "@bangumi-x/share";
+import {
+  SubjectType,
+  type Subject,
+  type Character,
+  type PersonDetail,
+  type EpisodeDetail,
+} from "@bangumi-x/share";
 
 function mockSubject(over: Partial<Subject> = {}): Subject {
   return {
@@ -25,7 +31,10 @@ function mockSubject(over: Partial<Subject> = {}): Subject {
     total_episodes: 12,
     rating: { rank: 1, total: 50, score: 8.5, count: {} },
     collection: { wish: 1, collect: 1, doing: 1, on_hold: 0, dropped: 0 },
-    tags: [{ name: "标签A", count: 5 }, { name: "标签B", count: 3 }],
+    tags: [
+      { name: "标签A", count: 5 },
+      { name: "标签B", count: 3 },
+    ],
     ...over,
   };
 }
@@ -38,7 +47,11 @@ assert.strictEqual(s.genre, "动画");
 assert.ok(typeof s.keywords === "string" && (s.keywords as string).includes("标签A"));
 assert.ok(s.aggregateRating, "rating with total>=10 should be present");
 
-const noRating = subjectJsonLd(mockSubject({ rating: { rank: 0, total: 5, score: 7, count: {} } }), [], []);
+const noRating = subjectJsonLd(
+  mockSubject({ rating: { rank: 0, total: 5, score: 7, count: {} } }),
+  [],
+  [],
+);
 assert.ok(!noRating.aggregateRating, "rating with total<10 must be filtered");
 
 const book = subjectJsonLd(mockSubject({ type: SubjectType.Book }), [], []);

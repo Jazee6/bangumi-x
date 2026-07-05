@@ -10,4 +10,4 @@
 6. **robots.txt 显式 Allow** GPTBot/OAI-SearchBot/PerplexityBot/ClaudeBot/Google-Extended。
 7. **sitemap 仅扩到列表页入口**（/characters、/persons），不拉热门 ID——避免打满 Worker 缓存与 bgm 限流。
 
-被否方案：Worker 侧加 /api/*（会重复 JSON-LD 构造逻辑）；预渲染当季条目（数据会过期）；拉热门 ID 写 sitemap（成本与限流风险）。
+被否方案：Worker 侧加 /api/\*（会重复 JSON-LD 构造逻辑）；预渲染当季条目（数据会过期）；拉热门 ID 写 sitemap（成本与限流风险）。

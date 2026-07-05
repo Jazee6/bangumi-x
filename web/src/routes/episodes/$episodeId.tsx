@@ -46,10 +46,7 @@ export const Route = createFileRoute("/episodes/$episodeId")({
       image: subject?.images?.large || subject?.images?.common,
       url: `/episodes/${params.episodeId}`,
       type: "article",
-      jsonLd: [
-        episodeJsonLd(episode, subject),
-        breadcrumbJsonLd(`/episodes/${params.episodeId}`),
-      ],
+      jsonLd: [episodeJsonLd(episode, subject), breadcrumbJsonLd(`/episodes/${params.episodeId}`)],
     });
   },
   pendingComponent: () => (
