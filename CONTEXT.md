@@ -38,7 +38,7 @@ Cloudflare Workers 边缘代理层，职责是翻墙访问上游 bgm API + edge 
 _Avoid_: 硬编码域名散落各处
 
 **OGImage**:
-Open Graph 分享预览图。由 server 包（Worker）路由 `/og/<type>/<id>` 动态生成，用 Satori + @resvg/resvg-wasm 把条目封面+标题+评分拼成 SVG 再转 PNG。web 包 `og:image` 指向 `https://s.bgmx.jaze.top/og/<type>/<id>`。
+Open Graph 分享预览图。由 server 包（Worker）动态生成，含封面+标题+类型/职业 Badge+评分+品牌字标。web 包 `og:image` 指向 `https://s.bgmx.jaze.top/og/<type>/<id>`。
 _Avoid_: 在 web 包用 native resvg-js（EdgeOne 不支持 .node 二进制）
 
 **JSON-LD**:
