@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cache } from "hono/cache";
 import satori from "satori";
 import { Resvg, initWasm } from "@resvg/resvg-wasm";
+import wasmModule from "@resvg/resvg-wasm/index_bg.wasm";
 import { bgmUrl, bgmProxy } from "../lib";
 
 const app = new Hono();
@@ -13,25 +14,17 @@ let fontReady: Promise<ArrayBuffer> | null = null;
 function loadFont(): Promise<ArrayBuffer> {
   if (!fontReady) {
     fontReady = fetch(
-      "https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@main/google-fonts/NotoSansSC[wght].ttf",
+      "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-sc@latest/chinese-simplified-400-normal.ttf",
     ).then((r) => r.arrayBuffer());
   }
   return fontReady;
 }
 
-let wasmReady: Promise<void> | null = null;
-function initWasmOnce(): Promise<void> {
-  if (!wasmReady) {
-    wasmReady = initWasm(
-      fetch("https://cdn.jsdelivr.net/npm/@resvg/resvg-wasm@2.6.2/index.wasm").then((r) =>
-        r.arrayBuffer(),
-      ),
-    ).catch(() => {
-      wasmReady = null;
-      throw new Error("wasm init failed");
-    });
-  }
-  return wasmReady;
+let wasmReady = false;
+async function initWasmOnce(): Promise<void> {
+  if (wasmReady) return;
+  await initWasm(wasmModule);
+  wasmReady = true;
 }
 
 interface OgData {
@@ -98,7 +91,7 @@ function characterTypeLabel(t: number): string {
 }
 
 app.get(
-  "/og/:type/:id",
+  "/:type/:id",
   cache({ cacheName: "og-image", cacheControl: "max-age=86400" }),
   async (c) => {
     const type = c.req.param("type");

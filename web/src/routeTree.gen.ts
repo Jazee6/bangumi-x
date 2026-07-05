@@ -9,16 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubjectsIndexRouteImport } from './routes/subjects/index'
 import { Route as PersonsIndexRouteImport } from './routes/persons/index'
 import { Route as CharactersIndexRouteImport } from './routes/characters/index'
 import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects/$subjectId'
-import { Route as SitemapXmlRouteImport } from './routes/sitemap.xml'
 import { Route as PersonsPersonIdRouteImport } from './routes/persons/$personId'
 import { Route as EpisodesEpisodeIdRouteImport } from './routes/episodes/$episodeId'
 import { Route as CharactersCharacterIdRouteImport } from './routes/characters/$characterId'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -44,11 +49,6 @@ const SubjectsSubjectIdRoute = SubjectsSubjectIdRouteImport.update({
   path: '/subjects/$subjectId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SitemapXmlRoute = SitemapXmlRouteImport.update({
-  id: '/sitemap/xml',
-  path: '/sitemap/xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PersonsPersonIdRoute = PersonsPersonIdRouteImport.update({
   id: '/persons/$personId',
   path: '/persons/$personId',
@@ -67,10 +67,10 @@ const CharactersCharacterIdRoute = CharactersCharacterIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
   '/persons/$personId': typeof PersonsPersonIdRoute
-  '/sitemap/xml': typeof SitemapXmlRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
   '/characters/': typeof CharactersIndexRoute
   '/persons/': typeof PersonsIndexRoute
@@ -78,10 +78,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
   '/persons/$personId': typeof PersonsPersonIdRoute
-  '/sitemap/xml': typeof SitemapXmlRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
   '/characters': typeof CharactersIndexRoute
   '/persons': typeof PersonsIndexRoute
@@ -90,10 +90,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
   '/persons/$personId': typeof PersonsPersonIdRoute
-  '/sitemap/xml': typeof SitemapXmlRoute
   '/subjects/$subjectId': typeof SubjectsSubjectIdRoute
   '/characters/': typeof CharactersIndexRoute
   '/persons/': typeof PersonsIndexRoute
@@ -103,10 +103,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/sitemap.xml'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
     | '/persons/$personId'
-    | '/sitemap/xml'
     | '/subjects/$subjectId'
     | '/characters/'
     | '/persons/'
@@ -114,10 +114,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/sitemap.xml'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
     | '/persons/$personId'
-    | '/sitemap/xml'
     | '/subjects/$subjectId'
     | '/characters'
     | '/persons'
@@ -125,10 +125,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/sitemap.xml'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
     | '/persons/$personId'
-    | '/sitemap/xml'
     | '/subjects/$subjectId'
     | '/characters/'
     | '/persons/'
@@ -137,10 +137,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CharactersCharacterIdRoute: typeof CharactersCharacterIdRoute
   EpisodesEpisodeIdRoute: typeof EpisodesEpisodeIdRoute
   PersonsPersonIdRoute: typeof PersonsPersonIdRoute
-  SitemapXmlRoute: typeof SitemapXmlRoute
   SubjectsSubjectIdRoute: typeof SubjectsSubjectIdRoute
   CharactersIndexRoute: typeof CharactersIndexRoute
   PersonsIndexRoute: typeof PersonsIndexRoute
@@ -149,6 +149,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -184,13 +191,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubjectsSubjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sitemap/xml': {
-      id: '/sitemap/xml'
-      path: '/sitemap/xml'
-      fullPath: '/sitemap/xml'
-      preLoaderRoute: typeof SitemapXmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/persons/$personId': {
       id: '/persons/$personId'
       path: '/persons/$personId'
@@ -217,10 +217,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   CharactersCharacterIdRoute: CharactersCharacterIdRoute,
   EpisodesEpisodeIdRoute: EpisodesEpisodeIdRoute,
   PersonsPersonIdRoute: PersonsPersonIdRoute,
-  SitemapXmlRoute: SitemapXmlRoute,
   SubjectsSubjectIdRoute: SubjectsSubjectIdRoute,
   CharactersIndexRoute: CharactersIndexRoute,
   PersonsIndexRoute: PersonsIndexRoute,

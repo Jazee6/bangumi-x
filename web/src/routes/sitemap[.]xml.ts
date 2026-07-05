@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getCalendar } from "@/server/functions.ts";
 import { SITE_URL } from "@/lib/seo/site.ts";
 
-export const Route = createFileRoute("/sitemap/xml")({
+export const Route = createFileRoute("/sitemap.xml")({
   headers: () => ({
     "Content-Type": "application/xml; charset=utf-8",
     "Cache-Control": "public, max-age=3600, s-maxage=21600, stale-while-revalidate=86400",
