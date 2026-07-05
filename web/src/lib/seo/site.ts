@@ -1,10 +1,20 @@
-import type { Character, EpisodeDetail, PersonDetail, Subject } from "@/types";
-import { SubjectType } from "@/types";
+import type {
+  Character,
+  CharacterPerson,
+  EpisodeDetail,
+  PersonDetail,
+  RelatedCharacter,
+  RelatedPerson,
+  Subject,
+} from "@/types";
+import { SubjectType, SubjectTypeLabel } from "@/types";
 
 export const SITE_NAME = "Bangumi X";
 export const SITE_DESCRIPTION = "Bangumi X - 番组计划数据浏览";
 export const SITE_URL = "https://bgmx.jaze.top";
 export const WORKER_URL = "https://s.bgmx.jaze.top";
+export const GITHUB_URL = "https://github.com/Jazee6/bangumi-x";
+const RATING_MIN_TOTAL = 10;
 
 interface BuildMetaOpts {
   title: string;
@@ -24,6 +34,43 @@ function workerImage(src?: string): string | undefined {
   if (!src) return undefined;
   if (src.startsWith("http")) return src;
   return `${WORKER_URL}/bgm/image?url=${encodeURIComponent(src)}`;
+}
+
+function bgmSameAs(kind: "subject" | "character" | "person", id: number | string): string[] {
+  return [`https://bgm.tv/${kind}/${id}`];
+}
+
+function subjectSchemaType(type: SubjectType): string {
+  switch (type) {
+    case SubjectType.Anime:
+      return "TVSeries";
+    case SubjectType.Book:
+      return "Book";
+    case SubjectType.Music:
+      return "MusicAlbum";
+    case SubjectType.Game:
+      return "VideoGame";
+    case SubjectType.Real:
+      return "TVSeries";
+    default:
+      return "CreativeWork";
+  }
+}
+
+function pruneFalsy(obj: Record<string, unknown>): void {
+  for (const k of Object.keys(obj)) {
+    const v = obj[k];
+    if (v === undefined || v === null || v === "" || v === 0) delete obj[k];
+  }
+}
+
+function personRef(id: number, name: string): Record<string, unknown> {
+  return {
+    "@type": "Person",
+    name,
+    url: absUrl(`/persons/${id}`),
+    sameAs: bgmSameAs("person", id),
+  };
 }
 
 export function buildMeta(opts: BuildMetaOpts) {
@@ -76,24 +123,51 @@ export function buildMeta(opts: BuildMetaOpts) {
 }
 
 export function ogImageUrl(type: "subjects" | "characters" | "persons", id: number | string): string {
-  return `${WORKER_URL}/og/${type}/${id}`;
+  return absUrl(`/og/${type}/${id}`);
 }
 
-export function subjectJsonLd(s: Subject): Record<string, unknown> {
+export function subjectJsonLd(
+  s: Subject,
+  characters: RelatedCharacter[] = [],
+  persons: RelatedPerson[] = [],
+): Record<string, unknown> {
   const url = absUrl(`/subjects/${s.id}`);
   const image = workerImage(s.images?.large || s.images?.common);
+
+  const actors = persons
+    .filter((p) => p.relation === "声优")
+    .slice(0, 10)
+    .map((p) => personRef(p.id, p.name));
+
+  const characterList = characters.slice(0, 10).map((c) => ({
+    "@type": "Role",
+    character: {
+      "@type": "FictionalCharacter",
+      name: c.name,
+      url: absUrl(`/characters/${c.id}`),
+      sameAs: bgmSameAs("character", c.id),
+    },
+    actor: c.actors?.[0] ? personRef(c.actors[0].id, c.actors[0].name) : undefined,
+  }));
+
   const base: Record<string, unknown> = {
     "@context": "https://schema.org",
-    "@type": s.type === SubjectType.Anime ? "TVSeries" : "CreativeWork",
+    "@type": subjectSchemaType(s.type),
     name: s.name_cn || s.name,
     alternateName: s.name_cn && s.name !== s.name_cn ? s.name : undefined,
     description: s.summary || undefined,
     image,
     url,
+    sameAs: bgmSameAs("subject", s.id),
     datePublished: s.date || undefined,
+    dateModified: s.date || undefined,
     numberOfEpisodes: s.eps > 0 ? s.eps : undefined,
+    genre: SubjectTypeLabel[s.type] ?? undefined,
+    keywords: s.tags?.length ? s.tags.slice(0, 10).map((t) => t.name).join(", ") : undefined,
+    actor: actors.length ? actors : undefined,
+    character: characterList.length ? characterList : undefined,
     aggregateRating:
-      s.rating?.score > 0 && s.rating.total > 0
+      s.rating?.score > 0 && s.rating.total >= RATING_MIN_TOTAL
         ? {
             "@type": "AggregateRating",
             ratingValue: s.rating.score.toFixed(1),
@@ -102,7 +176,7 @@ export function subjectJsonLd(s: Subject): Record<string, unknown> {
           }
         : undefined,
   };
-  for (const k of Object.keys(base)) if (base[k] === undefined) delete base[k];
+  pruneFalsy(base);
   return base;
 }
 
@@ -117,6 +191,7 @@ export function episodeJsonLd(
     name: ep.name_cn || ep.name || `第 ${ep.sort} 话`,
     episodeNumber: ep.sort,
     url,
+    sameAs: bgmSameAs("subject", ep.subject_id),
     datePublished: ep.airdate || undefined,
     duration: ep.duration || undefined,
     description: ep.desc || undefined,
@@ -125,25 +200,38 @@ export function episodeJsonLd(
           "@type": "TVSeries",
           name: subject.name_cn || subject.name,
           url: absUrl(`/subjects/${subject.id}`),
+          sameAs: bgmSameAs("subject", subject.id),
         }
       : undefined,
   };
-  for (const k of Object.keys(obj)) if (obj[k] === undefined) delete obj[k];
+  pruneFalsy(obj);
   return obj;
 }
 
-export function characterJsonLd(c: Character): Record<string, unknown> {
+export function characterJsonLd(
+  c: Character,
+  persons: CharacterPerson[] = [],
+): Record<string, unknown> {
   const url = absUrl(`/characters/${c.id}`);
+  const performers = persons
+    .filter((p) => p.staff === "声优" || p.staff === "演员")
+    .slice(0, 5)
+    .map((p) => ({
+      "@type": "Role",
+      performer: personRef(p.id, p.name),
+    }));
   const obj: Record<string, unknown> = {
     "@context": "https://schema.org",
-    "@type": "Person",
+    "@type": "FictionalCharacter",
     name: c.name,
     description: c.summary || undefined,
     url,
     image: workerImage(c.images?.large || c.images?.medium),
+    sameAs: bgmSameAs("character", c.id),
     gender: c.gender || undefined,
+    performer: performers.length ? performers : undefined,
   };
-  for (const k of Object.keys(obj)) if (obj[k] === undefined) delete obj[k];
+  pruneFalsy(obj);
   return obj;
 }
 
@@ -156,6 +244,7 @@ export function personJsonLd(p: PersonDetail): Record<string, unknown> {
     description: p.summary || undefined,
     url,
     image: workerImage(p.images?.large || p.images?.medium),
+    sameAs: bgmSameAs("person", p.id),
     gender: p.gender || undefined,
     birthDate:
       p.birth_year && p.birth_mon && p.birth_day
@@ -163,7 +252,7 @@ export function personJsonLd(p: PersonDetail): Record<string, unknown> {
         : undefined,
     jobTitle: p.career?.length ? p.career.join(", ") : undefined,
   };
-  for (const k of Object.keys(obj)) if (obj[k] === undefined) delete obj[k];
+  pruneFalsy(obj);
   return obj;
 }
 
@@ -174,6 +263,16 @@ export function websiteJsonLd(): Record<string, unknown> {
     name: SITE_NAME,
     url: SITE_URL,
     description: SITE_DESCRIPTION,
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/icon.svg`,
+      },
+      sameAs: [GITHUB_URL],
+    },
     potentialAction: {
       "@type": "SearchAction",
       target: {
@@ -182,6 +281,34 @@ export function websiteJsonLd(): Record<string, unknown> {
       },
       "query-input": "required name=search_term_string",
     },
+  };
+}
+
+export function breadcrumbJsonLd(path: string): Record<string, unknown> {
+  const segments = path.split("/").filter(Boolean);
+  const items: Array<Record<string, unknown>> = [
+    { "@type": "ListItem", position: 1, name: "首页", item: SITE_URL },
+  ];
+  const listNames: Record<string, string> = {
+    subjects: "条目",
+    characters: "角色",
+    persons: "人物",
+    episodes: "章节",
+  };
+  let href = "";
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
+    href += `/${seg}`;
+    const isLast = i === segments.length - 1;
+    const name = isLast ? undefined : listNames[seg];
+    if (name) {
+      items.push({ "@type": "ListItem", position: items.length + 1, name, item: absUrl(href) });
+    }
+  }
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items,
   };
 }
 

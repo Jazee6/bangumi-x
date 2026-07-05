@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
-import { buildMeta, episodeJsonLd } from "@/lib/seo/site.ts";
+import { buildMeta, breadcrumbJsonLd, episodeJsonLd } from "@/lib/seo/site.ts";
 import { getEpisode, getSubject } from "@/server/functions.ts";
 import { type EpisodeDetail, EpTypeLabel, type Subject } from "@/types";
 
@@ -46,7 +46,10 @@ export const Route = createFileRoute("/episodes/$episodeId")({
       image: subject?.images?.large || subject?.images?.common,
       url: `/episodes/${params.episodeId}`,
       type: "article",
-      jsonLd: episodeJsonLd(episode, subject),
+      jsonLd: [
+        episodeJsonLd(episode, subject),
+        breadcrumbJsonLd(`/episodes/${params.episodeId}`),
+      ],
     });
   },
   pendingComponent: () => (

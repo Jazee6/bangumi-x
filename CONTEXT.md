@@ -22,6 +22,9 @@ _Avoid_: 把它当作独立领域概念
 现实人物或组织（个人/公司/组合），通过 `staff`（原作/导演/声优等制作职位）与条目关联。
 _Avoid_: 把 Person 与 Character 混用
 
+**FictionalCharacter**:
+Character 在结构化数据（JSON-LD）中的语义类型，与 Person（现实人物）区分。schema.org 无官方虚构角色类型，使用 `Role`（指向声优 Person）或 `FictionalCharacter`，避免 AI 把「绫波丽」与「林原惠」归为同一实体。
+
 **Calendar**:
 每日放送表，按星期分组返回当周开播的条目。使用旧版 API 故 items 类型为 LegacySubject。
 
@@ -42,5 +45,8 @@ _Avoid_: 在 web 包用 native resvg-js（EdgeOne 不支持 .node 二进制）
 schema.org 结构化数据，嵌在 `<script type="application/ld+json">`。Subject 用 `TVSeries`/`CreativeWork`，Character/Person 用 `Person`，首页用 `WebSite`+`SearchAction`，列表页用 `ItemList`。
 
 **Sitemap**:
-动态 server route `/sitemap.xml`，含静态页 + 当前放送季条目（来自首页 calendar 数据）。不拉全量条目 ID（bgm API 无此接口）。
+动态 server route `/sitemap.xml`，含静态页 + 当前放送季条目（来自首页 calendar 数据）+ 列表页入口（/subjects、/characters、/persons）。不拉全量条目 ID（bgm API 无此接口）。
 _Avoid_: 全量条目 sitemap
+
+**MachineReadableEndpoint**:
+web 包 server route `/api/$type/$id`，返回单个实体的 schema.org JSON-LD（与页面 `<script type="application/ld+json">` 同源，复用 `site.ts` 的 jsonLd 构造函数）。供 AI 工具直接拉取，区别于 Worker 的 `/bgm/*`（代理上游原始 JSON）。

@@ -16,7 +16,7 @@ import {
   tabsListVariants,
 } from "@/components/ui/tabs.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
-import { buildMeta, ogImageUrl, subjectJsonLd } from "@/lib/seo/site.ts";
+import { buildMeta, breadcrumbJsonLd, ogImageUrl, subjectJsonLd } from "@/lib/seo/site.ts";
 import { characterRelationOrder, getRelationScore, personRelationOrder } from "@/lib/relation.ts";
 import {
   getSubject,
@@ -65,7 +65,7 @@ export const Route = createFileRoute("/subjects/$subjectId")({
     };
   },
   head: ({ loaderData }) => {
-    const subject = loaderData!.subject;
+    const { subject, characters, persons } = loaderData!;
     const typeLabel = SubjectTypeLabel[subject.type] ?? "条目";
     const title = subject.name_cn || subject.name;
 
@@ -88,7 +88,7 @@ export const Route = createFileRoute("/subjects/$subjectId")({
       image: ogImageUrl("subjects", subject.id),
       url: `/subjects/${subject.id}`,
       type: "article",
-      jsonLd: subjectJsonLd(subject),
+      jsonLd: [subjectJsonLd(subject, characters, persons), breadcrumbJsonLd(`/subjects/${subject.id}`)],
     });
   },
   pendingComponent: () => (

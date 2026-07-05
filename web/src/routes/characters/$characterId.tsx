@@ -13,7 +13,7 @@ import {
   tabsListVariants,
 } from "@/components/ui/tabs.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
-import { buildMeta, characterJsonLd, ogImageUrl } from "@/lib/seo/site.ts";
+import { buildMeta, breadcrumbJsonLd, characterJsonLd, ogImageUrl } from "@/lib/seo/site.ts";
 import { getCharacter, getCharacterPersons, getCharacterSubjects } from "@/server/functions.ts";
 import {
   BloodTypeLabel,
@@ -46,7 +46,7 @@ export const Route = createFileRoute("/characters/$characterId")({
     return { character, subjects, persons };
   },
   head: ({ loaderData, params }) => {
-    const { character, subjects } = loaderData!;
+    const { character, subjects, persons } = loaderData!;
     const typeLabel = character.type ? CharacterTypeLabel[character.type] : "角色";
 
     const facts: string[] = [];
@@ -75,7 +75,10 @@ export const Route = createFileRoute("/characters/$characterId")({
       image: ogImageUrl("characters", params.characterId),
       url: `/characters/${params.characterId}`,
       type: "article",
-      jsonLd: characterJsonLd(character),
+      jsonLd: [
+        characterJsonLd(character, persons),
+        breadcrumbJsonLd(`/characters/${params.characterId}`),
+      ],
     });
   },
   pendingComponent: () => (

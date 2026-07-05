@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubjectsIndexRouteImport } from './routes/subjects/index'
 import { Route as PersonsIndexRouteImport } from './routes/persons/index'
@@ -18,10 +19,16 @@ import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects/$subjec
 import { Route as PersonsPersonIdRouteImport } from './routes/persons/$personId'
 import { Route as EpisodesEpisodeIdRouteImport } from './routes/episodes/$episodeId'
 import { Route as CharactersCharacterIdRouteImport } from './routes/characters/$characterId'
+import { Route as ApiTypeIdRouteImport } from './routes/api.$type.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -64,9 +71,15 @@ const CharactersCharacterIdRoute = CharactersCharacterIdRouteImport.update({
   path: '/characters/$characterId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTypeIdRoute = ApiTypeIdRouteImport.update({
+  id: '/api/$type/$id',
+  path: '/api/$type/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
@@ -75,9 +88,11 @@ export interface FileRoutesByFullPath {
   '/characters/': typeof CharactersIndexRoute
   '/persons/': typeof PersonsIndexRoute
   '/subjects/': typeof SubjectsIndexRoute
+  '/api/$type/$id': typeof ApiTypeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
@@ -86,10 +101,12 @@ export interface FileRoutesByTo {
   '/characters': typeof CharactersIndexRoute
   '/persons': typeof PersonsIndexRoute
   '/subjects': typeof SubjectsIndexRoute
+  '/api/$type/$id': typeof ApiTypeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/characters/$characterId': typeof CharactersCharacterIdRoute
   '/episodes/$episodeId': typeof EpisodesEpisodeIdRoute
@@ -98,11 +115,13 @@ export interface FileRoutesById {
   '/characters/': typeof CharactersIndexRoute
   '/persons/': typeof PersonsIndexRoute
   '/subjects/': typeof SubjectsIndexRoute
+  '/api/$type/$id': typeof ApiTypeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/llms.txt'
     | '/sitemap.xml'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
@@ -111,9 +130,11 @@ export interface FileRouteTypes {
     | '/characters/'
     | '/persons/'
     | '/subjects/'
+    | '/api/$type/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/llms.txt'
     | '/sitemap.xml'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
@@ -122,9 +143,11 @@ export interface FileRouteTypes {
     | '/characters'
     | '/persons'
     | '/subjects'
+    | '/api/$type/$id'
   id:
     | '__root__'
     | '/'
+    | '/llms.txt'
     | '/sitemap.xml'
     | '/characters/$characterId'
     | '/episodes/$episodeId'
@@ -133,10 +156,12 @@ export interface FileRouteTypes {
     | '/characters/'
     | '/persons/'
     | '/subjects/'
+    | '/api/$type/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CharactersCharacterIdRoute: typeof CharactersCharacterIdRoute
   EpisodesEpisodeIdRoute: typeof EpisodesEpisodeIdRoute
@@ -145,6 +170,7 @@ export interface RootRouteChildren {
   CharactersIndexRoute: typeof CharactersIndexRoute
   PersonsIndexRoute: typeof PersonsIndexRoute
   SubjectsIndexRoute: typeof SubjectsIndexRoute
+  ApiTypeIdRoute: typeof ApiTypeIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -154,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -212,11 +245,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CharactersCharacterIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/$type/$id': {
+      id: '/api/$type/$id'
+      path: '/api/$type/$id'
+      fullPath: '/api/$type/$id'
+      preLoaderRoute: typeof ApiTypeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CharactersCharacterIdRoute: CharactersCharacterIdRoute,
   EpisodesEpisodeIdRoute: EpisodesEpisodeIdRoute,
@@ -225,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   CharactersIndexRoute: CharactersIndexRoute,
   PersonsIndexRoute: PersonsIndexRoute,
   SubjectsIndexRoute: SubjectsIndexRoute,
+  ApiTypeIdRoute: ApiTypeIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

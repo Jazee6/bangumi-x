@@ -20,7 +20,7 @@ import {
   tabsListVariants,
 } from "@/components/ui/tabs.tsx";
 import { Typography } from "@/components/ui/typography.tsx";
-import { buildMeta, ogImageUrl, personJsonLd } from "@/lib/seo/site.ts";
+import { buildMeta, breadcrumbJsonLd, ogImageUrl, personJsonLd } from "@/lib/seo/site.ts";
 import { characterRelationOrder, getRelationScore } from "@/lib/relation.ts";
 import { getPerson, getPersonCharacters, getPersonSubjects } from "@/server/functions.ts";
 import {
@@ -81,7 +81,10 @@ export const Route = createFileRoute("/persons/$personId")({
       image: ogImageUrl("persons", params.personId),
       url: `/persons/${params.personId}`,
       type: "article",
-      jsonLd: personJsonLd(person),
+      jsonLd: [
+        personJsonLd(person),
+        breadcrumbJsonLd(`/persons/${params.personId}`),
+      ],
     });
   },
   pendingComponent: () => (
