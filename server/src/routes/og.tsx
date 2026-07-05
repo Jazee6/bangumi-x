@@ -10,6 +10,10 @@ const app = new Hono();
 const WIDTH = 1200;
 const HEIGHT = 630;
 
+const ICON_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fafafa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2-5 5-5-5"/><rect width="20" height="15" x="2" y="7" rx="2"/></svg>';
+const ICON_DATA_URI = `data:image/svg+xml;base64,${btoa(ICON_SVG)}`;
+
 const FONT_BASE = "https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-sc@latest";
 let fontsReady: Promise<ArrayBuffer[]> | null = null;
 function loadFonts(): Promise<ArrayBuffer[]> {
@@ -44,11 +48,15 @@ async function loadOgData(type: string, id: number): Promise<OgData | null> {
       name_cn: string;
       type: number;
       date?: string;
+      eps?: number;
+      platform?: string;
       images?: { large?: string };
       rating?: { score?: number };
     };
     const badges = [subjectTypeLabel(s.type)];
     if (s.date) badges.push(s.date);
+    if (s.eps && s.eps > 0) badges.push(`${s.eps} 话`);
+    if (s.platform) badges.push(s.platform);
     return {
       title: s.name_cn || s.name,
       badges,
@@ -166,9 +174,8 @@ app.get(
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          backgroundColor: "#0a0a0a",
-          backgroundImage: "linear-gradient(135deg, #1f1f1f 0%, #0a0a0a 100%)",
-          color: "#fafafa",
+            backgroundColor: "#0a0a0a",
+            color: "#fafafa",
           padding: "60px",
           fontFamily: "Noto Sans SC",
         }}
@@ -190,42 +197,38 @@ app.get(
               style={{
                 width: "300px",
                 height: "400px",
-                borderRadius: "16px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "12px",
-                backgroundImage: "linear-gradient(135deg, #262626 0%, #171717 100%)",
-              }}
+                  borderRadius: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "12px",
+                  backgroundColor: "#262626",
+                }}
             >
               <div style={{ fontSize: "96px", fontWeight: 700, color: "#525252" }}>B</div>
               <div style={{ fontSize: "20px", color: "#737373" }}>Bangumi X</div>
             </div>
           )}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "24px",
-              flex: "1",
-              minWidth: 0,
-            }}
-          >
             <div
               style={{
-                fontSize: `${tSize}px`,
-                fontWeight: 700,
-                lineHeight: 1.2,
-                color: "#fafafa",
+                display: "flex",
+                flexDirection: "column",
+                gap: "20px",
+                flex: "1",
+                minWidth: 0,
               }}
             >
-              {data.title}
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center" }}>
-              {data.badges.map((b) => (
-                <Badge key={b}>{b}</Badge>
-              ))}
+              <div
+                style={{
+                  fontSize: `${tSize}px`,
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                  color: "#fafafa",
+                }}
+              >
+                {data.title}
+              </div>
               {data.score !== null && (
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <Star size={32} color="#737373" />
@@ -234,11 +237,26 @@ app.get(
                   </span>
                 </div>
               )}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+                {data.badges.map((b) => (
+                  <Badge key={b}>{b}</Badge>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-        <div style={{ fontSize: "30px", fontWeight: 700, color: "#fafafa" }}>Bangumi X</div>
-      </div>,
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
+              <img src={ICON_DATA_URI} width={30} height={30} />
+              <div style={{ fontSize: "30px", fontWeight: 700, color: "#fafafa" }}>Bangumi X</div>
+            </div>
+          </div>
+        </div>,
       {
         width: WIDTH,
         height: HEIGHT,

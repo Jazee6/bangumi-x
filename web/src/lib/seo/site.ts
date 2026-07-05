@@ -76,7 +76,7 @@ function personRef(id: number, name: string): Record<string, unknown> {
 export function buildMeta(opts: BuildMetaOpts) {
   const title = `${opts.title} | ${SITE_NAME}`;
   const description = opts.description ?? SITE_DESCRIPTION;
-  const ogImage = workerImage(opts.image);
+  const ogImage = opts.image ? workerImage(opts.image) : absUrl("/og-default.png");
   const canonical = opts.url ? absUrl(opts.url) : undefined;
 
   const meta: Array<Record<string, string>> = [
