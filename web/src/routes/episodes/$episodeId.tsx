@@ -23,7 +23,7 @@ export const Route = createFileRoute("/episodes/$episodeId")({
     if (!episode) {
       return { episode, subject: null };
     }
-    let subject: Subject | null = null;
+    let subject: Subject | null;
     try {
       subject = await getSubject({ data: { id: episode.subject_id } });
     } catch {

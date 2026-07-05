@@ -13,7 +13,7 @@ const app = new Hono();
 app.use(
   "*",
   cors({
-    origin: (process.env.CORS_ORIGIN ?? "http://localhost:3000").split(","),
+    origin: (process.env.SITE_URL ?? "https://bgmx.jaze.top").split(","),
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type"],
   }),
