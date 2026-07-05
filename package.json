@@ -1,0 +1,19 @@
+{
+  "name": "bangumi-x",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "./server",
+    "./share",
+    "./web"
+  ],
+  "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.57.0",
+    "oxlint": "^1.72.0"
+  }
+}
