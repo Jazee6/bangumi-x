@@ -1,0 +1,28 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 48rpx;
+  gap: 16rpx;
+}
+.empty__title {
+  font-size: 30rpx;
+  color: var(--foreground);
+}
+.empty__desc {
+  font-size: 26rpx;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+.empty__btn {
+  margin-top: 16rpx;
+  padding: 16rpx 48rpx;
+  border-radius: var(--radius);
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 28rpx;
+}
+.empty__btn--hover {
+  opacity: 0.85;
+}

@@ -1,0 +1,10 @@
+<view class="cell">
+  <view class="cell__avatar">
+    <proxy-image src="{{image}}" mode="aspectFill" />
+  </view>
+  <view class="cell__body">
+    <text class="cell__title" overflow="ellipsis" max-lines="1">{{title}}</text>
+    <text wx:if="{{description}}" class="cell__desc" overflow="ellipsis" max-lines="1">{{description}}</text>
+  </view>
+  <view wx:if="{{arrow}}" class="cell__arrow"><image class="cell__arrow-icon" src="{{chevronIcon}}" mode="aspectFit" /></view>
+</view>

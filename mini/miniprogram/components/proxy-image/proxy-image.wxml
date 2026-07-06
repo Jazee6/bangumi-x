@@ -1,0 +1,11 @@
+<view class="proxy-image" wx:if="{{errored}}">
+  <text class="proxy-image__placeholder">无图</text>
+</view>
+<image
+  wx:else
+  class="proxy-image__img"
+  src="{{proxied}}"
+  mode="{{mode}}"
+  lazy-load="{{lazy}}"
+  binderror="onError"
+/>

@@ -1,0 +1,38 @@
+.page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+.scroll {
+  flex: 1;
+  height: 0;
+}
+.topbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 16rpx 16rpx 20rpx;
+  background-color: var(--background);
+  border-bottom: 1rpx solid var(--border);
+}
+.topbar__trigger {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6rpx;
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 26rpx;
+}
+.topbar__arrow {
+  width: 20rpx;
+  height: 20rpx;
+}
+.grid__item--hover {
+  opacity: 0.85;
+}

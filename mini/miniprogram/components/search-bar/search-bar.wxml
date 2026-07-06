@@ -1,0 +1,14 @@
+<view class="search-bar">
+  <image class="search-bar__icon" src="{{icon}}" mode="aspectFit" />
+  <input
+    class="search-bar__input"
+    type="text"
+    value="{{inner}}"
+    placeholder="{{placeholder}}"
+    placeholder-class="search-bar__placeholder"
+    confirm-type="search"
+    bindinput="onInput"
+    bindconfirm="onConfirm"
+  />
+  <view wx:if="{{inner}}" class="search-bar__clear" bindtap="onClear"><text>×</text></view>
+</view>

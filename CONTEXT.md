@@ -50,3 +50,29 @@ _Avoid_: 全量条目 sitemap
 
 **MachineReadableEndpoint**:
 web 包 server route `/api/$type/$id`，返回单个实体的 schema.org JSON-LD（与页面 `<script type="application/ld+json">` 同源，复用 `site.ts` 的 jsonLd 构造函数）。供 AI 工具直接拉取，区别于 Worker 的 `/bgm/*`（代理上游原始 JSON）。
+
+## Mini
+
+**MiniApp**:
+微信小程序端，`./mini` workspace 包。Skyline 渲染引擎 + glass-easel 组件框架 + weui 扩展库。与 web 共用同一 Worker 上游，通过 `wx.request` 直连 `s.bgmx.jaze.top/bgm/*`（无需 SSR 层）。
+_Avoid_: 把它当作独立领域——领域概念（Subject/Character/Person/Episode/Calendar）与 web 同源，区别仅在渲染与导航模型。
+
+**DiscoverPage**:
+MiniApp 底部 tab「发现」，单页面内用 segmented-control 切换 Subject / Character / Person 三个搜索域，顶部统一搜索框 + 类型筛选 chips。区别于 web 的三个独立路由（/subjects、/characters、/persons）。
+_Avoid_: 把它当作聚合 API 或独立领域概念——它仅是 MiniApp 的导航/交互约定。
+
+**SubjectDetailPage**:
+MiniApp 的 Subject 详情页。头部（封面+名称+评分+简介+标签）+ 吸顶 Tab（章节/角色/制作人员），用 nested-scroll + swiper 实现。区别于 web 的 `/subjects/$id` 单页滚动布局。关联数据（章节/角色/制作人员）切 Tab 时懒加载。
+_Avoid_: 把它当作独立领域概念——领域上是 Subject，区别仅在导航/交互模型。
+
+**CharacterDetailPage / PersonDetailPage**:
+MiniApp 的 Character/Person 详情页。单 list scroll-view：头部（头像+名字+简介）+ 关联作品列表（character 还有出演声优，person 还有饰演角色）。区别于 web 的 `/characters/$id`、`/persons/$id`。
+_Avoid_: 把它当作独立领域概念。
+
+**DetailRoute**:
+MiniApp 跳转详情页的统一路由约定，用预设路由 `wx://zoom`（页面缩放进入）。区别于 web 的浏览器导航。封装在 `navigateToDetail(type, id)`。
+_Avoid_: 把它当作独立领域概念——仅是 MiniApp 的路由/动画约定。
+
+**ThemeMode**:
+MiniApp 的主题模式，完全跟随系统（light/dark），无手动覆盖。通过 `app.json` 的 `darkmode: true` + `theme.json` 变量让原生 tabBar / 导航栏自动随系统切换；页面级通过根 view 的 `dark` class + CSS 变量切换，`dark` class 由 `wx.onThemeChange` 驱动。
+_Avoid_: 引入手动主题切换或持久化到 storage——与 web 的 `next-themes` 也不同，web 走 `class="dark"` + Tailwind，MiniApp 走原生 darkmode + CSS 变量。

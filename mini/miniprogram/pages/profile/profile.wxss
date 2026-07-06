@@ -1,0 +1,39 @@
+.page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+.scroll {
+  flex: 1;
+  height: 0;
+}
+.section-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+  color: var(--foreground);
+}
+.theme-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16rpx;
+}
+.theme-chip {
+  flex: none;
+  padding: 16rpx 32rpx;
+  border-radius: 999rpx;
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 26rpx;
+}
+.theme-chip--active {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+.placeholder {
+  color: var(--muted-foreground);
+  font-size: 28rpx;
+}

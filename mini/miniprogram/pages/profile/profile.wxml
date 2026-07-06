@@ -1,0 +1,9 @@
+<view class="page {{dark ? 'dark' : ''}}">
+  <navigation-bar title="我的" back="{{false}}" dark="{{dark}}" background="{{dark ? '#0a0a0a' : '#ffffff'}}" color="{{dark ? '#fafafa' : '#18181b'}}" />
+
+  <scroll-view class="scroll" type="list" scroll-y show-scrollbar="{{false}}" cache-extent="500">
+    <view class="app-padding">
+      <text class="placeholder">设置项即将上线</text>
+    </view>
+  </scroll-view>
+</view>

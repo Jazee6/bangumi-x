@@ -1,0 +1,12 @@
+{
+  "navigationStyle": "custom",
+  "disableScroll": true,
+  "usingComponents": {
+    "navigation-bar": "/components/navigation-bar/navigation-bar",
+    "search-bar": "/components/search-bar/search-bar",
+    "subject-card": "/components/subject-card/subject-card",
+    "character-cell": "/components/character-cell/character-cell",
+    "empty-state": "/components/empty-state/empty-state",
+    "skeleton": "/components/skeleton/skeleton"
+  }
+}

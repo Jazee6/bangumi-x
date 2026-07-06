@@ -1,0 +1,124 @@
+.page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+.scroll {
+  flex: 1;
+  height: 0;
+}
+.scroll-placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  padding: 24rpx;
+}
+.header__poster {
+  width: 240rpx;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background-color: var(--muted);
+  flex: none;
+}
+.header__info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+.header__name {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.header__sub-name {
+  font-size: 26rpx;
+  color: var(--muted-foreground);
+}
+.header__badges {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+.badge {
+  padding: 4rpx 16rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 22rpx;
+}
+.badge--secondary {
+  background-color: var(--secondary);
+  border-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+.header__summary {
+  font-size: 26rpx;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.header__tags {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+.tag {
+  padding: 4rpx 16rpx;
+  border-radius: 999rpx;
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 22rpx;
+}
+.tabs {
+  display: flex;
+  flex-direction: row;
+  background-color: var(--background);
+  border-bottom: 1rpx solid var(--border);
+}
+.tabs__item {
+  flex: 1;
+  padding: 20rpx 0;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: 28rpx;
+}
+.tabs__item--active {
+  color: var(--foreground);
+  font-weight: 600;
+}
+.swiper {
+  height: 100%;
+}
+.tab-scroll {
+  height: 100%;
+}
+.group {
+  padding-bottom: 16rpx;
+}
+.group__title {
+  display: block;
+  padding: 24rpx 24rpx 16rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+.loading-more {
+  padding: 24rpx 0 48rpx;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: 26rpx;
+}
+.cell-wrap--hover {
+  background-color: var(--muted);
+}

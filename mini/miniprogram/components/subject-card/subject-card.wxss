@@ -1,0 +1,28 @@
+.subject-card {
+  display: flex;
+  flex-direction: column;
+}
+.subject-card__poster {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background-color: var(--muted);
+}
+.subject-card__score {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 22rpx;
+  backdrop-filter: blur(8rpx);
+}
+.subject-card__name {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  line-height: 1.3;
+}

@@ -1,0 +1,7 @@
+<view class="empty">
+  <text class="empty__title">{{title}}</text>
+  <text wx:if="{{description}}" class="empty__desc">{{description}}</text>
+  <view wx:if="{{retry}}" class="empty__btn" bindtap="onRetry" hover-class="empty__btn--hover">
+    <text>重试</text>
+  </view>
+</view>

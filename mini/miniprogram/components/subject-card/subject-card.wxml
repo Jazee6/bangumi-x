@@ -1,0 +1,7 @@
+<view class="subject-card">
+  <view class="subject-card__poster">
+    <proxy-image src="{{image}}" mode="aspectFill" />
+    <view wx:if="{{score > 0}}" class="subject-card__score"><text>★ {{score}}</text></view>
+  </view>
+  <text class="subject-card__name" max-lines="2" overflow="ellipsis">{{nameCn || name}}</text>
+</view>

@@ -35,3 +35,4 @@ Before finishing a task, run from the repo root:
 - Lint: `bun run lint`
 - Typecheck web: `cd web && ./node_modules/.bin/tsc --noEmit`
 - Typecheck server: `cd server && ./node_modules/.bin/tsc --noEmit`
+- Typecheck mini: `bun run typecheck:mini`

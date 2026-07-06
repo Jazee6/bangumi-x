@@ -1,0 +1,9 @@
+<view class="ep" hover-class="ep--hover">
+  <view class="ep__sort">
+    <text class="ep__sort-num">#{{sort}}</text>
+  </view>
+  <view class="ep__body">
+    <text class="ep__title" overflow="ellipsis" max-lines="1">{{title}}</text>
+    <text wx:if="{{meta}}" class="ep__meta">{{meta}}</text>
+  </view>
+</view>

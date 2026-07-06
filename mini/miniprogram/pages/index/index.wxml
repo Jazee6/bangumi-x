@@ -1,0 +1,40 @@
+<view class="page {{dark ? 'dark' : ''}}">
+  <navigation-bar title="每日放送" back="{{false}}" dark="{{dark}}" loading="{{loading}}" background="{{dark ? '#0a0a0a' : '#ffffff'}}" color="{{dark ? '#fafafa' : '#18181b'}}" />
+
+  <view class="topbar">
+    <picker
+      class="topbar__picker"
+      mode="selector"
+      range="{{calendar}}"
+      range-key="label"
+      value="{{activeIndex}}"
+      bindchange="onPickDay"
+    >
+      <view class="topbar__trigger"><text>{{currentDayLabel}}</text><image class="topbar__arrow" src="{{chevronDown}}" mode="aspectFit" /></view>
+    </picker>
+  </view>
+
+  <scroll-view class="scroll" type="custom" scroll-y show-scrollbar="{{false}}" cache-extent="500" refresher-enabled="{{true}}" refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
+    <block wx:if="{{error}}">
+      <empty-state title="加载失败" description="网络异常" retry="{{true}}" bindretry="onRetry" />
+    </block>
+    <block wx:elif="{{loading}}">
+      <skeleton type="card" count="{{6}}" />
+    </block>
+    <block wx:elif="{{currentItems.length === 0}}">
+      <empty-state title="今日无放送" />
+    </block>
+    <block wx:else>
+      <grid-view class="grid" type="aligned" max-cross-axis-extent="140" cross-axis-gap="8" main-axis-gap="12" padding="{{[8, 12, 48, 12]}}">
+        <view wx:for="{{currentItems}}" wx:key="id" list-item catchtap="onTapSubject" data-id="{{item.id}}" hover-class="grid__item--hover" hover-stay-time="100">
+          <subject-card
+            name="{{item.name}}"
+            nameCn="{{item.name_cn}}"
+            image="{{item.images.large || item.images.common}}"
+            score="{{item.score}}"
+          />
+        </view>
+      </grid-view>
+    </block>
+  </scroll-view>
+</view>

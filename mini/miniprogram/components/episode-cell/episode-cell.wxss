@@ -1,0 +1,36 @@
+.ep {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx;
+  background-color: var(--card);
+  border-bottom: 1rpx solid var(--border);
+}
+.ep--hover {
+  background-color: var(--muted);
+}
+.ep__sort {
+  width: 80rpx;
+  flex: none;
+  text-align: center;
+}
+.ep__sort-num {
+  font-size: 28rpx;
+  color: var(--muted-foreground);
+  font-family: "SF Mono", Menlo, monospace;
+}
+.ep__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+.ep__title {
+  font-size: 28rpx;
+  color: var(--card-foreground);
+}
+.ep__meta {
+  font-size: 22rpx;
+  color: var(--muted-foreground);
+}

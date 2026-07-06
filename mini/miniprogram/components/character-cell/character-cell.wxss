@@ -1,0 +1,43 @@
+.cell {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 20rpx 24rpx;
+  background-color: var(--card);
+  border-bottom: 1rpx solid var(--border);
+}
+.cell__avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--muted);
+  flex: none;
+}
+.cell__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+.cell__title {
+  font-size: 30rpx;
+  color: var(--card-foreground);
+}
+.cell__desc {
+  font-size: 24rpx;
+  color: var(--muted-foreground);
+}
+.cell__arrow {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32rpx;
+  height: 32rpx;
+}
+.cell__arrow-icon {
+  width: 24rpx;
+  height: 24rpx;
+}

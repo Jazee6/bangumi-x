@@ -1,0 +1,124 @@
+<view class="page {{dark ? 'dark' : ''}}">
+  <navigation-bar title="{{typeLabel}}" back="{{true}}" dark="{{dark}}" loading="{{loading}}" background="{{dark ? '#0a0a0a' : '#ffffff'}}" color="{{dark ? '#fafafa' : '#18181b'}}" />
+
+  <block wx:if="{{error}}">
+    <view class="scroll-placeholder">
+      <empty-state title="加载失败" description="网络异常" retry="{{true}}" bindretry="onRetry" />
+    </view>
+  </block>
+  <block wx:elif="{{subject}}">
+    <scroll-view class="scroll" type="nested" scroll-y show-scrollbar="{{false}}" cache-extent="500">
+      <nested-scroll-header>
+        <view class="header">
+          <view class="header__poster">
+            <proxy-image src="{{subject.images.large || subject.images.common}}" mode="aspectFill" />
+          </view>
+          <view class="header__info">
+            <text class="header__name">{{subject.name_cn || subject.name}}</text>
+            <text wx:if="{{subject.name_cn && subject.name !== subject.name_cn}}" class="header__sub-name">{{subject.name}}</text>
+            <view class="header__badges">
+              <text wx:if="{{typeLabel}}" class="badge badge--secondary">{{typeLabel}}</text>
+              <text wx:if="{{subject.rating.score > 0}}" class="badge badge--secondary">★ {{subject.rating.score}}</text>
+              <text wx:if="{{subject.eps > 0}}" class="badge">{{subject.eps}} 话</text>
+              <text wx:if="{{subject.date}}" class="badge">{{subject.date}}</text>
+              <text wx:if="{{subject.platform}}" class="badge">{{subject.platform}}</text>
+            </view>
+            <text wx:if="{{subject.summary}}" class="header__summary" overflow="ellipsis" max-lines="4">{{subject.summary}}</text>
+            <view wx:if="{{subject.tags.length > 0}}" class="header__tags">
+              <text wx:for="{{subject.tags}}" wx:key="name" wx:if="{{index < 10}}" class="tag">{{item.name}}</text>
+            </view>
+          </view>
+        </view>
+      </nested-scroll-header>
+
+      <nested-scroll-header>
+        <view class="tabs">
+          <view
+            wx:for="{{tabs}}"
+            wx:key="value"
+            class="tabs__item {{item.value === activeTab ? 'tabs__item--active' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="onPickTab"
+          >
+            <text>{{item.label}}</text>
+          </view>
+        </view>
+      </nested-scroll-header>
+
+      <nested-scroll-body>
+        <swiper class="swiper" current="{{activeTab}}" bindchange="onSwiperChange">
+          <swiper-item>
+            <scroll-view class="tab-scroll" type="list" scroll-y show-scrollbar="{{false}}" cache-extent="500" associative-container="nested-scroll-view" bindscrolltolower="onLoadMoreEpisodes">
+              <block wx:if="{{episodesLoading && episodes.length === 0}}">
+                <skeleton type="list" count="{{8}}" />
+              </block>
+              <block wx:elif="{{episodes.length === 0}}">
+                <empty-state title="暂无章节" />
+              </block>
+              <block wx:else>
+                <view wx:for="{{episodes}}" wx:key="id" list-item>
+                  <episode-cell episode="{{item.episode}}" />
+                </view>
+                <view wx:if="{{episodesLoading}}" class="loading-more">
+                  <text>加载中...</text>
+                </view>
+              </block>
+            </scroll-view>
+          </swiper-item>
+
+          <swiper-item>
+            <scroll-view class="tab-scroll" type="list" scroll-y show-scrollbar="{{false}}" cache-extent="500" associative-container="nested-scroll-view">
+              <block wx:if="{{charactersLoading}}">
+                <skeleton type="list" count="{{8}}" />
+              </block>
+              <block wx:elif="{{characters.length === 0}}">
+                <empty-state title="暂无角色" />
+              </block>
+              <block wx:else>
+                <view wx:for="{{characters}}" wx:key="relation" wx:for-item="group" class="group">
+                  <text class="group__title">{{group.relation}}</text>
+                  <view wx:for="{{group.items}}" wx:key="id" list-item catchtap="onTapCell" data-target="{{item.target}}" data-id="{{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
+                    <character-cell dark="{{dark}}"
+                      title="{{item.title}}"
+                      description="{{item.description}}"
+                      image="{{item.image}}"
+                    />
+                  </view>
+                </view>
+              </block>
+            </scroll-view>
+          </swiper-item>
+
+          <swiper-item>
+            <scroll-view class="tab-scroll" type="list" scroll-y show-scrollbar="{{false}}" cache-extent="500" associative-container="nested-scroll-view">
+              <block wx:if="{{personsLoading}}">
+                <skeleton type="list" count="{{8}}" />
+              </block>
+              <block wx:elif="{{persons.length === 0}}">
+                <empty-state title="暂无制作人员" />
+              </block>
+              <block wx:else>
+                <view wx:for="{{persons}}" wx:key="relation" wx:for-item="group" class="group">
+                  <text class="group__title">{{group.relation}}</text>
+                  <view wx:for="{{group.items}}" wx:key="id" list-item catchtap="onTapCell" data-target="{{item.target}}" data-id="{{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
+                    <character-cell dark="{{dark}}"
+                      title="{{item.title}}"
+                      description="{{item.description}}"
+                      image="{{item.image}}"
+                    />
+                  </view>
+                </view>
+              </block>
+            </scroll-view>
+          </swiper-item>
+        </swiper>
+      </nested-scroll-body>
+    </scroll-view>
+  </block>
+  <block wx:else>
+    <view class="scroll-placeholder">
+      <skeleton wx:if="{{loading}}" type="detail" count="{{1}}" />
+      <empty-state wx:else title="暂无数据" />
+    </view>
+  </block>
+</view>
