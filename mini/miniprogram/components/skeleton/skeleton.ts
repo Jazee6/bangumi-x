@@ -1,7 +1,7 @@
 Component({
   properties: {
     type: { type: String, value: "card" },
-    count: { type: Number, value: 6 },
+    count: { type: Number, value: 9 },
   },
   data: {
     items: [] as number[],

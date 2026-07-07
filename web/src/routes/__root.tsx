@@ -103,8 +103,8 @@ function RootDocument({ children }: { children: ReactNode }) {
             <SidebarProvider>
               <AppSidebar />
 
-              <SidebarInset className="h-[calc(100svh-1rem)] relative">
-                <header className="absolute w-full top-0 z-20 flex h-12 items-center gap-2 px-4 app-blur rounded-t-[18px]">
+              <SidebarInset className="md:h-[calc(100dvh-1rem)] relative">
+                <header className="sticky top-0 z-20 flex h-12 items-center gap-2 px-4 app-blur md:rounded-t-[18px]">
                   <SidebarTrigger className="-ml-1" />
                   <Tooltip>
                     <TooltipTrigger
@@ -137,7 +137,7 @@ function RootDocument({ children }: { children: ReactNode }) {
                   </Tooltip>
                 </header>
 
-                <div className="pt-12 overflow-auto">
+                <div className="md:overflow-auto">
                   <div className="p-4 md:p-6">{children}</div>
                 </div>
               </SidebarInset>
