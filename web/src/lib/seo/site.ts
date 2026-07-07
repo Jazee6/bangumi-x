@@ -126,7 +126,7 @@ export function ogImageUrl(
   type: "subjects" | "characters" | "persons",
   id: number | string,
 ): string {
-  return absUrl(`/og/${type}/${id}`);
+  return `${WORKER_URL}/og/${type}/${id}`;
 }
 
 export function subjectJsonLd(
