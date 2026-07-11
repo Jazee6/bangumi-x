@@ -14,7 +14,10 @@
             <proxy-image src="{{subject.images.large || subject.images.common}}" mode="aspectFill" />
           </view>
           <view class="header__info">
-            <text class="header__name">{{subject.name_cn || subject.name}}</text>
+            <view class="header__title-row">
+              <text class="header__name">{{subject.name_cn || subject.name}}</text>
+              <image class="header__copy" src="{{copyIcon}}" mode="aspectFit" catchtap="onCopyTitle" />
+            </view>
             <text wx:if="{{subject.name_cn && subject.name !== subject.name_cn}}" class="header__sub-name">{{subject.name}}</text>
             <view class="header__badges">
               <text wx:if="{{typeLabel}}" class="badge badge--secondary">{{typeLabel}}</text>

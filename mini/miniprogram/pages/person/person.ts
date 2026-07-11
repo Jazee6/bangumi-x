@@ -1,5 +1,7 @@
 import { getPerson, getPersonCharacters, getPersonSubjects } from "../../utils/api";
 import { applyTheme, getCurrentDark, navigateToDetail } from "../../utils/page";
+import { buildPersonShare, buildBrandShare } from "../../utils/share";
+import { ICON_COPY_LIGHT, ICON_COPY_DARK } from "../../utils/icons";
 import {
   BloodTypeLabel,
   CareerLabel,
@@ -33,6 +35,7 @@ Page({
     careerLabel: "",
     bloodLabel: "",
     birthday: "",
+    copyIcon: ICON_COPY_LIGHT,
     tabs: [
       { value: 0, label: "相关条目" },
       { value: 1, label: "相关角色" },
@@ -55,6 +58,7 @@ Page({
   },
   onShow() {
     applyTheme.call(this);
+    this.setData({ copyIcon: getCurrentDark() ? ICON_COPY_DARK : ICON_COPY_LIGHT });
   },
   onThemeChange() {
     applyTheme.call(this);
@@ -143,5 +147,23 @@ Page({
   },
   onTapCharacter(e: WechatMiniprogram.TouchEvent) {
     navigateToDetail("character", Number(e.currentTarget.dataset.id));
+  },
+  onCopyTitle() {
+    const p = this.data.person;
+    if (!p) return;
+    wx.setClipboardData({
+      data: p.name,
+      success: () => wx.showToast({ title: "已复制", icon: "success" }),
+    });
+  },
+  onShareAppMessage() {
+    const p = this.data.person;
+    if (!p) return buildBrandShare("index");
+    return buildPersonShare(p);
+  },
+  onShareTimeline() {
+    const p = this.data.person;
+    if (!p) return buildBrandShare("index");
+    return buildPersonShare(p);
   },
 });

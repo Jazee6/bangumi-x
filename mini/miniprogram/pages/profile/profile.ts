@@ -1,4 +1,5 @@
 import { applyTheme, getCurrentDark } from "../../utils/page";
+import { buildBrandShare } from "../../utils/share";
 
 Page({
   data: {
@@ -9,5 +10,11 @@ Page({
   },
   onThemeChange() {
     applyTheme.call(this);
+  },
+  onShareAppMessage() {
+    return buildBrandShare("profile");
+  },
+  onShareTimeline() {
+    return buildBrandShare("profile");
   },
 });

@@ -14,7 +14,10 @@
             <proxy-image src="{{person.images.large || person.images.medium}}" mode="aspectFill" />
           </view>
           <view class="header__info">
-            <text class="header__name">{{person.name}}</text>
+            <view class="header__title-row">
+              <text class="header__name">{{person.name}}</text>
+              <image class="header__copy" src="{{copyIcon}}" mode="aspectFit" catchtap="onCopyTitle" />
+            </view>
             <view class="header__badges">
               <text wx:if="{{careerLabel}}" class="badge badge--secondary">{{careerLabel}}</text>
               <text wx:if="{{person.gender}}" class="badge">{{person.gender}}</text>

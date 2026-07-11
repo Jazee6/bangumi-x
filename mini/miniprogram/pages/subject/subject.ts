@@ -1,5 +1,7 @@
 import { getSubject, getSubjectCharacters, getSubjectEpisodes, getSubjectPersons } from "../../utils/api";
 import { applyTheme, getCurrentDark, navigateToDetail } from "../../utils/page";
+import { buildSubjectShare, buildBrandShare } from "../../utils/share";
+import { ICON_COPY_LIGHT, ICON_COPY_DARK } from "../../utils/icons";
 import { characterRelationOrder, groupByRelation, personRelationOrder } from "../../utils/relation";
 import {
   type Episode,
@@ -41,6 +43,7 @@ Page({
     subject: null as Subject | null,
     typeLabel: "",
     activeTab: 0 as Tab,
+    copyIcon: ICON_COPY_LIGHT,
     tabs: [
       { value: 0, label: "章节" },
       { value: 1, label: "角色" },
@@ -68,6 +71,7 @@ Page({
   },
   onShow() {
     applyTheme.call(this);
+    this.setData({ copyIcon: getCurrentDark() ? ICON_COPY_DARK : ICON_COPY_LIGHT });
   },
   onThemeChange() {
     applyTheme.call(this);
@@ -190,5 +194,23 @@ Page({
     const id = Number(e.currentTarget.dataset.id);
     const target = e.currentTarget.dataset.target as "character" | "person";
     navigateToDetail(target, id);
+  },
+  onCopyTitle() {
+    const s = this.data.subject;
+    if (!s) return;
+    wx.setClipboardData({
+      data: s.name_cn || s.name,
+      success: () => wx.showToast({ title: "已复制", icon: "success" }),
+    });
+  },
+  onShareAppMessage() {
+    const s = this.data.subject;
+    if (!s) return buildBrandShare("index");
+    return buildSubjectShare(s);
+  },
+  onShareTimeline() {
+    const s = this.data.subject;
+    if (!s) return buildBrandShare("index");
+    return buildSubjectShare(s);
   },
 });

@@ -1,4 +1,5 @@
 import { applyTheme, getCurrentDark, navigateToDetail } from "../../utils/page";
+import { buildBrandShare } from "../../utils/share";
 import { ICON_CHEVRON_DOWN_LIGHT, ICON_CHEVRON_DOWN_DARK } from "../../utils/icons";
 import { browseSubjects, searchSubjects, searchCharacters, searchPersons } from "../../utils/api";
 import type { Subject, Character, Person, PagedResponse } from "../../types";
@@ -268,5 +269,11 @@ Page({
     const target = e.currentTarget.dataset.target as "character" | "person";
     if (!target) return;
     navigateToDetail(target, id);
+  },
+  onShareAppMessage() {
+    return buildBrandShare("discover");
+  },
+  onShareTimeline() {
+    return buildBrandShare("discover");
   },
 });

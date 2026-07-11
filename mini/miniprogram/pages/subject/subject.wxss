@@ -40,6 +40,18 @@
   font-weight: 600;
   color: var(--foreground);
 }
+.header__title-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12rpx;
+}
+.header__copy {
+  width: 36rpx;
+  height: 36rpx;
+  flex: none;
+  opacity: 0.6;
+}
 .header__sub-name {
   font-size: 26rpx;
   color: var(--muted-foreground);

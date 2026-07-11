@@ -14,6 +14,7 @@
       <view class="skeleton-cell__body">
         <view class="skeleton-cell__line shimmer"></view>
         <view class="skeleton-cell__line skeleton-cell__line--short shimmer"></view>
+        <view class="skeleton-cell__line skeleton-cell__line--shorter shimmer"></view>
       </view>
     </view>
   </view>

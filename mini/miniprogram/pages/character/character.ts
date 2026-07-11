@@ -1,5 +1,7 @@
 import { getCharacter, getCharacterPersons, getCharacterSubjects } from "../../utils/api";
 import { applyTheme, getCurrentDark, navigateToDetail } from "../../utils/page";
+import { buildCharacterShare, buildBrandShare } from "../../utils/share";
+import { ICON_COPY_LIGHT, ICON_COPY_DARK } from "../../utils/icons";
 import { BloodTypeLabel, CharacterTypeLabel, type Character, type CharacterPerson, type RelatedSubject } from "../../types";
 
 interface SubjectItem {
@@ -26,6 +28,7 @@ Page({
     typeLabel: "",
     bloodLabel: "",
     birthday: "",
+    copyIcon: ICON_COPY_LIGHT,
     tabs: [
       { value: 0, label: "相关条目" },
       { value: 1, label: "相关人物" },
@@ -48,6 +51,7 @@ Page({
   },
   onShow() {
     applyTheme.call(this);
+    this.setData({ copyIcon: getCurrentDark() ? ICON_COPY_DARK : ICON_COPY_LIGHT });
   },
   onThemeChange() {
     applyTheme.call(this);
@@ -136,5 +140,23 @@ Page({
   },
   onTapPerson(e: WechatMiniprogram.TouchEvent) {
     navigateToDetail("person", Number(e.currentTarget.dataset.id));
+  },
+  onCopyTitle() {
+    const c = this.data.character;
+    if (!c) return;
+    wx.setClipboardData({
+      data: c.name,
+      success: () => wx.showToast({ title: "已复制", icon: "success" }),
+    });
+  },
+  onShareAppMessage() {
+    const c = this.data.character;
+    if (!c) return buildBrandShare("index");
+    return buildCharacterShare(c);
+  },
+  onShareTimeline() {
+    const c = this.data.character;
+    if (!c) return buildBrandShare("index");
+    return buildCharacterShare(c);
   },
 });

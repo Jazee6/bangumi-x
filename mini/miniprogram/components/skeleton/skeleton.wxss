@@ -59,6 +59,9 @@
 .skeleton-cell__line--short {
   width: 50%;
 }
+.skeleton-cell__line--shorter {
+  width: 30%;
+}
 .skeleton-detail {
   display: flex;
   flex-direction: column;

@@ -1,5 +1,6 @@
 import { getCalendar } from "../../utils/api";
 import { applyTheme, getCurrentDark, navigateToDetail } from "../../utils/page";
+import { buildBrandShare } from "../../utils/share";
 import { ICON_CHEVRON_DOWN_LIGHT, ICON_CHEVRON_DOWN_DARK } from "../../utils/icons";
 import type { CalendarDay, LegacySubject } from "../../types";
 
@@ -91,6 +92,9 @@ Page({
     this.loadData();
   },
   onShareAppMessage() {
-    return { title: "Bangumi X · 每日放送" };
+    return buildBrandShare("index");
+  },
+  onShareTimeline() {
+    return buildBrandShare("index");
   },
 });

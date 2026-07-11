@@ -13,6 +13,7 @@ function svg(color: string, path: string): string {
 const CHEVRON_LEFT = "m15 18-6-6 6-6";
 const CHEVRON_RIGHT = "m9 18 6-6-6-6";
 const CHEVRON_DOWN = "m6 9 6 6 6-6";
+const COPY = "M9 9h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2zM5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1";
 
 export const ICON_BACK_LIGHT = svg(FG_LIGHT, CHEVRON_LEFT);
 export const ICON_BACK_DARK = svg(FG_DARK, CHEVRON_LEFT);
@@ -20,3 +21,5 @@ export const ICON_CHEVRON_RIGHT_LIGHT = svg(MUTED_LIGHT, CHEVRON_RIGHT);
 export const ICON_CHEVRON_RIGHT_DARK = svg(MUTED_DARK, CHEVRON_RIGHT);
 export const ICON_CHEVRON_DOWN_LIGHT = svg(MUTED_LIGHT, CHEVRON_DOWN);
 export const ICON_CHEVRON_DOWN_DARK = svg(MUTED_DARK, CHEVRON_DOWN);
+export const ICON_COPY_LIGHT = svg(MUTED_LIGHT, COPY);
+export const ICON_COPY_DARK = svg(MUTED_DARK, COPY);
