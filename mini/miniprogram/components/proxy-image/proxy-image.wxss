@@ -16,5 +16,5 @@
   pointer-events: none;
 }
 .proxy-image__placeholder {
-  font-size: 24rpx;
+  font-size: var(--font-sm);
 }

@@ -1,4 +1,4 @@
-<view class="page {{dark ? 'dark' : ''}}">
+<view class="page {{dark ? 'dark' : ''}} {{expanded ? 'expanded' : ''}}">
   <navigation-bar title="人物" back="{{true}}" dark="{{dark}}" loading="{{loading}}" background="{{dark ? '#0a0a0a' : '#ffffff'}}" color="{{dark ? '#fafafa' : '#18181b'}}" />
 
   <block wx:if="{{error}}">

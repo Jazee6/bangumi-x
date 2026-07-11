@@ -22,11 +22,11 @@
   gap: 6rpx;
 }
 .cell__title {
-  font-size: 30rpx;
+  font-size: var(--font-lg);
   color: var(--card-foreground);
 }
 .cell__desc {
-  font-size: 24rpx;
+  font-size: var(--font-sm);
   color: var(--muted-foreground);
 }
 .cell__arrow {

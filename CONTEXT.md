@@ -40,7 +40,7 @@ _Avoid_: 硬编码域名散落各处
 **OGImage**:
 Open Graph 分享预览图。由 server 包（Worker）动态生成，含封面+标题+类型/职业 Badge+评分+品牌字标。web 包 `og:image` 指向 `https://s.bgmx.jaze.top/og/<type>/<id>`。
 _Avoid_: 在 web 包用 native resvg-js（EdgeOne 不支持 .node 二进制）
-_Avoid_: 在 web 包用 absUrl 拼 OG URL——OG 路由是 Worker 一等路由，必须用 WORKER_URL
+_Avoid_: 在 web 包用 absUrl 拼 OG URL--OG 路由是 Worker 一等路由，必须用 WORKER_URL
 
 **JSON-LD**:
 schema.org 结构化数据，嵌在 `<script type="application/ld+json">`。Subject 用 `TVSeries`/`CreativeWork`，Character/Person 用 `Person`，首页用 `WebSite`+`SearchAction`，列表页用 `ItemList`。
@@ -56,15 +56,15 @@ web 包 server route `/api/$type/$id`，返回单个实体的 schema.org JSON-LD
 
 **MiniApp**:
 微信小程序端，`./mini` workspace 包。Skyline 渲染引擎 + glass-easel 组件框架 + weui 扩展库。与 web 共用同一 Worker 上游，通过 `wx.request` 直连 `s.bgmx.jaze.top/bgm/*`（无需 SSR 层）。
-_Avoid_: 把它当作独立领域——领域概念（Subject/Character/Person/Episode/Calendar）与 web 同源，区别仅在渲染与导航模型。
+_Avoid_: 把它当作独立领域--领域概念（Subject/Character/Person/Episode/Calendar）与 web 同源，区别仅在渲染与导航模型。
 
 **DiscoverPage**:
 MiniApp 底部 tab「发现」，单页面内用 segmented-control 切换 Subject / Character / Person 三个搜索域，顶部统一搜索框 + 类型筛选 chips。区别于 web 的三个独立路由（/subjects、/characters、/persons）。
-_Avoid_: 把它当作聚合 API 或独立领域概念——它仅是 MiniApp 的导航/交互约定。
+_Avoid_: 把它当作聚合 API 或独立领域概念--它仅是 MiniApp 的导航/交互约定。
 
 **SubjectDetailPage**:
 MiniApp 的 Subject 详情页。头部（封面+名称+评分+简介+标签）+ 吸顶 Tab（章节/角色/制作人员），用 nested-scroll + swiper 实现。区别于 web 的 `/subjects/$id` 单页滚动布局。关联数据（章节/角色/制作人员）切 Tab 时懒加载。
-_Avoid_: 把它当作独立领域概念——领域上是 Subject，区别仅在导航/交互模型。
+_Avoid_: 把它当作独立领域概念--领域上是 Subject，区别仅在导航/交互模型。
 
 **CharacterDetailPage / PersonDetailPage**:
 MiniApp 的 Character/Person 详情页。单 list scroll-view：头部（头像+名字+简介）+ 关联作品列表（character 还有出演声优，person 还有饰演角色）。区别于 web 的 `/characters/$id`、`/persons/$id`。
@@ -72,8 +72,14 @@ _Avoid_: 把它当作独立领域概念。
 
 **DetailRoute**:
 MiniApp 跳转详情页的统一路由约定，用预设路由 `wx://zoom`（页面缩放进入）。区别于 web 的浏览器导航。封装在 `navigateToDetail(type, id)`。
-_Avoid_: 把它当作独立领域概念——仅是 MiniApp 的路由/动画约定。
+_Avoid_: 把它当作独立领域概念--仅是 MiniApp 的路由/动画约定。
 
 **ThemeMode**:
 MiniApp 的主题模式，完全跟随系统（light/dark），无手动覆盖。通过 `app.json` 的 `darkmode: true` + `theme.json` 变量让原生 tabBar / 导航栏自动随系统切换；页面级通过根 view 的 `dark` class + CSS 变量切换，`dark` class 由 `wx.onThemeChange` 驱动。
-_Avoid_: 引入手动主题切换或持久化到 storage——与 web 的 `next-themes` 也不同，web 走 `class="dark"` + Tailwind，MiniApp 走原生 darkmode + CSS 变量。
+_Avoid_: 引入手动主题切换或持久化到 storage--与 web 的 `next-themes` 也不同，web 走 `class="dark"` + Tailwind，MiniApp 走原生 darkmode + CSS 变量。
+
+**LayoutMode**:
+MiniApp 的布局模式，值为 compact（紧凑，手机）或 expanded（宽松，平板/折叠屏展开态）。与 ThemeMode 正交--ThemeMode 是主题维度（light/dark），LayoutMode 是布局维度。由 `windowWidth >= 600 && deviceType !== 'phone'` 判定为 expanded。通过 `app.ts` globalData 存储冷启值，页面 `onShow` 拉取；`utils/layout.ts` 提供 `getCurrentLayout()` + `applyLayout()`，与 `applyTheme` 模式对齐。Skyline 不支持 CSS `@media`，故采用运行时判断而非声明式断点。
+_Avoid_: 把它当作独立领域概念--领域概念（Subject/Character/Person/Episode/Calendar）与 web 同源，LayoutMode 仅是 MiniApp 的布局维度，区别在渲染密度。
+_Avoid_: 引入 Breakpoint 命名--Skyline 不支持 media query，无「断点」可言，叫 Breakpoint 有误导。
+_Avoid_: 在 MVP 阶段处理横屏--`pageOrientation` 保持 portrait，`onResize` 预留但不触发，横屏适配留到 Phase 2。

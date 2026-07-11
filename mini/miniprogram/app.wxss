@@ -15,10 +15,16 @@ page {
   --border: #e4e4e7;
   --input: #e4e4e7;
   --radius: 16rpx;
+  --font-xs: 22rpx;
+  --font-sm: 24rpx;
+  --font-base: 26rpx;
+  --font-md: 28rpx;
+  --font-lg: 30rpx;
+  --font-xl: 36rpx;
   background-color: var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
-  font-size: 28rpx;
+  font-size: var(--font-md);
 }
 
 page.dark,
@@ -37,6 +43,12 @@ page.dark,
   --accent-foreground: #fafafa;
   --border: #27272a;
   --input: #27272a;
+}
+
+.expanded {
+  --font-md: 24rpx;
+  --font-lg: 26rpx;
+  --font-xl: 30rpx;
 }
 
 view,

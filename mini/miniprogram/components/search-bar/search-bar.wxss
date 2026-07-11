@@ -14,7 +14,7 @@
 }
 .search-bar__input {
   flex: 1;
-  font-size: 28rpx;
+  font-size: var(--font-md);
   color: var(--foreground);
 }
 .search-bar__placeholder {
@@ -22,7 +22,7 @@
 }
 .search-bar__clear {
   color: var(--muted-foreground);
-  font-size: 36rpx;
+  font-size: var(--font-xl);
   line-height: 1;
   padding: 0 8rpx;
 }

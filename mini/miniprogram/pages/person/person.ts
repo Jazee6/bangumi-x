@@ -1,5 +1,6 @@
 import { getPerson, getPersonCharacters, getPersonSubjects } from "../../utils/api";
 import { applyTheme, getCurrentDark, navigateToDetail } from "../../utils/page";
+import { applyLayout } from "../../utils/layout";
 import { buildPersonShare, buildBrandShare } from "../../utils/share";
 import { ICON_COPY_LIGHT, ICON_COPY_DARK } from "../../utils/icons";
 import {
@@ -29,6 +30,7 @@ type Tab = 0 | 1;
 Page({
   data: {
     dark: getCurrentDark(),
+    expanded: false,
     loading: true,
     error: false,
     person: null as PersonDetail | null,
@@ -58,10 +60,14 @@ Page({
   },
   onShow() {
     applyTheme.call(this);
+    applyLayout.call(this);
     this.setData({ copyIcon: getCurrentDark() ? ICON_COPY_DARK : ICON_COPY_LIGHT });
   },
   onThemeChange() {
     applyTheme.call(this);
+  },
+  onResize() {
+    applyLayout.call(this);
   },
   async loadData(id: number) {
     this.setData({ loading: true, error: false });

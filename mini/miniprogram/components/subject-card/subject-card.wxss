@@ -18,11 +18,11 @@
   border-radius: 999rpx;
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
-  font-size: 22rpx;
+  font-size: var(--font-xs);
   backdrop-filter: blur(8rpx);
 }
 .subject-card__name {
   margin-top: 12rpx;
-  font-size: 26rpx;
+  font-size: var(--font-base);
   line-height: 1.3;
 }

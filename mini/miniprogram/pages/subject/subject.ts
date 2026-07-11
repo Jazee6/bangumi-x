@@ -1,5 +1,6 @@
 import { getSubject, getSubjectCharacters, getSubjectEpisodes, getSubjectPersons } from "../../utils/api";
 import { applyTheme, getCurrentDark, navigateToDetail } from "../../utils/page";
+import { applyLayout } from "../../utils/layout";
 import { buildSubjectShare, buildBrandShare } from "../../utils/share";
 import { ICON_COPY_LIGHT, ICON_COPY_DARK } from "../../utils/icons";
 import { characterRelationOrder, groupByRelation, personRelationOrder } from "../../utils/relation";
@@ -38,6 +39,7 @@ interface RelationGroup {
 Page({
   data: {
     dark: getCurrentDark(),
+    expanded: false,
     loading: true,
     error: false,
     subject: null as Subject | null,
@@ -71,10 +73,14 @@ Page({
   },
   onShow() {
     applyTheme.call(this);
+    applyLayout.call(this);
     this.setData({ copyIcon: getCurrentDark() ? ICON_COPY_DARK : ICON_COPY_LIGHT });
   },
   onThemeChange() {
     applyTheme.call(this);
+  },
+  onResize() {
+    applyLayout.call(this);
   },
   async loadData(id: number) {
     this.setData({ loading: true, error: false });

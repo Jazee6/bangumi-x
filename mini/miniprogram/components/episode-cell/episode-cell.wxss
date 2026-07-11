@@ -15,7 +15,7 @@
   text-align: center;
 }
 .ep__sort-num {
-  font-size: 28rpx;
+  font-size: var(--font-md);
   color: var(--muted-foreground);
   font-family: "SF Mono", Menlo, monospace;
 }
@@ -27,10 +27,10 @@
   gap: 6rpx;
 }
 .ep__title {
-  font-size: 28rpx;
+  font-size: var(--font-md);
   color: var(--card-foreground);
 }
 .ep__meta {
-  font-size: 22rpx;
+  font-size: var(--font-xs);
   color: var(--muted-foreground);
 }
