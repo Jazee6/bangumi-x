@@ -1,11 +1,10 @@
 <block wx:if="{{type === 'card'}}">
-  <view class="skeleton-cards">
-    <view class="skeleton-card" wx:for="{{items}}" wx:key="*this">
+  <grid-view class="skeleton-cards" type="aligned" max-cross-axis-extent="180" cross-axis-gap="12" main-axis-gap="20" padding="{{[16, 24, 64, 24]}}">
+    <view class="skeleton-card" wx:for="{{items}}" wx:key="*this" list-item>
       <view class="skeleton-card__poster shimmer"></view>
       <view class="skeleton-card__line shimmer"></view>
-      <view class="skeleton-card__line skeleton-card__line--short shimmer"></view>
     </view>
-  </view>
+  </grid-view>
 </block>
 <block wx:elif="{{type === 'list'}}">
   <view class="skeleton-cells">

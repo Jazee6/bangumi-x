@@ -1,14 +1,6 @@
 <view class="page {{dark ? 'dark' : ''}} {{expanded ? 'expanded' : ''}}">
   <navigation-bar title="每日放送" back="{{false}}" dark="{{dark}}" loading="{{loading}}" background="{{dark ? '#0a0a0a' : '#ffffff'}}" color="{{dark ? '#fafafa' : '#18181b'}}" />
 
-  <view class="intro">
-    <view class="intro__copy">
-      <text class="intro__eyebrow">ON AIR</text>
-      <text class="intro__title">本周放送</text>
-    </view>
-    <text class="intro__count">{{currentItems.length}} 部</text>
-  </view>
-
   <scroll-view class="week" type="custom" scroll-x enable-flex show-scrollbar="{{false}}">
     <view class="week__inner">
       <view wx:for="{{calendar}}" wx:key="shortLabel" class="week__day {{item.weekday.id === activeId ? 'week__day--active' : ''}}" data-id="{{item.weekday.id}}" bindtap="onPickDay" hover-class="week__day--hover">

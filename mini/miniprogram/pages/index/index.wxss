@@ -9,37 +9,6 @@
   flex: 1;
   height: 0;
 }
-.intro {
-  width: 100%;
-  max-width: var(--content-max);
-  margin: 0 auto;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24rpx var(--content-gutter) 12rpx;
-  background-color: var(--background);
-  box-sizing: border-box;
-}
-.intro__copy {
-  display: flex;
-  flex-direction: column;
-  gap: 4rpx;
-}
-.intro__eyebrow {
-  color: var(--muted-foreground);
-  font-size: var(--font-xs);
-  letter-spacing: 3rpx;
-}
-.intro__title {
-  color: var(--foreground);
-  font-size: var(--font-xl);
-  font-weight: 700;
-}
-.intro__count {
-  color: var(--muted-foreground);
-  font-size: var(--font-sm);
-}
 .week {
   width: 100%;
   height: 88rpx;

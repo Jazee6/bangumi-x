@@ -1,12 +1,10 @@
 .skeleton-cards {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 12rpx;
-  padding: 8rpx 12rpx 48rpx;
+  width: 100%;
+  max-width: var(--content-max);
+  margin-left: auto;
+  margin-right: auto;
 }
 .skeleton-card {
-  width: calc((100% - 24rpx) / 3);
   display: flex;
   flex-direction: column;
 }
@@ -21,9 +19,6 @@
   margin-top: 12rpx;
   border-radius: 8rpx;
   background-color: var(--muted);
-}
-.skeleton-card__line--short {
-  width: 60%;
 }
 .skeleton-cells {
   display: flex;
