@@ -1,6 +1,6 @@
 import { applyTheme, getCurrentDark } from "../../utils/page";
+import { applyLayout } from "../../utils/layout";
 import { buildBrandShare } from "../../utils/share";
-import { ICON_CHEVRON_DOWN_LIGHT, ICON_CHEVRON_DOWN_DARK } from "../../utils/icons";
 import { browseSubjects, searchSubjects, searchCharacters, searchPersons } from "../../utils/api";
 import type { Subject, Character, Person, PagedResponse } from "../../types";
 import { SubjectType } from "../../types";
@@ -67,12 +67,11 @@ function tabHasList(tab: Tab, data: { subjectList: unknown[]; characterList: unk
 Page({
   data: {
     dark: getCurrentDark(),
+    expanded: false,
     tab: "subject" as Tab,
     keyword: "",
     filterOptions: FILTER_OPTIONS,
     filterIndex: 0,
-    currentFilterLabel: FILTER_OPTIONS[0].label,
-    chevronDown: ICON_CHEVRON_DOWN_LIGHT,
     loading: false,
     error: false,
     hasMore: false,
@@ -93,10 +92,13 @@ Page({
   },
   onShow() {
     applyTheme.call(this);
-    this.setData({ chevronDown: getCurrentDark() ? ICON_CHEVRON_DOWN_DARK : ICON_CHEVRON_DOWN_LIGHT });
+    applyLayout.call(this);
   },
   onThemeChange() {
     applyTheme.call(this);
+  },
+  onResize() {
+    applyLayout.call(this);
   },
   onUnload() {
     beginRequest(this);
@@ -142,6 +144,14 @@ Page({
   },
   currentFilterType(): SubjectType | null {
     return FILTER_TO_TYPE[this.currentFilter()] ?? null;
+  },
+  onPickFilter(e: WechatMiniprogram.TouchEvent) {
+    const value = e.currentTarget.dataset.value as SubjectFilter;
+    const filterIndex = FILTER_OPTIONS.findIndex((option) => option.value === value);
+    if (filterIndex < 0 || filterIndex === this.data.filterIndex) return;
+    this.setData({ filterIndex, subjectList: [], offset: 0, hasMore: false, hasList: false });
+    if (this.data.keyword) this.loadData(true);
+    else this.loadDefault();
   },
   async loadDefault() {
     const generation = beginRequest(this);
@@ -270,23 +280,6 @@ Page({
       if (!isCurrentRequest(this, generation)) return;
       this.setData({ loading: false });
       wx.showToast({ title: "加载失败", icon: "none" });
-    }
-  },
-  onPickFilter(e: { detail: { value: number } }) {
-    const index = e.detail.value;
-    if (index === this.data.filterIndex) return;
-    this.setData({
-      filterIndex: index,
-      currentFilterLabel: FILTER_OPTIONS[index].label,
-      subjectList: [],
-      offset: 0,
-      hasMore: false,
-      hasList: false,
-    });
-    if (this.data.keyword) {
-      this.loadData(true);
-    } else {
-      this.loadDefault();
     }
   },
   onRetry() {

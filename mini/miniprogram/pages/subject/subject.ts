@@ -43,6 +43,8 @@ Page({
     loading: true,
     error: false,
     subject: null as Subject | null,
+    summaryExpanded: false,
+    hasLongSummary: false,
     typeLabel: "",
     activeTab: 0 as Tab,
     copyIcon: ICON_COPY_LIGHT,
@@ -92,7 +94,7 @@ Page({
       }
       const typeLabel = SubjectTypeLabel[subject.type] ?? "条目";
       wx.setNavigationBarTitle({ title: getSubjectTitle(subject) });
-      this.setData({ subject, typeLabel, loading: false });
+      this.setData({ subject, typeLabel, hasLongSummary: subject.summary.length > 120, loading: false });
       this.loadEpisodes();
     } catch {
       this.setData({ loading: false, error: true });
@@ -101,6 +103,9 @@ Page({
   onRetry() {
     const s = this.data.subject;
     if (s) this.loadData(s.id);
+  },
+  onToggleSummary() {
+    this.setData({ summaryExpanded: !this.data.summaryExpanded });
   },
   onPickTab(e: WechatMiniprogram.TouchEvent) {
     const v = Number(e.currentTarget.dataset.value) as Tab;

@@ -15,6 +15,9 @@ page {
   --border: #e4e4e7;
   --input: #e4e4e7;
   --radius: 16rpx;
+  --radius-lg: 28rpx;
+  --content-max: 1180px;
+  --content-gutter: 24rpx;
   --font-xs: 22rpx;
   --font-sm: 24rpx;
   --font-base: 26rpx;
@@ -49,6 +52,7 @@ page.dark,
   --font-md: 24rpx;
   --font-lg: 26rpx;
   --font-xl: 30rpx;
+  --content-gutter: 40rpx;
 }
 
 view,
@@ -76,4 +80,12 @@ text {
 
 .muted {
   color: var(--muted-foreground);
+}
+
+.content-shell {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
 }

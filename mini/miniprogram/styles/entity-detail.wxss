@@ -1,0 +1,25 @@
+.page { height: 100vh; display: flex; flex-direction: column; background-color: var(--background); color: var(--foreground); }
+.scroll { flex: 1; height: 0; }
+.scroll-placeholder { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
+.header { display: flex; flex-direction: column; gap: 24rpx; width: 100%; max-width: var(--content-max); margin: 0 auto; padding: 28rpx var(--content-gutter) 36rpx; box-sizing: border-box; }
+.expanded .header { flex-direction: row; align-items: flex-start; gap: 48rpx; padding-top: 48rpx; padding-bottom: 56rpx; }
+.expanded .header__info { max-width: 720px; }
+.header__avatar { width: 240rpx; height: 240rpx; border-radius: var(--radius-lg); overflow: hidden; background-color: var(--muted); flex: none; }
+.expanded .header__avatar { width: 320rpx; height: 320rpx; }
+.header__info { width: 100%; display: flex; flex-direction: column; gap: 12rpx; }
+.header__name { font-size: var(--font-xl); font-weight: 700; color: var(--foreground); }
+.header__title-row { display: flex; flex-direction: row; align-items: center; gap: 12rpx; }
+.header__copy { width: 36rpx; height: 36rpx; flex: none; opacity: 0.6; }
+.header__badges { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8rpx; }
+.badge { padding: 4rpx 16rpx; border-radius: 999rpx; border: 1rpx solid var(--border); color: var(--muted-foreground); font-size: var(--font-xs); }
+.badge--secondary { background-color: var(--secondary); border-color: var(--secondary); color: var(--secondary-foreground); }
+.header__summary { font-size: var(--font-base); line-height: 1.5; color: var(--muted-foreground); }
+.tabs { display: flex; flex-direction: row; background-color: var(--background); border-bottom: 1rpx solid var(--border); width: 100%; max-width: var(--content-max); margin: 0 auto; }
+.tabs__item { position: relative; flex: 1; padding: 20rpx 0; text-align: center; color: var(--muted-foreground); font-size: var(--font-md); }
+.tabs__item--active { color: var(--foreground); font-weight: 600; }
+.tabs__item--active::after { content: ""; position: absolute; left: 32%; right: 32%; bottom: 0; height: 4rpx; border-radius: 999rpx; background-color: var(--foreground); }
+.swiper { height: 100%; }
+.tab-scroll { height: 100%; width: 100%; max-width: var(--content-max); margin: 0 auto; }
+.grid__item--hover { opacity: 0.85; }
+.cell-list { padding: 0 16rpx; }
+.cell-wrap--hover { background-color: var(--muted); }

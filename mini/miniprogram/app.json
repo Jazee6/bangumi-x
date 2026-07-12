@@ -11,7 +11,8 @@
     "navigationBarTextStyle": "@navTxtStyle",
     "navigationStyle": "custom",
     "backgroundColor": "@bgColor",
-    "backgroundTextStyle": "@bgTxtStyle"
+    "backgroundTextStyle": "@bgTxtStyle",
+    "pageOrientation": "auto"
   },
   "darkmode": true,
   "themeLocation": "theme.json",

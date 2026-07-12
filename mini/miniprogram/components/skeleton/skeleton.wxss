@@ -13,7 +13,7 @@
 .skeleton-card__poster {
   width: 100%;
   aspect-ratio: 3 / 4;
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   background-color: var(--muted);
 }
 .skeleton-card__line {

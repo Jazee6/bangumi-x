@@ -26,7 +26,9 @@
               <text wx:if="{{subject.date}}" class="badge">{{subject.date}}</text>
               <text wx:if="{{subject.platform}}" class="badge">{{subject.platform}}</text>
             </view>
-            <text wx:if="{{subject.summary}}" class="header__summary" overflow="ellipsis" max-lines="4">{{subject.summary}}</text>
+            <text wx:if="{{subject.summary && !summaryExpanded}}" class="header__summary" overflow="ellipsis" max-lines="4" bindtap="onToggleSummary">{{subject.summary}}</text>
+            <text wx:elif="{{subject.summary}}" class="header__summary" bindtap="onToggleSummary">{{subject.summary}}</text>
+            <text wx:if="{{hasLongSummary}}" class="header__summary-action" bindtap="onToggleSummary">{{summaryExpanded ? '收起' : '展开简介'}}</text>
             <view wx:if="{{subject.tags.length > 0}}" class="header__tags">
               <text wx:for="{{subject.tags}}" wx:key="name" wx:if="{{index < 10}}" class="tag">{{item.name}}</text>
             </view>

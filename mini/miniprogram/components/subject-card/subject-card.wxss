@@ -6,7 +6,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   background-color: var(--muted);
 }
@@ -16,13 +16,20 @@
   right: 12rpx;
   padding: 4rpx 12rpx;
   border-radius: 999rpx;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.68);
   color: #fff;
   font-size: var(--font-xs);
-  backdrop-filter: blur(8rpx);
 }
 .subject-card__name {
-  margin-top: 12rpx;
+  margin-top: 14rpx;
   font-size: var(--font-base);
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.subject-card__original {
+  margin-top: 5rpx;
+  font-size: var(--font-xs);
   line-height: 1.3;
+  color: var(--muted-foreground);
 }

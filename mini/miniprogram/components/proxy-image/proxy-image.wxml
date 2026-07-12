@@ -7,5 +7,6 @@
   src="{{proxied}}"
   mode="{{mode}}"
   lazy-load="{{lazy}}"
+  fade-in="{{true}}"
   binderror="onError"
 />

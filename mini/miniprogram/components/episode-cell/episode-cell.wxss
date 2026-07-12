@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   gap: 20rpx;
-  padding: 24rpx;
+  padding: 24rpx var(--content-gutter);
   background-color: var(--card);
   border-bottom: 1rpx solid var(--border);
 }
@@ -16,7 +16,8 @@
 }
 .ep__sort-num {
   font-size: var(--font-md);
-  color: var(--muted-foreground);
+  color: var(--foreground);
+  font-weight: 600;
   font-family: "SF Mono", Menlo, monospace;
 }
 .ep__body {

@@ -1,9 +1,31 @@
-<view class="page {{dark ? 'dark' : ''}}">
+<view class="page {{dark ? 'dark' : ''}} {{expanded ? 'expanded' : ''}}">
   <navigation-bar title="我的" back="{{false}}" dark="{{dark}}" background="{{dark ? '#0a0a0a' : '#ffffff'}}" color="{{dark ? '#fafafa' : '#18181b'}}" />
 
   <scroll-view class="scroll" type="list" scroll-y show-scrollbar="{{false}}" cache-extent="500">
-    <view class="app-padding">
-      <text class="placeholder">设置项即将上线</text>
+    <view class="profile-shell">
+      <view class="brand-card">
+        <view class="brand-card__mark"><text>BX</text></view>
+        <view class="brand-card__copy">
+          <text class="brand-card__title">Bangumi X</text>
+          <text class="brand-card__subtitle">轻量浏览番组、角色与人物资料</text>
+        </view>
+      </view>
+      <view class="info-card">
+        <view class="info-row">
+          <text class="info-row__label">外观</text>
+          <text class="info-row__value">跟随系统</text>
+        </view>
+        <view class="info-row">
+          <text class="info-row__label">数据来源</text>
+          <text class="info-row__value">Bangumi 番组计划</text>
+        </view>
+        <view class="info-row info-row--last">
+          <text class="info-row__label">当前版本</text>
+          <text class="info-row__value">0.1.0</text>
+        </view>
+      </view>
+      <button class="feedback" open-type="feedback" hover-class="feedback--hover"><text>反馈建议</text></button>
+      <text class="profile-note">本应用仅提供公开资料浏览，不包含账户、收藏或同步功能。</text>
     </view>
   </scroll-view>
 </view>

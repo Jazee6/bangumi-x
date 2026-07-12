@@ -1,10 +1,9 @@
-<view class="page {{dark ? 'dark' : ''}}">
+<view class="page {{dark ? 'dark' : ''}} {{expanded ? 'expanded' : ''}}">
   <navigation-bar title="发现" back="{{false}}" dark="{{dark}}" loading="{{loading}}" background="{{dark ? '#0a0a0a' : '#ffffff'}}" color="{{dark ? '#fafafa' : '#18181b'}}" />
 
-  <view class="search-wrap">
+  <view class="search-wrap content-shell">
     <search-bar value="{{keyword}}" dark="{{dark}}" placeholder="搜索条目 / 角色 / 人物" bindsearch="onSearch" />
-    <view class="tabs-row">
-      <view class="tabs">
+    <view class="tabs">
         <view
           wx:for="{{tabs}}"
           wx:key="value"
@@ -14,19 +13,12 @@
         >
           <text>{{item.label}}</text>
         </view>
-      </view>
-      <picker
-        wx:if="{{tab === 'subject'}}"
-        class="filter-picker"
-        mode="selector"
-        range="{{filterOptions}}"
-        range-key="label"
-        value="{{filterIndex}}"
-        bindchange="onPickFilter"
-      >
-        <view class="filter-picker__trigger"><text>{{currentFilterLabel}}</text><image class="filter-picker__arrow" src="{{chevronDown}}" mode="aspectFit" /></view>
-      </picker>
     </view>
+    <scroll-view wx:if="{{tab === 'subject'}}" class="filters" type="custom" scroll-x enable-flex show-scrollbar="{{false}}">
+      <view class="filters__inner">
+        <view wx:for="{{filterOptions}}" wx:key="value" class="filter {{index === filterIndex ? 'filter--active' : ''}}" data-value="{{item.value}}" bindtap="onPickFilter" hover-class="filter--hover"><text>{{item.label}}</text></view>
+      </view>
+    </scroll-view>
   </view>
 
   <scroll-view class="scroll" type="custom" scroll-y show-scrollbar="{{false}}" cache-extent="500" bindscrolltolower="onLoadMore">
@@ -43,7 +35,7 @@
       <view wx:if="{{subjectList.length === 0}}">
         <empty-state wx:if="{{!loading}}" title="无结果" />
       </view>
-      <grid-view wx:else class="grid" type="aligned" max-cross-axis-extent="140" cross-axis-gap="8" main-axis-gap="12" padding="{{[8, 12, 48, 12]}}">
+      <grid-view wx:else class="grid" type="aligned" max-cross-axis-extent="180" cross-axis-gap="12" main-axis-gap="20" padding="{{[16, 24, 64, 24]}}">
         <navigator wx:for="{{subjectList}}" wx:key="id" list-item url="/pages/subject/subject?id={{item.id}}" hover-class="grid__item--hover" hover-stay-time="100">
           <subject-card
             name="{{item.name}}"

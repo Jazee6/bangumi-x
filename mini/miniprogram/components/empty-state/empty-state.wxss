@@ -8,6 +8,7 @@
 }
 .empty__title {
   font-size: var(--font-lg);
+  font-weight: 600;
   color: var(--foreground);
 }
 .empty__desc {
@@ -18,11 +19,12 @@
 .empty__btn {
   margin-top: 16rpx;
   padding: 16rpx 48rpx;
-  border-radius: var(--radius);
+  border-radius: 999rpx;
   background-color: var(--primary);
   color: var(--primary-foreground);
   font-size: var(--font-md);
 }
 .empty__btn--hover {
   opacity: 0.85;
+  transform: scale(0.98);
 }

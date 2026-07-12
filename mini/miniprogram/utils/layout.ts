@@ -9,18 +9,12 @@ const EXPANDED_THRESHOLD = 600;
 
 export function computeLayoutMode(): LayoutMode {
   const win = wx.getWindowInfo();
-  const device = wx.getDeviceInfo() as WechatMiniprogram.DeviceInfo & { deviceType?: string };
-  if (win.windowWidth >= EXPANDED_THRESHOLD && device.deviceType !== "phone") {
-    return "expanded";
-  }
-  return "compact";
-}
-
-export function getCurrentLayout(): LayoutMode {
-  const app = getApp<{ globalData: { layoutMode: LayoutMode } }>();
-  return app?.globalData?.layoutMode ?? "compact";
+  return win.windowWidth >= EXPANDED_THRESHOLD ? "expanded" : "compact";
 }
 
 export function applyLayout(this: ThemedInstance): void {
-  this.setData({ expanded: getCurrentLayout() === "expanded" });
+  const mode = computeLayoutMode();
+  const app = getApp<{ globalData: { layoutMode: LayoutMode } }>();
+  if (app?.globalData) app.globalData.layoutMode = mode;
+  this.setData({ expanded: mode === "expanded" });
 }

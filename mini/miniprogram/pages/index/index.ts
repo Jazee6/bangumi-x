@@ -1,7 +1,7 @@
 import { getCalendar } from "../../utils/api";
 import { applyTheme, getCurrentDark } from "../../utils/page";
+import { applyLayout } from "../../utils/layout";
 import { buildBrandShare } from "../../utils/share";
-import { ICON_CHEVRON_DOWN_LIGHT, ICON_CHEVRON_DOWN_DARK } from "../../utils/icons";
 import type { CalendarDay, LegacySubject } from "../../types";
 
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 7];
@@ -22,14 +22,13 @@ interface DayData {
 Page({
   data: {
     dark: getCurrentDark(),
+    expanded: false,
     loading: true,
     error: false,
     refreshing: false,
     calendar: [] as DayData[],
     activeId: getTodayId(),
-    activeIndex: 0,
-    currentDayLabel: WEEK_LABELS[getTodayId()] ?? "今日",
-    chevronDown: ICON_CHEVRON_DOWN_LIGHT,
+    todayId: getTodayId(),
     currentItems: [] as (LegacySubject & { score: number })[],
   },
   onLoad() {
@@ -38,10 +37,13 @@ Page({
   },
   onShow() {
     applyTheme.call(this);
-    this.setData({ chevronDown: getCurrentDark() ? ICON_CHEVRON_DOWN_DARK : ICON_CHEVRON_DOWN_LIGHT });
+    applyLayout.call(this);
   },
   onThemeChange() {
     applyTheme.call(this);
+  },
+  onResize() {
+    applyLayout.call(this);
   },
   onRefresh() {
     this.setData({ refreshing: true });
@@ -58,21 +60,18 @@ Page({
           ? { weekday: day.weekday, items: day.items, label: cn }
           : { weekday: { id, cn }, items: [], label: cn };
       });
-      const activeIndex = Math.max(0, sorted.findIndex((d) => d.weekday.id === this.data.activeId));
-      this.setData({ calendar: sorted, activeIndex, loading: false });
+      this.setData({ calendar: sorted, loading: false });
       this.applyActive();
     } catch {
       this.setData({ loading: false, error: true });
     }
   },
-  onPickDay(e: { detail: { value: number } }) {
-    const index = e.detail.value;
-    const day = this.data.calendar[index];
+  onPickDay(e: WechatMiniprogram.TouchEvent) {
+    const id = Number(e.currentTarget.dataset.id);
+    const day = this.data.calendar.find((item) => item.weekday.id === id);
     if (!day) return;
     this.setData({
       activeId: day.weekday.id,
-      activeIndex: index,
-      currentDayLabel: day.label,
     });
     this.applyActive();
   },

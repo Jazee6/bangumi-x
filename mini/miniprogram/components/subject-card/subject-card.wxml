@@ -4,4 +4,5 @@
     <view wx:if="{{score > 0}}" class="subject-card__score"><text>★ {{score}}</text></view>
   </view>
   <text class="subject-card__name" max-lines="2" overflow="ellipsis">{{nameCn || name}}</text>
+  <text wx:if="{{nameCn && name && nameCn !== name}}" class="subject-card__original" max-lines="1" overflow="ellipsis">{{name}}</text>
 </view>

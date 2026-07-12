@@ -9,30 +9,91 @@
   flex: 1;
   height: 0;
 }
-.topbar {
+.intro {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: flex-end;
-  padding: 16rpx 16rpx 20rpx;
+  justify-content: space-between;
+  padding: 24rpx var(--content-gutter) 12rpx;
   background-color: var(--background);
+  box-sizing: border-box;
+}
+.intro__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.intro__eyebrow {
+  color: var(--muted-foreground);
+  font-size: var(--font-xs);
+  letter-spacing: 3rpx;
+}
+.intro__title {
+  color: var(--foreground);
+  font-size: var(--font-xl);
+  font-weight: 700;
+}
+.intro__count {
+  color: var(--muted-foreground);
+  font-size: var(--font-sm);
+}
+.week {
+  width: 100%;
+  flex: none;
   border-bottom: 1rpx solid var(--border);
 }
-.topbar__trigger {
+.week__inner {
+  width: 100%;
+  max-width: var(--content-max);
+  min-width: 700rpx;
+  margin: 0 auto;
+  padding: 4rpx var(--content-gutter) 16rpx;
   display: flex;
   flex-direction: row;
-  align-items: center;
-  gap: 6rpx;
-  padding: 12rpx 24rpx;
+  gap: 8rpx;
+  box-sizing: border-box;
+}
+.week__day {
+  position: relative;
+  flex: 1;
+  min-width: 88rpx;
+  padding: 16rpx 8rpx;
   border-radius: 999rpx;
-  background-color: var(--muted);
+  text-align: center;
   color: var(--muted-foreground);
+  transition: transform 160ms, background-color 160ms, color 160ms;
+}
+.week__day--active {
+  color: var(--primary-foreground);
+  background-color: var(--primary);
+  font-weight: 600;
+}
+.week__day--hover {
+  transform: scale(0.97);
+}
+.week__label {
   font-size: var(--font-base);
 }
-.topbar__arrow {
-  width: 20rpx;
-  height: 20rpx;
+.week__today {
+  position: absolute;
+  left: 50%;
+  bottom: 6rpx;
+  width: 5rpx;
+  height: 5rpx;
+  margin-left: -2rpx;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+.grid {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-left: auto;
+  margin-right: auto;
 }
 .grid__item--hover {
-  opacity: 0.85;
+  opacity: 0.82;
+  transform: scale(0.985);
 }

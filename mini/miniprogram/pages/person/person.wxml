@@ -54,7 +54,7 @@
                 <empty-state title="暂无相关条目" />
               </block>
               <block wx:else>
-                <grid-view class="grid" type="aligned" max-cross-axis-extent="140" cross-axis-gap="8" main-axis-gap="12" padding="{{[8, 12, 48, 12]}}">
+                <grid-view class="grid" type="aligned" max-cross-axis-extent="180" cross-axis-gap="12" main-axis-gap="20" padding="{{[16, 24, 64, 24]}}">
                   <navigator wx:for="{{subjects}}" wx:key="id" list-item url="/pages/subject/subject?id={{item.id}}" hover-class="grid__item--hover" hover-stay-time="100">
                     <subject-card
                       name="{{item.name}}"

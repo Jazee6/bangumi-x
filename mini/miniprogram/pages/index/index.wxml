@@ -1,18 +1,22 @@
-<view class="page {{dark ? 'dark' : ''}}">
+<view class="page {{dark ? 'dark' : ''}} {{expanded ? 'expanded' : ''}}">
   <navigation-bar title="每日放送" back="{{false}}" dark="{{dark}}" loading="{{loading}}" background="{{dark ? '#0a0a0a' : '#ffffff'}}" color="{{dark ? '#fafafa' : '#18181b'}}" />
 
-  <view class="topbar">
-    <picker
-      class="topbar__picker"
-      mode="selector"
-      range="{{calendar}}"
-      range-key="label"
-      value="{{activeIndex}}"
-      bindchange="onPickDay"
-    >
-      <view class="topbar__trigger"><text>{{currentDayLabel}}</text><image class="topbar__arrow" src="{{chevronDown}}" mode="aspectFit" /></view>
-    </picker>
+  <view class="intro">
+    <view class="intro__copy">
+      <text class="intro__eyebrow">ON AIR</text>
+      <text class="intro__title">本周放送</text>
+    </view>
+    <text class="intro__count">{{currentItems.length}} 部</text>
   </view>
+
+  <scroll-view class="week" type="custom" scroll-x enable-flex show-scrollbar="{{false}}">
+    <view class="week__inner">
+      <view wx:for="{{calendar}}" wx:key="label" class="week__day {{item.weekday.id === activeId ? 'week__day--active' : ''}}" data-id="{{item.weekday.id}}" bindtap="onPickDay" hover-class="week__day--hover">
+        <text class="week__label">{{item.label}}</text>
+        <view wx:if="{{item.weekday.id === todayId}}" class="week__today"></view>
+      </view>
+    </view>
+  </scroll-view>
 
   <scroll-view class="scroll" type="custom" scroll-y show-scrollbar="{{false}}" cache-extent="500" refresher-enabled="{{true}}" refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
     <block wx:if="{{error}}">
@@ -25,7 +29,7 @@
       <empty-state title="今日无放送" />
     </block>
     <block wx:else>
-      <grid-view class="grid" type="aligned" max-cross-axis-extent="140" cross-axis-gap="8" main-axis-gap="12" padding="{{[8, 12, 48, 12]}}">
+      <grid-view class="grid" type="aligned" max-cross-axis-extent="180" cross-axis-gap="12" main-axis-gap="20" padding="{{[16, 24, 64, 24]}}">
         <navigator wx:for="{{currentItems}}" wx:key="id" list-item url="/pages/subject/subject?id={{item.id}}" hover-class="grid__item--hover" hover-stay-time="100">
           <subject-card
             name="{{item.name}}"

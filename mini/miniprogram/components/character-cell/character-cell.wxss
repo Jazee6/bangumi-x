@@ -2,14 +2,14 @@
   display: flex;
   align-items: center;
   gap: 20rpx;
-  padding: 20rpx 24rpx;
+  padding: 22rpx 24rpx;
   background-color: var(--card);
   border-bottom: 1rpx solid var(--border);
 }
 .cell__avatar {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 50%;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 24rpx;
   overflow: hidden;
   background-color: var(--muted);
   flex: none;
@@ -23,6 +23,7 @@
 }
 .cell__title {
   font-size: var(--font-lg);
+  font-weight: 600;
   color: var(--card-foreground);
 }
 .cell__desc {
