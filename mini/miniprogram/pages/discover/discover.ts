@@ -29,6 +29,20 @@ const FILTER_TO_TYPE: Record<SubjectFilter, SubjectType | null> = {
 
 const PAGE_SIZE = 20;
 
+// Only the newest request for each page instance may update it. Search, tab and
+// filter changes can otherwise let a slower response overwrite the current view.
+const requestGenerations = new WeakMap<object, number>();
+
+function beginRequest(page: object): number {
+  const generation = (requestGenerations.get(page) ?? 0) + 1;
+  requestGenerations.set(page, generation);
+  return generation;
+}
+
+function isCurrentRequest(page: object, generation: number): boolean {
+  return generation === requestGenerations.get(page);
+}
+
 interface SubjectItem {
   id: number;
   name: string;
@@ -84,10 +98,14 @@ Page({
   onThemeChange() {
     applyTheme.call(this);
   },
+  onUnload() {
+    beginRequest(this);
+  },
   onPickTab(e: WechatMiniprogram.TouchEvent) {
     const v = e.currentTarget.dataset.value as Tab;
     if (v === this.data.tab) return;
-    this.setData({ tab: v, hasList: tabHasList(v, this.data) });
+    beginRequest(this);
+    this.setData({ tab: v, hasList: tabHasList(v, this.data), loading: false, error: false });
     if (this.data.keyword) {
       this.loadData(true);
     } else if (v === "subject" && this.data.subjectList.length === 0) {
@@ -107,12 +125,15 @@ Page({
     this.loadData(true);
   },
   clearResults() {
+    beginRequest(this);
     this.setData({
       subjectList: [],
       characterList: [],
       personList: [],
       hasMore: false,
       hasList: false,
+      offset: 0,
+      loading: false,
       error: false,
     });
   },
@@ -123,6 +144,7 @@ Page({
     return FILTER_TO_TYPE[this.currentFilter()] ?? null;
   },
   async loadDefault() {
+    const generation = beginRequest(this);
     this.setData({ loading: true, error: false });
     try {
       const type = this.currentFilterType() ?? SubjectType.Anime;
@@ -134,6 +156,7 @@ Page({
         image: s.images?.large || s.images?.common || "",
         score: s.rating?.score ?? 0,
       }));
+      if (!isCurrentRequest(this, generation)) return;
       this.setData({
         subjectList: list,
         offset: list.length,
@@ -142,12 +165,14 @@ Page({
         loading: false,
       });
     } catch {
+      if (!isCurrentRequest(this, generation)) return;
       this.setData({ loading: false, error: true });
     }
   },
   async loadData(reset: boolean) {
     const { tab, keyword, offset } = this.data;
     if (!keyword) return;
+    const generation = beginRequest(this);
     const newOffset = reset ? 0 : offset;
     this.setData({ loading: true, error: false });
     try {
@@ -159,17 +184,21 @@ Page({
       } else {
         result = await this.searchPersons(keyword, newOffset);
       }
+      if (!isCurrentRequest(this, generation)) return;
       const list = result.list;
       const key = (tab + "List") as "subjectList" | "characterList" | "personList";
+      const nextList = reset ? list : [...(this.data[key] as typeof list), ...list];
       this.setData({
-        [key]: reset ? list : [...(this.data[key] as typeof list), ...list],
+        [key]: nextList,
         offset: newOffset + list.length,
         hasMore: newOffset + list.length < result.total,
-        hasList: list.length > 0,
+        hasList: nextList.length > 0,
         loading: false,
       });
     } catch {
-      this.setData({ loading: false, error: true });
+      if (!isCurrentRequest(this, generation)) return;
+      this.setData({ loading: false, error: reset });
+      if (!reset) wx.showToast({ title: "加载失败", icon: "none" });
     }
   },
   async searchSubjects(keyword: string, offset: number): Promise<{ list: SubjectItem[]; total: number }> {
@@ -216,6 +245,7 @@ Page({
   },
   async loadMoreDefault() {
     const { offset } = this.data;
+    const generation = beginRequest(this);
     this.setData({ loading: true, error: false });
     try {
       const type = this.currentFilterType() ?? SubjectType.Anime;
@@ -227,14 +257,19 @@ Page({
         image: s.images?.large || s.images?.common || "",
         score: s.rating?.score ?? 0,
       }));
+      if (!isCurrentRequest(this, generation)) return;
+      const subjectList = [...this.data.subjectList, ...list];
       this.setData({
-        subjectList: [...this.data.subjectList, ...list],
+        subjectList,
         offset: offset + list.length,
         hasMore: offset + list.length < res.total,
+        hasList: subjectList.length > 0,
         loading: false,
       });
     } catch {
-      this.setData({ loading: false, error: true });
+      if (!isCurrentRequest(this, generation)) return;
+      this.setData({ loading: false });
+      wx.showToast({ title: "加载失败", icon: "none" });
     }
   },
   onPickFilter(e: { detail: { value: number } }) {
