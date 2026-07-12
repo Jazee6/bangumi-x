@@ -90,6 +90,9 @@
 .info-row--last {
   border-bottom-width: 0;
 }
+.info-row--hover {
+  opacity: 0.65;
+}
 .info-row__label,
 .info-row__value {
   font-size: var(--font-base);
