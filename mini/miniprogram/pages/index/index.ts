@@ -6,6 +6,7 @@ import type { CalendarDay, LegacySubject } from "../../types";
 
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 7];
 const WEEK_LABELS: Record<number, string> = { 1: "周一", 2: "周二", 3: "周三", 4: "周四", 5: "周五", 6: "周六", 7: "周日" };
+const WEEK_SHORT_LABELS: Record<number, string> = { 1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "日" };
 
 function getTodayId(): number {
   const now = new Date();
@@ -16,7 +17,7 @@ function getTodayId(): number {
 interface DayData {
   weekday: { id: number; cn: string };
   items: LegacySubject[];
-  label: string;
+  shortLabel: string;
 }
 
 Page({
@@ -57,8 +58,8 @@ Page({
         const day = cal.find((d: CalendarDay) => d.weekday.id === id);
         const cn = day?.weekday.cn ?? WEEK_LABELS[id] ?? "—";
         return day
-          ? { weekday: day.weekday, items: day.items, label: cn }
-          : { weekday: { id, cn }, items: [], label: cn };
+          ? { weekday: day.weekday, items: day.items, shortLabel: WEEK_SHORT_LABELS[id] }
+          : { weekday: { id, cn }, items: [], shortLabel: WEEK_SHORT_LABELS[id] };
       });
       this.setData({ calendar: sorted, loading: false });
       this.applyActive();

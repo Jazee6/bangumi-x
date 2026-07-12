@@ -11,8 +11,8 @@
 
   <scroll-view class="week" type="custom" scroll-x enable-flex show-scrollbar="{{false}}">
     <view class="week__inner">
-      <view wx:for="{{calendar}}" wx:key="label" class="week__day {{item.weekday.id === activeId ? 'week__day--active' : ''}}" data-id="{{item.weekday.id}}" bindtap="onPickDay" hover-class="week__day--hover">
-        <text class="week__label">{{item.label}}</text>
+      <view wx:for="{{calendar}}" wx:key="shortLabel" class="week__day {{item.weekday.id === activeId ? 'week__day--active' : ''}}" data-id="{{item.weekday.id}}" bindtap="onPickDay" hover-class="week__day--hover">
+        <text class="week__label">{{item.shortLabel}}</text>
         <view wx:if="{{item.weekday.id === todayId}}" class="week__today"></view>
       </view>
     </view>
