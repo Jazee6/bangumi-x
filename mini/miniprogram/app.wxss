@@ -49,10 +49,15 @@ page.dark,
 }
 
 .expanded {
-  --font-md: 24rpx;
-  --font-lg: 26rpx;
-  --font-xl: 30rpx;
-  --content-gutter: 40rpx;
+  --radius: 8px;
+  --radius-lg: 14px;
+  --font-xs: 12px;
+  --font-sm: 13px;
+  --font-base: 14px;
+  --font-md: 15px;
+  --font-lg: 17px;
+  --font-xl: 24px;
+  --content-gutter: 24px;
 }
 
 view,
