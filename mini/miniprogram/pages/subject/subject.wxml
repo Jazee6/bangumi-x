@@ -11,7 +11,7 @@
       <nested-scroll-header>
         <view class="header">
           <view class="header__poster">
-            <proxy-image src="{{subject.images.large || subject.images.common}}" mode="aspectFill" />
+            <proxy-image src="{{subject.images.large || subject.images.common}}" mode="aspectFill" preview="{{true}}" />
           </view>
           <view class="header__info">
             <view class="header__title-row">
@@ -28,7 +28,7 @@
             </view>
             <text wx:if="{{subject.summary && !summaryExpanded}}" class="header__summary" overflow="ellipsis" max-lines="4" bindtap="onToggleSummary">{{subject.summary}}</text>
             <text wx:elif="{{subject.summary}}" class="header__summary" bindtap="onToggleSummary">{{subject.summary}}</text>
-            <text wx:if="{{hasLongSummary}}" class="header__summary-action" bindtap="onToggleSummary">{{summaryExpanded ? '收起' : '展开简介'}}</text>
+            <text wx:if="{{hasLongSummary}}" class="header__summary-action" bindtap="onToggleSummary">{{summaryExpanded ? '收起' : '展开'}}</text>
             <view wx:if="{{subject.tags.length > 0}}" class="header__tags">
               <text wx:for="{{subject.tags}}" wx:key="name" wx:if="{{index < 10}}" class="tag">{{item.name}}</text>
             </view>
@@ -50,12 +50,12 @@
         </view>
       </nested-scroll-header>
 
-      <nested-scroll-body>
+      <nested-scroll-body offset-top="48">
         <swiper class="swiper" current="{{activeTab}}" bindchange="onSwiperChange">
           <swiper-item>
             <scroll-view class="tab-scroll" type="list" scroll-y show-scrollbar="{{false}}" cache-extent="500" associative-container="nested-scroll-view" bindscrolltolower="onLoadMoreEpisodes">
               <block wx:if="{{episodesLoading && episodes.length === 0}}">
-                <skeleton type="list" count="{{8}}" />
+                <skeleton type="episode" count="{{8}}" expanded="{{expanded}}" />
               </block>
               <block wx:elif="{{episodes.length === 0}}">
                 <empty-state title="暂无章节" />
@@ -74,7 +74,7 @@
           <swiper-item>
             <scroll-view class="tab-scroll" type="list" scroll-y show-scrollbar="{{false}}" cache-extent="500" associative-container="nested-scroll-view">
               <block wx:if="{{charactersLoading}}">
-                <skeleton type="list" count="{{8}}" />
+                <skeleton type="cell" count="{{8}}" expanded="{{expanded}}" />
               </block>
               <block wx:elif="{{characters.length === 0}}">
                 <empty-state title="暂无角色" />
@@ -97,7 +97,7 @@
           <swiper-item>
             <scroll-view class="tab-scroll" type="list" scroll-y show-scrollbar="{{false}}" cache-extent="500" associative-container="nested-scroll-view">
               <block wx:if="{{personsLoading}}">
-                <skeleton type="list" count="{{8}}" />
+                <skeleton type="cell" count="{{8}}" expanded="{{expanded}}" />
               </block>
               <block wx:elif="{{persons.length === 0}}">
                 <empty-state title="暂无制作人员" />
@@ -122,7 +122,7 @@
   </block>
   <block wx:else>
     <view class="scroll-placeholder">
-      <skeleton wx:if="{{loading}}" type="detail" count="{{1}}" />
+      <skeleton wx:if="{{loading}}" type="subject-detail" count="{{1}}" expanded="{{expanded}}" />
       <empty-state wx:else title="暂无数据" />
     </view>
   </block>

@@ -1,7 +1,7 @@
 import { getSubject, getSubjectCharacters, getSubjectEpisodes, getSubjectPersons } from "../../utils/api";
 import { applyTheme, getCurrentDark } from "../../utils/page";
 import { applyLayout } from "../../utils/layout";
-import { buildSubjectShare, buildBrandShare, getSubjectTitle } from "../../utils/share";
+import { buildSubjectShare, buildSubjectTimelineShare, buildBrandShare, enableShareMenu, getSubjectTitle } from "../../utils/share";
 import { ICON_COPY_LIGHT, ICON_COPY_DARK } from "../../utils/icons";
 import { characterRelationOrder, groupByRelation, personRelationOrder } from "../../utils/relation";
 import {
@@ -66,6 +66,7 @@ Page({
     personsLoaded: false,
   },
   onLoad(query: { id?: string }) {
+    enableShareMenu();
     const id = Number(query?.id ?? 0);
     if (!id) {
       this.setData({ loading: false, error: true });
@@ -217,7 +218,7 @@ Page({
   },
   onShareTimeline() {
     const s = this.data.subject;
-    if (!s) return buildBrandShare("index");
-    return buildSubjectShare(s);
+    if (!s) return { title: buildBrandShare("index").title };
+    return buildSubjectTimelineShare(s);
   },
 });

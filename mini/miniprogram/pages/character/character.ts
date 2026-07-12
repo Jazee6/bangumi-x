@@ -1,7 +1,7 @@
 import { getCharacter, getCharacterPersons, getCharacterSubjects } from "../../utils/api";
 import { applyTheme, getCurrentDark } from "../../utils/page";
 import { applyLayout } from "../../utils/layout";
-import { buildCharacterShare, buildBrandShare, getCharacterTitle } from "../../utils/share";
+import { buildCharacterShare, buildCharacterTimelineShare, buildBrandShare, enableShareMenu, getCharacterTitle } from "../../utils/share";
 import { ICON_COPY_LIGHT, ICON_COPY_DARK } from "../../utils/icons";
 import { BloodTypeLabel, CharacterTypeLabel, type Character, type CharacterPerson, type RelatedSubject } from "../../types";
 
@@ -27,6 +27,8 @@ Page({
     loading: true,
     error: false,
     character: null as Character | null,
+    summaryExpanded: false,
+    hasLongSummary: false,
     typeLabel: "",
     bloodLabel: "",
     birthday: "",
@@ -44,6 +46,7 @@ Page({
     personsLoaded: false,
   },
   onLoad(query: { id?: string }) {
+    enableShareMenu();
     const id = Number(query?.id ?? 0);
     if (!id) {
       this.setData({ loading: false, error: true });
@@ -74,7 +77,15 @@ Page({
       const bloodLabel = character.blood_type ? BloodTypeLabel[character.blood_type] ?? "" : "";
       const birthday = [character.birth_year && `${character.birth_year}年`, character.birth_mon && `${character.birth_mon}月`, character.birth_day && `${character.birth_day}日`].filter(Boolean).join("");
       wx.setNavigationBarTitle({ title: getCharacterTitle(character) });
-      this.setData({ character, typeLabel, bloodLabel, birthday, loading: false });
+      this.setData({
+        character,
+        typeLabel,
+        bloodLabel,
+        birthday,
+        summaryExpanded: false,
+        hasLongSummary: character.summary.length > 120,
+        loading: false,
+      });
       this.loadSubjects(id);
     } catch {
       this.setData({ loading: false, error: true });
@@ -142,6 +153,9 @@ Page({
     const c = this.data.character;
     if (c) this.loadData(c.id);
   },
+  onToggleSummary() {
+    this.setData({ summaryExpanded: !this.data.summaryExpanded });
+  },
   onCopyTitle() {
     const c = this.data.character;
     if (!c) return;
@@ -157,7 +171,7 @@ Page({
   },
   onShareTimeline() {
     const c = this.data.character;
-    if (!c) return buildBrandShare("index");
-    return buildCharacterShare(c);
+    if (!c) return { title: buildBrandShare("index").title };
+    return buildCharacterTimelineShare(c);
   },
 });

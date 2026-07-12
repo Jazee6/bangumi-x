@@ -5,6 +5,7 @@ Component({
     src: { type: String, value: "" },
     mode: { type: String, value: "aspectFill" },
     lazy: { type: Boolean, value: true },
+    preview: { type: Boolean, value: false },
   },
   data: {
     proxied: "",
@@ -21,6 +22,10 @@ Component({
   methods: {
     onError() {
       this.setData({ errored: true });
+    },
+    onPreview() {
+      if (!this.data.preview || !this.data.proxied) return;
+      wx.previewImage({ current: this.data.proxied, urls: [this.data.proxied] });
     },
   },
 });

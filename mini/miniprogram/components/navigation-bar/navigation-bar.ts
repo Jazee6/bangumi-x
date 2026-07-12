@@ -95,11 +95,16 @@ Component({
     back() {
       const data = this.data;
       if (data.delta) {
-        wx.navigateBack({
-          delta: data.delta,
-        });
+        if (getCurrentPages().length > data.delta) {
+          wx.navigateBack({ delta: data.delta });
+        } else {
+          wx.switchTab({ url: "/pages/index/index" });
+        }
       }
       this.triggerEvent("back", { delta: data.delta }, {});
+    },
+    home() {
+      wx.switchTab({ url: "/pages/index/index" });
     },
   },
 });

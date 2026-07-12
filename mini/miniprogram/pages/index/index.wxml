@@ -15,7 +15,7 @@
       <empty-state title="加载失败" description="网络异常" retry="{{true}}" bindretry="onRetry" />
     </block>
     <block wx:elif="{{loading}}">
-      <skeleton type="card" count="{{6}}" />
+      <skeleton type="card" count="{{6}}" expanded="{{expanded}}" topPadding="{{16}}" />
     </block>
     <block wx:elif="{{currentItems.length === 0}}">
       <empty-state title="今日无放送" />

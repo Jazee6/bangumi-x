@@ -9,4 +9,5 @@
   lazy-load="{{lazy}}"
   fade-in="{{true}}"
   binderror="onError"
+  bindtap="onPreview"
 />

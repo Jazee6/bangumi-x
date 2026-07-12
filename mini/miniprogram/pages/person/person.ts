@@ -1,7 +1,7 @@
 import { getPerson, getPersonCharacters, getPersonSubjects } from "../../utils/api";
 import { applyTheme, getCurrentDark } from "../../utils/page";
 import { applyLayout } from "../../utils/layout";
-import { buildPersonShare, buildBrandShare, getPersonTitle } from "../../utils/share";
+import { buildPersonShare, buildPersonTimelineShare, buildBrandShare, enableShareMenu, getPersonTitle } from "../../utils/share";
 import { ICON_COPY_LIGHT, ICON_COPY_DARK } from "../../utils/icons";
 import {
   BloodTypeLabel,
@@ -34,6 +34,8 @@ Page({
     loading: true,
     error: false,
     person: null as PersonDetail | null,
+    summaryExpanded: false,
+    hasLongSummary: false,
     careerLabel: "",
     bloodLabel: "",
     birthday: "",
@@ -51,6 +53,7 @@ Page({
     charactersLoaded: false,
   },
   onLoad(query: { id?: string }) {
+    enableShareMenu();
     const id = Number(query?.id ?? 0);
     if (!id) {
       this.setData({ loading: false, error: true });
@@ -83,7 +86,15 @@ Page({
       const bloodLabel = person.blood_type ? BloodTypeLabel[person.blood_type] ?? "" : "";
       const birthday = [person.birth_year && `${person.birth_year}年`, person.birth_mon && `${person.birth_mon}月`, person.birth_day && `${person.birth_day}日`].filter(Boolean).join("");
       wx.setNavigationBarTitle({ title: getPersonTitle(person) });
-      this.setData({ person, careerLabel, bloodLabel, birthday, loading: false });
+      this.setData({
+        person,
+        careerLabel,
+        bloodLabel,
+        birthday,
+        summaryExpanded: false,
+        hasLongSummary: person.summary.length > 120,
+        loading: false,
+      });
       this.loadSubjects(id);
     } catch {
       this.setData({ loading: false, error: true });
@@ -149,6 +160,9 @@ Page({
     const p = this.data.person;
     if (p) this.loadData(p.id);
   },
+  onToggleSummary() {
+    this.setData({ summaryExpanded: !this.data.summaryExpanded });
+  },
   onCopyTitle() {
     const p = this.data.person;
     if (!p) return;
@@ -164,7 +178,7 @@ Page({
   },
   onShareTimeline() {
     const p = this.data.person;
-    if (!p) return buildBrandShare("index");
-    return buildPersonShare(p);
+    if (!p) return { title: buildBrandShare("index").title };
+    return buildPersonTimelineShare(p);
   },
 });

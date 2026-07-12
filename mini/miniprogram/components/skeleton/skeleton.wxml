@@ -1,26 +1,48 @@
 <block wx:if="{{type === 'card'}}">
-  <grid-view class="skeleton-cards" type="aligned" max-cross-axis-extent="180" cross-axis-gap="12" main-axis-gap="20" padding="{{[16, 24, 64, 24]}}">
-    <view class="skeleton-card" wx:for="{{items}}" wx:key="*this" list-item>
+  <view class="skeleton-cards {{expanded ? 'skeleton-cards--expanded' : ''}}" style="padding-top: {{topPadding}}px;">
+    <view class="skeleton-card" wx:for="{{items}}" wx:key="*this">
       <view class="skeleton-card__poster shimmer"></view>
       <view class="skeleton-card__line shimmer"></view>
     </view>
-  </grid-view>
+  </view>
 </block>
-<block wx:elif="{{type === 'list'}}">
-  <view class="skeleton-cells">
+<block wx:elif="{{type === 'cell'}}">
+  <view class="skeleton-cells {{inset ? 'skeleton-cells--inset' : ''}}">
     <view class="skeleton-cell" wx:for="{{items}}" wx:key="*this">
       <view class="skeleton-cell__avatar shimmer"></view>
       <view class="skeleton-cell__body">
         <view class="skeleton-cell__line shimmer"></view>
         <view class="skeleton-cell__line skeleton-cell__line--short shimmer"></view>
-        <view class="skeleton-cell__line skeleton-cell__line--shorter shimmer"></view>
+      </view>
+      <view class="skeleton-cell__arrow shimmer"></view>
+    </view>
+  </view>
+</block>
+<block wx:elif="{{type === 'episode'}}">
+  <view class="skeleton-episodes">
+    <view class="skeleton-episode" wx:for="{{items}}" wx:key="*this">
+      <view class="skeleton-episode__sort shimmer"></view>
+      <view class="skeleton-episode__body">
+        <view class="skeleton-episode__line shimmer"></view>
+        <view class="skeleton-episode__line skeleton-episode__line--meta shimmer"></view>
       </view>
     </view>
   </view>
 </block>
-<block wx:elif="{{type === 'detail'}}">
-  <view class="skeleton-detail">
+<block wx:elif="{{type === 'subject-detail'}}">
+  <view class="skeleton-detail skeleton-detail--subject {{expanded ? 'skeleton-detail--expanded' : ''}}">
     <view class="skeleton-detail__poster shimmer"></view>
+    <view class="skeleton-detail__info">
+      <view class="skeleton-detail__line skeleton-detail__line--title shimmer"></view>
+      <view class="skeleton-detail__line skeleton-detail__line--short shimmer"></view>
+      <view class="skeleton-detail__line shimmer"></view>
+      <view class="skeleton-detail__line shimmer"></view>
+    </view>
+  </view>
+</block>
+<block wx:elif="{{type === 'entity-detail'}}">
+  <view class="skeleton-detail skeleton-detail--entity {{expanded ? 'skeleton-detail--expanded' : ''}}">
+    <view class="skeleton-detail__avatar shimmer"></view>
     <view class="skeleton-detail__info">
       <view class="skeleton-detail__line skeleton-detail__line--title shimmer"></view>
       <view class="skeleton-detail__line skeleton-detail__line--short shimmer"></view>

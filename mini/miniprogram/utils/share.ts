@@ -1,12 +1,18 @@
 import { proxyImageUrl } from "./request";
 import { SubjectTypeLabel, type Character, type PersonDetail, type Subject } from "../types";
 
-const BRAND = "Bangumi X";
+const BRAND = "番迹";
 const MAX_TITLE_LEN = 35;
 
 interface SharePayload {
   title: string;
   path: string;
+  imageUrl?: string;
+}
+
+interface TimelineSharePayload {
+  title: string;
+  query: string;
   imageUrl?: string;
 }
 
@@ -36,11 +42,28 @@ function detailPath(type: "subject" | "character" | "person", id: number): strin
   return `/pages/${type}/${type}?id=${encodeURIComponent(id)}`;
 }
 
+function detailQuery(id: number): string {
+  return `id=${encodeURIComponent(id)}`;
+}
+
+export function enableShareMenu(): void {
+  wx.showShareMenu({ menus: ["shareAppMessage", "shareTimeline"] });
+}
+
 export function buildSubjectShare(subject: Subject): SharePayload {
   const image = subject.images?.large || subject.images?.common;
   return {
     title: getSubjectTitle(subject),
     path: detailPath("subject", subject.id),
+    imageUrl: image ? proxyImageUrl(image) : undefined,
+  };
+}
+
+export function buildSubjectTimelineShare(subject: Subject): TimelineSharePayload {
+  const image = subject.images?.large || subject.images?.common;
+  return {
+    title: getSubjectTitle(subject),
+    query: detailQuery(subject.id),
     imageUrl: image ? proxyImageUrl(image) : undefined,
   };
 }
@@ -54,11 +77,29 @@ export function buildCharacterShare(character: Character): SharePayload {
   };
 }
 
+export function buildCharacterTimelineShare(character: Character): TimelineSharePayload {
+  const image = character.images?.large || character.images?.medium;
+  return {
+    title: getCharacterTitle(character),
+    query: detailQuery(character.id),
+    imageUrl: image ? proxyImageUrl(image) : undefined,
+  };
+}
+
 export function buildPersonShare(person: PersonDetail): SharePayload {
   const image = person.images?.large || person.images?.medium;
   return {
     title: getPersonTitle(person),
     path: detailPath("person", person.id),
+    imageUrl: image ? proxyImageUrl(image) : undefined,
+  };
+}
+
+export function buildPersonTimelineShare(person: PersonDetail): TimelineSharePayload {
+  const image = person.images?.large || person.images?.medium;
+  return {
+    title: getPersonTitle(person),
+    query: detailQuery(person.id),
     imageUrl: image ? proxyImageUrl(image) : undefined,
   };
 }
@@ -79,5 +120,12 @@ export function buildBrandShare(page: "index" | "discover" | "profile"): SharePa
   return {
     title: BRAND_TITLES[page],
     path: BRAND_PATHS[page],
+  };
+}
+
+export function buildBrandTimelineShare(page: "index" | "discover" | "profile"): TimelineSharePayload {
+  return {
+    title: BRAND_TITLES[page],
+    query: "",
   };
 }

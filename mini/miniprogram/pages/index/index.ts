@@ -1,7 +1,7 @@
 import { getCalendar } from "../../utils/api";
 import { applyTheme, getCurrentDark } from "../../utils/page";
 import { applyLayout } from "../../utils/layout";
-import { buildBrandShare } from "../../utils/share";
+import { buildBrandShare, buildBrandTimelineShare, enableShareMenu } from "../../utils/share";
 import type { CalendarDay, LegacySubject } from "../../types";
 
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 7];
@@ -34,7 +34,8 @@ Page({
     currentItems: [] as (LegacySubject & { score: number })[],
   },
   onLoad() {
-    wx.setNavigationBarTitle({ title: "每日放送｜Bangumi X" });
+    enableShareMenu();
+    wx.setNavigationBarTitle({ title: "每日放送｜番迹" });
     this.loadData();
   },
   onShow() {
@@ -93,6 +94,6 @@ Page({
     return buildBrandShare("index");
   },
   onShareTimeline() {
-    return buildBrandShare("index");
+    return buildBrandTimelineShare("index");
   },
 });

@@ -2,6 +2,9 @@ Component({
   properties: {
     type: { type: String, value: "card" },
     count: { type: Number, value: 9 },
+    expanded: { type: Boolean, value: false },
+    topPadding: { type: Number, value: 16 },
+    inset: { type: Boolean, value: false },
   },
   data: {
     items: [] as number[],

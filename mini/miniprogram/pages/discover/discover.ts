@@ -1,6 +1,6 @@
 import { applyTheme, getCurrentDark } from "../../utils/page";
 import { applyLayout } from "../../utils/layout";
-import { buildBrandShare } from "../../utils/share";
+import { buildBrandShare, buildBrandTimelineShare, enableShareMenu } from "../../utils/share";
 import { browseSubjects, searchSubjects, searchCharacters, searchPersons } from "../../utils/api";
 import type { Subject, Character, Person, PagedResponse } from "../../types";
 import { SubjectType } from "../../types";
@@ -87,7 +87,8 @@ Page({
     ],
   },
   onLoad() {
-    wx.setNavigationBarTitle({ title: "番组、角色与人物搜索｜Bangumi X" });
+    enableShareMenu();
+    wx.setNavigationBarTitle({ title: "番组、角色与人物搜索｜番迹" });
     this.loadDefault();
   },
   onShow() {
@@ -293,6 +294,6 @@ Page({
     return buildBrandShare("discover");
   },
   onShareTimeline() {
-    return buildBrandShare("discover");
+    return buildBrandTimelineShare("discover");
   },
 });

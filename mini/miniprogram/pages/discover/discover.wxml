@@ -26,7 +26,7 @@
       <empty-state title="加载失败" description="网络异常" retry="{{true}}" bindretry="onRetry" />
     </block>
     <block wx:elif="{{loading && !hasList}}">
-      <skeleton type="{{tab === 'subject' ? 'card' : 'list'}}" count="{{6}}" />
+      <skeleton type="{{tab === 'subject' ? 'card' : 'cell'}}" count="{{6}}" expanded="{{expanded}}" topPadding="{{8}}" />
     </block>
     <block wx:elif="{{!keyword && tab !== 'subject'}}">
       <empty-state title="输入关键词开始搜索" />
@@ -35,7 +35,7 @@
       <view wx:if="{{subjectList.length === 0}}">
         <empty-state wx:if="{{!loading}}" title="无结果" />
       </view>
-      <grid-view wx:else class="grid" type="aligned" max-cross-axis-extent="180" cross-axis-gap="12" main-axis-gap="20" padding="{{[16, 24, 64, 24]}}">
+      <grid-view wx:else class="grid" type="aligned" max-cross-axis-extent="180" cross-axis-gap="12" main-axis-gap="20" padding="{{[8, 24, 64, 24]}}">
         <navigator wx:for="{{subjectList}}" wx:key="id" list-item url="/pages/subject/subject?id={{item.id}}" hover-class="grid__item--hover" hover-stay-time="100">
           <subject-card
             name="{{item.name}}"

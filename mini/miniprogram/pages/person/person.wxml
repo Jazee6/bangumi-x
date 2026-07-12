@@ -11,7 +11,7 @@
       <nested-scroll-header>
         <view class="header">
           <view class="header__avatar">
-            <proxy-image src="{{person.images.large || person.images.medium}}" mode="aspectFill" />
+            <proxy-image src="{{person.images.large || person.images.medium}}" mode="aspectFill" preview="{{true}}" />
           </view>
           <view class="header__info">
             <view class="header__title-row">
@@ -24,7 +24,9 @@
               <text wx:if="{{bloodLabel}}" class="badge">血型 {{bloodLabel}}</text>
               <text wx:if="{{birthday}}" class="badge">{{birthday}}</text>
             </view>
-            <text wx:if="{{person.summary}}" class="header__summary" overflow="ellipsis" max-lines="4">{{person.summary}}</text>
+            <text wx:if="{{person.summary && !summaryExpanded}}" class="header__summary" overflow="ellipsis" max-lines="4" bindtap="onToggleSummary">{{person.summary}}</text>
+            <text wx:elif="{{person.summary}}" class="header__summary" bindtap="onToggleSummary">{{person.summary}}</text>
+            <text wx:if="{{hasLongSummary}}" class="header__summary-action" bindtap="onToggleSummary">{{summaryExpanded ? '收起' : '展开'}}</text>
           </view>
         </view>
       </nested-scroll-header>
@@ -43,12 +45,12 @@
         </view>
       </nested-scroll-header>
 
-      <nested-scroll-body>
+      <nested-scroll-body offset-top="48">
         <swiper class="swiper" current="{{activeTab}}" bindchange="onSwiperChange">
           <swiper-item>
             <scroll-view class="tab-scroll" type="custom" scroll-y show-scrollbar="{{false}}" cache-extent="500" associative-container="nested-scroll-view">
               <block wx:if="{{subjectsLoading}}">
-                <skeleton type="card" count="{{6}}" />
+                <skeleton type="card" count="{{6}}" expanded="{{expanded}}" topPadding="{{16}}" />
               </block>
               <block wx:elif="{{subjects.length === 0}}">
                 <empty-state title="暂无相关条目" />
@@ -71,7 +73,7 @@
           <swiper-item>
             <scroll-view class="tab-scroll" type="custom" scroll-y show-scrollbar="{{false}}" cache-extent="500" associative-container="nested-scroll-view">
               <block wx:if="{{charactersLoading}}">
-                <skeleton type="list" count="{{8}}" />
+                <skeleton type="cell" count="{{8}}" expanded="{{expanded}}" inset="{{true}}" />
               </block>
               <block wx:elif="{{characters.length === 0}}">
                 <empty-state title="暂无相关角色" />
@@ -95,7 +97,7 @@
   </block>
   <block wx:else>
     <view class="scroll-placeholder">
-      <skeleton wx:if="{{loading}}" type="detail" count="{{1}}" />
+      <skeleton wx:if="{{loading}}" type="entity-detail" count="{{1}}" expanded="{{expanded}}" />
       <empty-state wx:else title="暂无数据" />
     </view>
   </block>

@@ -49,8 +49,7 @@
   font-size: var(--font-xl);
   font-weight: 700;
 }
-.brand-card__subtitle,
-.profile-note {
+.brand-card__subtitle {
   color: var(--muted-foreground);
   font-size: var(--font-base);
   line-height: 1.5;
@@ -98,9 +97,4 @@
 .info-row__value {
   color: var(--muted-foreground);
   text-align: right;
-}
-.profile-note {
-  display: block;
-  margin-top: 24rpx;
-  padding: 0 8rpx;
 }

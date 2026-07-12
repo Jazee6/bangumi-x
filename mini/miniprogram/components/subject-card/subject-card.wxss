@@ -27,11 +27,3 @@
   font-weight: 600;
   color: var(--foreground);
 }
-.expanded .subject-card__score {
-  top: 8px;
-  right: 8px;
-  padding: 3px 8px;
-}
-.expanded .subject-card__name {
-  margin-top: 9px;
-}

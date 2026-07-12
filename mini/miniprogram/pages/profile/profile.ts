@@ -1,11 +1,14 @@
 import { applyTheme, getCurrentDark } from "../../utils/page";
 import { applyLayout } from "../../utils/layout";
-import { buildBrandShare } from "../../utils/share";
+import { buildBrandShare, buildBrandTimelineShare, enableShareMenu } from "../../utils/share";
 
 Page({
   data: {
     dark: getCurrentDark(),
     expanded: false,
+  },
+  onLoad() {
+    enableShareMenu();
   },
   onShow() {
     applyTheme.call(this);
@@ -21,6 +24,6 @@ Page({
     return buildBrandShare("profile");
   },
   onShareTimeline() {
-    return buildBrandShare("profile");
+    return buildBrandTimelineShare("profile");
   },
 });

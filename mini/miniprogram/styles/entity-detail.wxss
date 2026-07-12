@@ -14,8 +14,9 @@
 .badge { padding: 4rpx 16rpx; border-radius: 999rpx; border: 1rpx solid var(--border); color: var(--muted-foreground); font-size: var(--font-xs); }
 .badge--secondary { background-color: var(--secondary); border-color: var(--secondary); color: var(--secondary-foreground); }
 .header__summary { font-size: var(--font-base); line-height: 1.5; color: var(--muted-foreground); }
+.header__summary-action { align-self: flex-start; color: var(--foreground); font-size: var(--font-xs); font-weight: 600; }
 .tabs { display: flex; flex-direction: row; background-color: var(--background); border-bottom: 1rpx solid var(--border); width: 100%; max-width: var(--content-max); margin: 0 auto; }
-.tabs__item { position: relative; flex: 1; padding: 20rpx 0; text-align: center; color: var(--muted-foreground); font-size: var(--font-md); }
+.tabs__item { position: relative; flex: 1; height: 48px; padding: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--muted-foreground); font-size: var(--font-md); }
 .tabs__item--active { color: var(--foreground); font-weight: 600; }
 .tabs__item--active::after { content: ""; position: absolute; left: 32%; right: 32%; bottom: 0; height: 4rpx; border-radius: 999rpx; background-color: var(--foreground); }
 .swiper { height: 100%; }
