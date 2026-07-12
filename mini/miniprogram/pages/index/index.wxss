@@ -42,13 +42,15 @@
 }
 .week {
   width: 100%;
+  height: 88rpx;
   flex: none;
   border-bottom: 1rpx solid var(--border);
+  box-sizing: border-box;
 }
 .week__inner {
   width: 100%;
+  height: 88rpx;
   max-width: var(--content-max);
-  min-width: 700rpx;
   margin: 0 auto;
   padding: 4rpx var(--content-gutter) 16rpx;
   display: flex;
@@ -59,7 +61,7 @@
 .week__day {
   position: relative;
   flex: 1;
-  min-width: 88rpx;
+  min-width: 0;
   padding: 16rpx 8rpx;
   border-radius: 999rpx;
   text-align: center;
