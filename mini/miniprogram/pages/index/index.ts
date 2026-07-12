@@ -24,6 +24,7 @@ Page({
   data: {
     dark: getCurrentDark(),
     expanded: false,
+    pageTitle: "每日放送",
     loading: true,
     error: false,
     refreshing: false,
@@ -83,7 +84,7 @@ Page({
       ...it,
       score: it.rating?.score ?? 0,
     }));
-    this.setData({ currentItems: items });
+    this.setData({ currentItems: items, pageTitle: `每日放送(${items.length})` });
   },
   onRetry() {
     this.loadData();
