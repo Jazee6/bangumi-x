@@ -26,14 +26,14 @@
     </block>
     <block wx:else>
       <grid-view class="grid" type="aligned" max-cross-axis-extent="140" cross-axis-gap="8" main-axis-gap="12" padding="{{[8, 12, 48, 12]}}">
-        <view wx:for="{{currentItems}}" wx:key="id" list-item catchtap="onTapSubject" data-id="{{item.id}}" hover-class="grid__item--hover" hover-stay-time="100">
+        <navigator wx:for="{{currentItems}}" wx:key="id" list-item url="/pages/subject/subject?id={{item.id}}" hover-class="grid__item--hover" hover-stay-time="100">
           <subject-card
             name="{{item.name}}"
             nameCn="{{item.name_cn}}"
             image="{{item.images.large || item.images.common}}"
             score="{{item.score}}"
           />
-        </view>
+        </navigator>
       </grid-view>
     </block>
   </scroll-view>

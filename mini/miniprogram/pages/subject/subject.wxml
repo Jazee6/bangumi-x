@@ -80,13 +80,13 @@
               <block wx:else>
                 <view wx:for="{{characters}}" wx:key="relation" wx:for-item="group" class="group">
                   <text class="group__title">{{group.relation}}</text>
-                  <view wx:for="{{group.items}}" wx:key="id" list-item catchtap="onTapCell" data-target="{{item.target}}" data-id="{{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
+                  <navigator wx:for="{{group.items}}" wx:key="id" list-item url="/pages/{{item.target}}/{{item.target}}?id={{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
                     <character-cell dark="{{dark}}"
                       title="{{item.title}}"
                       description="{{item.description}}"
                       image="{{item.image}}"
                     />
-                  </view>
+                  </navigator>
                 </view>
               </block>
             </scroll-view>
@@ -103,13 +103,13 @@
               <block wx:else>
                 <view wx:for="{{persons}}" wx:key="relation" wx:for-item="group" class="group">
                   <text class="group__title">{{group.relation}}</text>
-                  <view wx:for="{{group.items}}" wx:key="id" list-item catchtap="onTapCell" data-target="{{item.target}}" data-id="{{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
+                  <navigator wx:for="{{group.items}}" wx:key="id" list-item url="/pages/{{item.target}}/{{item.target}}?id={{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
                     <character-cell dark="{{dark}}"
                       title="{{item.title}}"
                       description="{{item.description}}"
                       image="{{item.image}}"
                     />
-                  </view>
+                  </navigator>
                 </view>
               </block>
             </scroll-view>

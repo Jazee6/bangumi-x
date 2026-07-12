@@ -1,7 +1,7 @@
 import { getPerson, getPersonCharacters, getPersonSubjects } from "../../utils/api";
-import { applyTheme, getCurrentDark, navigateToDetail } from "../../utils/page";
+import { applyTheme, getCurrentDark } from "../../utils/page";
 import { applyLayout } from "../../utils/layout";
-import { buildPersonShare, buildBrandShare } from "../../utils/share";
+import { buildPersonShare, buildBrandShare, getPersonTitle } from "../../utils/share";
 import { ICON_COPY_LIGHT, ICON_COPY_DARK } from "../../utils/icons";
 import {
   BloodTypeLabel,
@@ -82,6 +82,7 @@ Page({
         .join("、");
       const bloodLabel = person.blood_type ? BloodTypeLabel[person.blood_type] ?? "" : "";
       const birthday = [person.birth_year && `${person.birth_year}年`, person.birth_mon && `${person.birth_mon}月`, person.birth_day && `${person.birth_day}日`].filter(Boolean).join("");
+      wx.setNavigationBarTitle({ title: getPersonTitle(person) });
       this.setData({ person, careerLabel, bloodLabel, birthday, loading: false });
       this.loadSubjects(id);
     } catch {
@@ -147,12 +148,6 @@ Page({
   onRetry() {
     const p = this.data.person;
     if (p) this.loadData(p.id);
-  },
-  onTapSubject(e: WechatMiniprogram.TouchEvent) {
-    navigateToDetail("subject", Number(e.currentTarget.dataset.id));
-  },
-  onTapCharacter(e: WechatMiniprogram.TouchEvent) {
-    navigateToDetail("character", Number(e.currentTarget.dataset.id));
   },
   onCopyTitle() {
     const p = this.data.person;

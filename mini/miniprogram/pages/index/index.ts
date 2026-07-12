@@ -1,5 +1,5 @@
 import { getCalendar } from "../../utils/api";
-import { applyTheme, getCurrentDark, navigateToDetail } from "../../utils/page";
+import { applyTheme, getCurrentDark } from "../../utils/page";
 import { buildBrandShare } from "../../utils/share";
 import { ICON_CHEVRON_DOWN_LIGHT, ICON_CHEVRON_DOWN_DARK } from "../../utils/icons";
 import type { CalendarDay, LegacySubject } from "../../types";
@@ -33,6 +33,7 @@ Page({
     currentItems: [] as (LegacySubject & { score: number })[],
   },
   onLoad() {
+    wx.setNavigationBarTitle({ title: "每日放送｜Bangumi X" });
     this.loadData();
   },
   onShow() {
@@ -83,10 +84,6 @@ Page({
       score: it.rating?.score ?? 0,
     }));
     this.setData({ currentItems: items });
-  },
-  onTapSubject(e: WechatMiniprogram.TouchEvent) {
-    const id = Number(e.currentTarget.dataset.id);
-    navigateToDetail("subject", id);
   },
   onRetry() {
     this.loadData();

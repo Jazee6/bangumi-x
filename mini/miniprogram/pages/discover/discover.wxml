@@ -44,14 +44,14 @@
         <empty-state wx:if="{{!loading}}" title="无结果" />
       </view>
       <grid-view wx:else class="grid" type="aligned" max-cross-axis-extent="140" cross-axis-gap="8" main-axis-gap="12" padding="{{[8, 12, 48, 12]}}">
-        <view wx:for="{{subjectList}}" wx:key="id" list-item catchtap="onTapSubject" data-id="{{item.id}}" hover-class="grid__item--hover" hover-stay-time="100">
+        <navigator wx:for="{{subjectList}}" wx:key="id" list-item url="/pages/subject/subject?id={{item.id}}" hover-class="grid__item--hover" hover-stay-time="100">
           <subject-card
             name="{{item.name}}"
             nameCn="{{item.nameCn}}"
             image="{{item.image}}"
             score="{{item.score}}"
           />
-        </view>
+        </navigator>
       </grid-view>
     </block>
     <block wx:elif="{{tab === 'character'}}">
@@ -59,13 +59,13 @@
         <empty-state wx:if="{{!loading}}" title="无结果" />
       </view>
       <list-view wx:else>
-        <view wx:for="{{characterList}}" wx:key="id" list-item catchtap="onTapCharacter" data-target="{{item.target}}" data-id="{{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
+        <navigator wx:for="{{characterList}}" wx:key="id" list-item url="/pages/{{item.target}}/{{item.target}}?id={{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
           <character-cell dark="{{dark}}"
             title="{{item.title}}"
             description="{{item.description}}"
             image="{{item.image}}"
           />
-        </view>
+        </navigator>
       </list-view>
     </block>
     <block wx:else>
@@ -73,13 +73,13 @@
         <empty-state wx:if="{{!loading}}" title="无结果" />
       </view>
       <list-view wx:else>
-        <view wx:for="{{personList}}" wx:key="id" list-item catchtap="onTapCharacter" data-target="{{item.target}}" data-id="{{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
+        <navigator wx:for="{{personList}}" wx:key="id" list-item url="/pages/{{item.target}}/{{item.target}}?id={{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
           <character-cell dark="{{dark}}"
             title="{{item.title}}"
             description="{{item.description}}"
             image="{{item.image}}"
           />
-        </view>
+        </navigator>
       </list-view>
     </block>
     <view wx:if="{{loading && hasList}}" class="loading-more">

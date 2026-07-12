@@ -3,6 +3,26 @@
   "rules": [
     {
       "action": "allow",
+      "page": "pages/index/index"
+    },
+    {
+      "action": "allow",
+      "page": "pages/discover/discover"
+    },
+    {
+      "action": "allow",
+      "page": "pages/subject/subject"
+    },
+    {
+      "action": "allow",
+      "page": "pages/character/character"
+    },
+    {
+      "action": "allow",
+      "page": "pages/person/person"
+    },
+    {
+      "action": "disallow",
       "page": "*"
     }
   ]

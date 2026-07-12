@@ -1,7 +1,7 @@
 import { getSubject, getSubjectCharacters, getSubjectEpisodes, getSubjectPersons } from "../../utils/api";
-import { applyTheme, getCurrentDark, navigateToDetail } from "../../utils/page";
+import { applyTheme, getCurrentDark } from "../../utils/page";
 import { applyLayout } from "../../utils/layout";
-import { buildSubjectShare, buildBrandShare } from "../../utils/share";
+import { buildSubjectShare, buildBrandShare, getSubjectTitle } from "../../utils/share";
 import { ICON_COPY_LIGHT, ICON_COPY_DARK } from "../../utils/icons";
 import { characterRelationOrder, groupByRelation, personRelationOrder } from "../../utils/relation";
 import {
@@ -91,6 +91,7 @@ Page({
         return;
       }
       const typeLabel = SubjectTypeLabel[subject.type] ?? "条目";
+      wx.setNavigationBarTitle({ title: getSubjectTitle(subject) });
       this.setData({ subject, typeLabel, loading: false });
       this.loadEpisodes();
     } catch {
@@ -195,11 +196,6 @@ Page({
   onLoadMoreEpisodes() {
     if (!this.data.episodeHasMore || this.data.episodesLoading) return;
     this.loadEpisodes(false);
-  },
-  onTapCell(e: WechatMiniprogram.TouchEvent) {
-    const id = Number(e.currentTarget.dataset.id);
-    const target = e.currentTarget.dataset.target as "character" | "person";
-    navigateToDetail(target, id);
   },
   onCopyTitle() {
     const s = this.data.subject;

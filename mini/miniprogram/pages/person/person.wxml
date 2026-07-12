@@ -55,14 +55,14 @@
               </block>
               <block wx:else>
                 <grid-view class="grid" type="aligned" max-cross-axis-extent="140" cross-axis-gap="8" main-axis-gap="12" padding="{{[8, 12, 48, 12]}}">
-                  <view wx:for="{{subjects}}" wx:key="id" list-item catchtap="onTapSubject" data-id="{{item.id}}" hover-class="grid__item--hover" hover-stay-time="100">
+                  <navigator wx:for="{{subjects}}" wx:key="id" list-item url="/pages/subject/subject?id={{item.id}}" hover-class="grid__item--hover" hover-stay-time="100">
                     <subject-card
                       name="{{item.name}}"
                       nameCn="{{item.nameCn}}"
                       image="{{item.image}}"
                       score="{{0}}"
                     />
-                  </view>
+                  </navigator>
                 </grid-view>
               </block>
             </scroll-view>
@@ -78,13 +78,13 @@
               </block>
               <block wx:else>
                 <view class="cell-list">
-                  <view wx:for="{{characters}}" wx:key="id" class="cell-list__item" catchtap="onTapCharacter" data-id="{{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
+                  <navigator wx:for="{{characters}}" wx:key="id" class="cell-list__item" url="/pages/character/character?id={{item.id}}" hover-class="cell-wrap--hover" hover-stay-time="100">
                     <character-cell dark="{{dark}}"
                       title="{{item.title}}"
                       description="{{item.description}}"
                       image="{{item.image}}"
                     />
-                  </view>
+                  </navigator>
                 </view>
               </block>
             </scroll-view>
