@@ -109,6 +109,39 @@ function RootDocument({ children }: { children: ReactNode }) {
                   <Tooltip>
                     <TooltipTrigger
                       render={
+                        <button
+                          type="button"
+                          aria-label="微信小程序"
+                          className={buttonVariants({
+                            variant: "ghost",
+                            size: "icon",
+                            className: "ml-auto",
+                          })}
+                        >
+                          <svg
+                            className="size-5 text-primary"
+                            viewBox="5 5 14 14"
+                            fill="currentColor"
+                            role="img"
+                            aria-label="微信小程序"
+                          >
+                            <title>微信小程序</title>
+                            <path d="M15.84 12.69c-.16.05-.32.08-.48.08-.61 0-.95-.41-.77-.92.14-.37.49-.68.93-.83.67-.24 1.14-.8 1.14-1.45 0-.88-.85-1.59-1.91-1.59-1.05 0-1.9.71-1.9 1.59v4.86c0 1.17-.68 2.2-1.7 2.78-.55.32-1.2.5-1.9.5-1.98 0-3.6-1.47-3.6-3.28 0-.57.17-1.11.45-1.58.45-.73 1.19-1.29 2.07-1.54.16-.05.31-.08.46-.08.62 0 .96.42.77.93-.13.34-.46.64-.86.8-.05.01-.09.03-.14.05-.63.26-1.06.8-1.06 1.42 0 .88.85 1.59 1.91 1.59 1.05 0 1.9-.71 1.9-1.59V9.57c0-1.18.68-2.2 1.7-2.78.55-.32 1.2-.5 1.9-.5 1.99 0 3.6 1.47 3.6 3.28 0 .57-.16 1.11-.45 1.58-.44.73-1.18 1.29-2.06 1.54Z" />
+                          </svg>
+                        </button>
+                      }
+                    />
+                    <TooltipContent side="bottom" className="p-2">
+                      <img
+                        src="/mini.webp"
+                        alt="微信小程序码"
+                        className="size-40 rounded-lg"
+                      />
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
                         <a
                           href="https://github.com/Jazee6/bangumi-x"
                           target="_blank"
@@ -117,7 +150,6 @@ function RootDocument({ children }: { children: ReactNode }) {
                           className={buttonVariants({
                             variant: "ghost",
                             size: "icon",
-                            className: "ml-auto",
                           })}
                         >
                           <svg
