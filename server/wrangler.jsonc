@@ -8,7 +8,9 @@
     "port": 8787,
   },
   "vars": {
+    "SITE_URL": "https://bgmx.jaze.top",
     "BETTER_AUTH_URL": "https://s.bgmx.jaze.top",
+    "EASY_AUTH_URL": "https://account.jaze.top",
   },
   "d1_databases": [
     {
