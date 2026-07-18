@@ -58,8 +58,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "icon", type: "image/svg+xml", href: "/icon.svg" },
-      { rel: "alternate", hreflang: "zh-CN", href: SITE_URL },
-      { rel: "alternate", hreflang: "x-default", href: SITE_URL },
+      { rel: "alternate", hrefLang: "zh-CN", href: SITE_URL },
+      { rel: "alternate", hrefLang: "x-default", href: SITE_URL },
     ],
   }),
   shellComponent: RootDocument,
@@ -103,8 +103,8 @@ function RootDocument({ children }: { children: ReactNode }) {
             <SidebarProvider>
               <AppSidebar />
 
-              <SidebarInset className="md:h-[calc(100dvh-1rem)] relative">
-                <header className="sticky top-0 z-20 flex h-12 items-center gap-2 px-4 app-blur md:rounded-t-[18px]">
+              <SidebarInset className="relative">
+                <header className="sticky top-0 z-20 flex h-12 items-center gap-2 px-4 app-blur">
                   <SidebarTrigger className="-ml-1" />
                   <Tooltip>
                     <TooltipTrigger
@@ -132,11 +132,7 @@ function RootDocument({ children }: { children: ReactNode }) {
                       }
                     />
                     <TooltipContent side="bottom" className="p-2">
-                      <img
-                        src="/mini.webp"
-                        alt="微信小程序码"
-                        className="size-40 rounded-lg"
-                      />
+                      <img src="/mini.webp" alt="微信小程序码" className="size-40 rounded-lg" />
                     </TooltipContent>
                   </Tooltip>
                   <Tooltip>

@@ -19,6 +19,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/components/ui/sidebar.tsx";
 
 const navItems = [
@@ -34,7 +35,9 @@ export function AppSidebar() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Sidebar collapsible="icon" variant="inset">
+    <Sidebar collapsible="icon">
+      <SidebarRail />
+
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
