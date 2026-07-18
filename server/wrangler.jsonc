@@ -4,6 +4,20 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-06-21",
   "compatibility_flags": ["nodejs_compat"],
+  "dev": {
+    "port": 8787,
+  },
+  "vars": {
+    "BETTER_AUTH_URL": "https://s.bgmx.jaze.top",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bangumi-x",
+      "database_id": "5abefc5a-2b40-49f3-b526-e117095b8b1d",
+      "migrations_dir": "drizzle/d1",
+    },
+  ],
   "cache": {
     "enabled": true,
   },

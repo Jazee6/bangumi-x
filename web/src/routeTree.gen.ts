@@ -9,21 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SubjectsIndexRouteImport } from './routes/subjects/index'
-import { Route as PersonsIndexRouteImport } from './routes/persons/index'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as CharactersIndexRouteImport } from './routes/characters/index'
-import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects/$subjectId'
-import { Route as PersonsPersonIdRouteImport } from './routes/persons/$personId'
-import { Route as EpisodesEpisodeIdRouteImport } from './routes/episodes/$episodeId'
 import { Route as CharactersCharacterIdRouteImport } from './routes/characters/$characterId'
+import { Route as EpisodesEpisodeIdRouteImport } from './routes/episodes/$episodeId'
+import { Route as PersonsIndexRouteImport } from './routes/persons/index'
+import { Route as PersonsPersonIdRouteImport } from './routes/persons/$personId'
+import { Route as SubjectsIndexRouteImport } from './routes/subjects/index'
+import { Route as SubjectsSubjectIdRouteImport } from './routes/subjects/$subjectId'
 import { Route as ApiTypeIdRouteImport } from './routes/api.$type.$id'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
@@ -31,19 +31,9 @@ const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
   path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SubjectsIndexRoute = SubjectsIndexRouteImport.update({
-  id: '/subjects/',
-  path: '/subjects/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PersonsIndexRoute = PersonsIndexRouteImport.update({
-  id: '/persons/',
-  path: '/persons/',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CharactersIndexRoute = CharactersIndexRouteImport.update({
@@ -51,14 +41,9 @@ const CharactersIndexRoute = CharactersIndexRouteImport.update({
   path: '/characters/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SubjectsSubjectIdRoute = SubjectsSubjectIdRouteImport.update({
-  id: '/subjects/$subjectId',
-  path: '/subjects/$subjectId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PersonsPersonIdRoute = PersonsPersonIdRouteImport.update({
-  id: '/persons/$personId',
-  path: '/persons/$personId',
+const CharactersCharacterIdRoute = CharactersCharacterIdRouteImport.update({
+  id: '/characters/$characterId',
+  path: '/characters/$characterId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EpisodesEpisodeIdRoute = EpisodesEpisodeIdRouteImport.update({
@@ -66,9 +51,24 @@ const EpisodesEpisodeIdRoute = EpisodesEpisodeIdRouteImport.update({
   path: '/episodes/$episodeId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CharactersCharacterIdRoute = CharactersCharacterIdRouteImport.update({
-  id: '/characters/$characterId',
-  path: '/characters/$characterId',
+const PersonsIndexRoute = PersonsIndexRouteImport.update({
+  id: '/persons/',
+  path: '/persons/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PersonsPersonIdRoute = PersonsPersonIdRouteImport.update({
+  id: '/persons/$personId',
+  path: '/persons/$personId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubjectsIndexRoute = SubjectsIndexRouteImport.update({
+  id: '/subjects/',
+  path: '/subjects/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubjectsSubjectIdRoute = SubjectsSubjectIdRouteImport.update({
+  id: '/subjects/$subjectId',
+  path: '/subjects/$subjectId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTypeIdRoute = ApiTypeIdRouteImport.update({
@@ -175,11 +175,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/llms.txt': {
@@ -189,25 +189,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/subjects/': {
-      id: '/subjects/'
-      path: '/subjects'
-      fullPath: '/subjects/'
-      preLoaderRoute: typeof SubjectsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/persons/': {
-      id: '/persons/'
-      path: '/persons'
-      fullPath: '/persons/'
-      preLoaderRoute: typeof PersonsIndexRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/characters/': {
@@ -217,18 +203,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CharactersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/subjects/$subjectId': {
-      id: '/subjects/$subjectId'
-      path: '/subjects/$subjectId'
-      fullPath: '/subjects/$subjectId'
-      preLoaderRoute: typeof SubjectsSubjectIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/persons/$personId': {
-      id: '/persons/$personId'
-      path: '/persons/$personId'
-      fullPath: '/persons/$personId'
-      preLoaderRoute: typeof PersonsPersonIdRouteImport
+    '/characters/$characterId': {
+      id: '/characters/$characterId'
+      path: '/characters/$characterId'
+      fullPath: '/characters/$characterId'
+      preLoaderRoute: typeof CharactersCharacterIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/episodes/$episodeId': {
@@ -238,11 +217,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EpisodesEpisodeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/characters/$characterId': {
-      id: '/characters/$characterId'
-      path: '/characters/$characterId'
-      fullPath: '/characters/$characterId'
-      preLoaderRoute: typeof CharactersCharacterIdRouteImport
+    '/persons/': {
+      id: '/persons/'
+      path: '/persons'
+      fullPath: '/persons/'
+      preLoaderRoute: typeof PersonsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/persons/$personId': {
+      id: '/persons/$personId'
+      path: '/persons/$personId'
+      fullPath: '/persons/$personId'
+      preLoaderRoute: typeof PersonsPersonIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subjects/': {
+      id: '/subjects/'
+      path: '/subjects'
+      fullPath: '/subjects/'
+      preLoaderRoute: typeof SubjectsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subjects/$subjectId': {
+      id: '/subjects/$subjectId'
+      path: '/subjects/$subjectId'
+      fullPath: '/subjects/$subjectId'
+      preLoaderRoute: typeof SubjectsSubjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/$type/$id': {

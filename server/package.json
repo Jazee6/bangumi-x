@@ -5,17 +5,23 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "gen:og": "bun scripts/gen-default-og.tsx"
   },
   "dependencies": {
     "@bangumi-x/share": "workspace:*",
     "@hono/standard-validator": "^0.2.3",
     "@resvg/resvg-wasm": "^2.6.2",
+    "better-auth": "1.6.23",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.12.26",
     "satori": "^0.26.0"
   },
   "devDependencies": {
     "@types/node": "^26.1.0",
+    "drizzle-kit": "^0.31.10",
     "typescript": "^6.0.3",
     "wrangler": "^4.4.0"
   }

@@ -9,12 +9,19 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { FileQuestionIcon } from "lucide-react";
-import { ThemeProvider } from "next-themes";
+import { FileQuestionIcon, MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
+import { ThemeProvider, useTheme } from "next-themes";
 import { type ReactNode, useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar.tsx";
 import { EmptyState } from "@/components/empty-state.tsx";
 import { Button, buttonVariants } from "@/components/ui/button.tsx";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu.tsx";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
 import {
@@ -36,6 +43,42 @@ interface MyRouterContext {
 BProgress.configure({
   showSpinner: false,
 });
+
+function ThemeMenu() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" size="icon" aria-label="选择主题">
+            <SunIcon className="hidden [html:not(.dark)_&]:block size-5" />
+            <MoonIcon className="hidden [html.dark_&]:block size-5" />
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end" className="w-40 min-w-40">
+        <DropdownMenuRadioGroup
+          value={theme ?? "system"}
+          onValueChange={(value) => value && setTheme(value)}
+        >
+          <DropdownMenuRadioItem value="light">
+            <SunIcon />
+            浅色
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="dark">
+            <MoonIcon />
+            深色
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="system">
+            <MonitorIcon />
+            跟随系统
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
@@ -163,6 +206,7 @@ function RootDocument({ children }: { children: ReactNode }) {
                     />
                     <TooltipContent>v{version}</TooltipContent>
                   </Tooltip>
+                  <ThemeMenu />
                 </header>
 
                 <div className="md:overflow-auto">
