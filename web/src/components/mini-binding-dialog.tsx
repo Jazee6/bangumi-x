@@ -212,7 +212,10 @@ export function MiniBindingDialog({
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent side={isMobile ? "bottom" : "right"} className="max-h-[92svh] overflow-auto">
+      <SheetContent
+        side={isMobile ? "bottom" : "right"}
+        className="overflow-auto data-[side=bottom]:max-h-[92svh]"
+      >
         <SheetHeader>
           <SheetTitle>微信小程序</SheetTitle>
           <SheetDescription>管理当前统一账户的小程序登录凭据。</SheetDescription>

@@ -1,6 +1,7 @@
-import { z, type BetterAuthPlugin } from "better-auth";
+import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthEndpoint, sessionMiddleware } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
+import { z } from "zod";
 import { touchMiniIdentity } from "./mini-identity-cleanup";
 
 const WECHAT_PROVIDER_ID = "wechat-mini";

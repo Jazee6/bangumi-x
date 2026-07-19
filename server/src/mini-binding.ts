@@ -1,4 +1,4 @@
-import { z, type BetterAuthPlugin } from "better-auth";
+import type { BetterAuthPlugin } from "better-auth";
 import {
   APIError,
   createAuthEndpoint,
@@ -7,6 +7,7 @@ import {
   sessionMiddleware,
 } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
+import { z } from "zod";
 import { touchMiniIdentity } from "./mini-identity-cleanup";
 
 const REAUTH_ATTEMPT_TTL = 10 * 60 * 1000;
