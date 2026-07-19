@@ -3,6 +3,7 @@
     "pages/index/index",
     "pages/discover/discover",
     "pages/profile/profile",
+    "pages/binding/binding",
     "pages/subject/subject",
     "pages/character/character",
     "pages/person/person"

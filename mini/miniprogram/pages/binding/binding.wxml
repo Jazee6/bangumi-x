@@ -1,0 +1,57 @@
+<view class="page {{dark ? 'dark' : ''}} {{expanded ? 'expanded' : ''}}">
+  <navigation-bar title="确认绑定" back="{{true}}" dark="{{dark}}" background="{{dark ? '#0a0a0a' : '#ffffff'}}" color="{{dark ? '#fafafa' : '#18181b'}}" />
+  <scroll-view class="binding-scroll" type="list" scroll-y show-scrollbar="{{false}}">
+    <view class="binding-shell">
+    <view wx:if="{{status === 'loading'}}" class="state-card">
+      <text class="state-card__title">正在检查绑定请求</text>
+      <text class="state-card__description">请稍候</text>
+    </view>
+
+    <view wx:elif="{{status === 'pending' || status === 'confirming' || status === 'rejecting'}}" class="account-card">
+      <proxy-image wx:if="{{profileImage}}" class="account-card__avatar" src="{{profileImage}}" mode="aspectFill" />
+      <view wx:else class="account-card__avatar account-card__fallback"><text>账</text></view>
+      <text class="account-card__eyebrow">将要绑定到</text>
+      <text class="account-card__name">{{profileName}}</text>
+      <text class="account-card__expiry">请求将在 {{expiresAt}} 失效</text>
+      <text class="account-card__notice">扫描本身不会改变身份。请确认这是你的统一账户。</text>
+      <button class="confirm-button" disabled="{{status !== 'pending'}}" bindtap="onConfirm" hover-class="confirm-button--hover">
+        <text>{{status === 'confirming' ? '正在连接账户' : '确认绑定'}}</text>
+      </button>
+      <button class="reject-button" disabled="{{status !== 'pending'}}" bindtap="onReject" hover-class="reject-button--hover">
+        <text>{{status === 'rejecting' ? '正在拒绝' : '拒绝本次绑定'}}</text>
+      </button>
+      <button class="back-button" bindtap="onBack" hover-class="back-button--hover"><text>暂不处理</text></button>
+    </view>
+
+    <view wx:elif="{{status === 'confirmed'}}" class="state-card">
+      <text class="state-card__title">账户已连接</text>
+      <text class="state-card__description">“我的”页面已切换为统一账户。</text>
+      <button class="confirm-button" bindtap="onBack"><text>完成</text></button>
+    </view>
+
+    <view wx:elif="{{status === 'conflict'}}" class="state-card">
+      <text class="state-card__title">无法完成绑定</text>
+      <text class="state-card__description">{{conflictReason === 'target' ? '该统一账户已连接其他微信身份。' : '当前微信身份已连接其他统一账户。'}}</text>
+      <button class="back-button" bindtap="onBack"><text>返回</text></button>
+    </view>
+
+    <view wx:elif="{{status === 'rejected'}}" class="state-card">
+      <text class="state-card__title">已拒绝绑定</text>
+      <text class="state-card__description">账户和小程序身份均未发生变化。</text>
+      <button class="back-button" bindtap="onBack"><text>返回</text></button>
+    </view>
+
+    <view wx:elif="{{status === 'expired' || status === 'replaced' || status === 'consumed'}}" class="state-card">
+      <text class="state-card__title">二维码已失效</text>
+      <text class="state-card__description">请在 Web 端生成新的二维码。</text>
+      <button class="back-button" bindtap="onBack"><text>返回</text></button>
+    </view>
+
+    <view wx:else class="state-card">
+      <text class="state-card__title">无法检查绑定请求</text>
+      <text class="state-card__description">请求可能无效，或身份服务暂时不可用。</text>
+      <button class="back-button" bindtap="onRetry"><text>重试</text></button>
+    </view>
+    </view>
+  </scroll-view>
+</view>

@@ -1,3 +1,4 @@
+import { establishMiniIdentity } from "./utils/auth";
 import { computeLayoutMode } from "./utils/layout";
 
 App<IAppOption>({
@@ -11,6 +12,8 @@ App<IAppOption>({
     g.systemTheme = (wx.getAppBaseInfo().theme as "light" | "dark") ?? "light";
     g.dark = g.systemTheme === "dark";
     g.layoutMode = computeLayoutMode();
+
+    void establishMiniIdentity();
 
     setTimeout(() => {
       wx.preloadSkylineView();

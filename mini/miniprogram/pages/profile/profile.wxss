@@ -16,7 +16,7 @@
   padding: 48rpx var(--content-gutter) 80rpx;
   box-sizing: border-box;
 }
-.brand-card {
+.identity-card {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -26,33 +26,56 @@
   border-radius: var(--radius-lg);
   background-color: var(--card);
 }
-.brand-card__mark {
+.identity-card__avatar {
   width: 96rpx;
   height: 96rpx;
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 24rpx;
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  font-size: var(--font-lg);
-  font-weight: 800;
-}
-.brand-card__copy {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-.brand-card__title {
+  border-radius: 50%;
+  background-color: var(--muted);
   color: var(--foreground);
-  font-size: var(--font-xl);
+  font-size: var(--font-lg);
   font-weight: 700;
 }
-.brand-card__subtitle {
+.identity-card__image {
+  display: block;
+  overflow: hidden;
+}
+.identity-card__copy {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8rpx;
+}
+.identity-card__retry {
+  width: auto;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 12rpx 22rpx;
+  border: 1rpx solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--background);
+  color: var(--foreground);
+  font-size: var(--font-sm);
+  line-height: 1.4;
+}
+.identity-card__retry--hover {
+  opacity: 0.65;
+}
+.identity-card__title {
+  color: var(--foreground);
+  font-size: var(--font-lg);
+  font-weight: 700;
+}
+.identity-card__subtitle {
   color: var(--muted-foreground);
   font-size: var(--font-base);
-  line-height: 1.5;
 }
 .feedback {
   width: 100%;

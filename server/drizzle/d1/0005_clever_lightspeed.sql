@@ -1,0 +1,1 @@
+ALTER TABLE `mini_identity` ADD `has_business_data` integer DEFAULT false NOT NULL;

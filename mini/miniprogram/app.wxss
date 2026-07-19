@@ -12,9 +12,11 @@ page {
   --muted-foreground: #71717a;
   --accent: #f4f4f5;
   --accent-foreground: #18181b;
+  --destructive: #dc2626;
   --border: #e4e4e7;
   --input: #e4e4e7;
   --radius: 16rpx;
+  --radius-md: 20rpx;
   --radius-lg: 28rpx;
   --content-max: 1180px;
   --content-gutter: 24rpx;
@@ -44,6 +46,7 @@ page.dark,
   --muted-foreground: #a1a1aa;
   --accent: #27272a;
   --accent-foreground: #fafafa;
+  --destructive: #f87171;
   --border: #27272a;
   --input: #27272a;
 }

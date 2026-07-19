@@ -3,25 +3,36 @@
 
   <scroll-view class="scroll" type="list" scroll-y show-scrollbar="{{false}}" cache-extent="500">
     <view class="profile-shell">
-      <view class="brand-card">
-        <view class="brand-card__mark"><text>番迹</text></view>
-        <view class="brand-card__copy">
-          <text class="brand-card__title">番迹</text>
-          <text class="brand-card__subtitle">轻量浏览番组、角色与人物资料</text>
+      <view class="identity-card">
+        <proxy-image wx:if="{{authStatus === 'bound' && profileImage}}" class="identity-card__avatar identity-card__image" src="{{profileImage}}" mode="aspectFill" />
+        <view wx:else class="identity-card__avatar"><text>{{authStatus === 'bound' ? '账' : '微'}}</text></view>
+        <view class="identity-card__copy" wx:if="{{authStatus === 'unbound'}}">
+          <text class="identity-card__title">微信用户</text>
+          <text class="identity-card__subtitle">小程序身份已建立</text>
         </view>
+        <view class="identity-card__copy" wx:elif="{{authStatus === 'bound'}}">
+          <text class="identity-card__title">{{profileName}}</text>
+          <text class="identity-card__subtitle">统一账户已连接</text>
+        </view>
+        <view class="identity-card__copy" wx:elif="{{authStatus === 'error'}}">
+          <text class="identity-card__title">身份暂不可用</text>
+          <text class="identity-card__subtitle">不影响浏览公开内容</text>
+        </view>
+        <view class="identity-card__copy" wx:else>
+          <text class="identity-card__title">正在建立身份</text>
+          <text class="identity-card__subtitle">你可以继续浏览公开内容</text>
+        </view>
+        <view wx:if="{{authStatus === 'error'}}" class="identity-card__retry" bindtap="onRetryAuth" hover-class="identity-card__retry--hover" aria-role="button" aria-label="重试身份认证"><text>重试</text></view>
+        <view wx:if="{{authStatus === 'unbound'}}" class="identity-card__retry" bindtap="onScanBinding" hover-class="identity-card__retry--hover" aria-role="button" aria-label="扫码绑定账户"><text>扫码绑定</text></view>
       </view>
       <view class="info-card">
-        <view class="info-row">
-          <text class="info-row__label">外观</text>
-          <text class="info-row__value">跟随系统</text>
-        </view>
-        <view class="info-row">
-          <text class="info-row__label">数据来源</text>
-          <text class="info-row__value">Bangumi 番组计划</text>
-        </view>
         <view class="info-row info-row--action" bindtap="onCopyWebUrl" hover-class="info-row--hover" hover-stay-time="100" aria-role="button" aria-label="复制 Web 版链接">
-          <text class="info-row__label">Web 版（点击复制）</text>
+          <text class="info-row__label">Web 版</text>
           <text class="info-row__value">{{webUrl}}</text>
+        </view>
+        <view class="info-row info-row--action" bindtap="onCopyGithubUrl" hover-class="info-row--hover" hover-stay-time="100" aria-role="button" aria-label="复制 GitHub 仓库链接">
+          <text class="info-row__label">GitHub 仓库</text>
+          <text class="info-row__value">Jazee6/bangumi-x</text>
         </view>
         <view class="info-row info-row--last">
           <text class="info-row__label">当前版本</text>

@@ -8,6 +8,41 @@
       "when": 1784363253301,
       "tag": "0000_open_loa",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1784375354547,
+      "tag": "0001_cute_thor",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1784421515993,
+      "tag": "0002_icy_lilandra",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1784422232734,
+      "tag": "0003_curved_scourge",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1784424923606,
+      "tag": "0004_mysterious_nemesis",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1784425407382,
+      "tag": "0005_clever_lightspeed",
+      "breakpoints": true
     }
   ]
 }

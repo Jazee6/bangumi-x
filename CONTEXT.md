@@ -42,6 +42,14 @@ _Avoid_: Person, Bangumi User
 SignedInViewer 在统一账户中心维护的姓名、邮箱和头像资料；Bangumi X 只展示这些资料，不维护独立的站内个人资料。
 _Avoid_: Bangumi X Profile, Person Profile
 
+**MiniIdentity**:
+Visitor 在微信小程序中以当前小程序的 OpenID 静默建立的独立身份。它可以在未登录统一账户时独立存在，但不等同于 SignedInViewer；UnionID 即使可用也不决定其唯一性。没有业务数据且连续 90 天不活跃的未绑定 MiniIdentity 可以被删除，下次访问时重新建立。
+_Avoid_: SignedInViewer, AccountProfile, 微信用户
+
+**IdentityMerge**:
+将 MiniIdentity 绑定到 SignedInViewer 的不可并列化身份归并。归并后，MiniIdentity 已有数据归属于 SignedInViewer，微信身份成为该 SignedInViewer 可使用的登录凭证，而不是继续作为并列的数据主体。一个 MiniIdentity 只能归并到一个 SignedInViewer，一个 SignedInViewer 也只能接纳一个 MiniIdentity。解绑不会反向拆分数据；既有数据留在 SignedInViewer，该 OpenID 下次访问时建立新的空 MiniIdentity。
+_Avoid_: 仅关联两个长期独立的身份, 同步两份身份数据
+
 **Worker**:
 Cloudflare Workers 边缘代理层，职责是翻墙访问上游 bgm API + edge cache + 图片代理 + UA 注入。SSR server 在国内必须经 Worker 访问 bgm。非可选优化层，是硬性依赖。生产域名 `https://s.bgmx.jaze.top`。
 

@@ -11,6 +11,7 @@
     "SITE_URL": "https://bgmx.jaze.top",
     "BETTER_AUTH_URL": "https://s.bgmx.jaze.top",
     "EASY_AUTH_URL": "https://account.jaze.top",
+    "WECHAT_MINI_APP_ID": "wx02ce91659b1acef4",
   },
   "d1_databases": [
     {
@@ -22,5 +23,8 @@
   ],
   "cache": {
     "enabled": true,
+  },
+  "triggers": {
+    "crons": ["17 3 * * *"],
   },
 }

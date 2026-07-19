@@ -8,13 +8,18 @@ import {
   LogInIcon,
   LogOutIcon,
   RefreshCwIcon,
+  QrCodeIcon,
   TvIcon,
   UserRoundIcon,
   UsersIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx";
+import {
+  consumeMiniBindingReopen,
+  MiniBindingDialog,
+} from "@/components/mini-binding-dialog.tsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +57,11 @@ export function AppSidebar() {
   const { isMobile } = useSidebar();
   const { data, error, isPending, isRefetching, refetch } = useSession();
   const [authAction, setAuthAction] = useState<"sign-in" | "sign-out" | null>(null);
+  const [bindingOpen, setBindingOpen] = useState(false);
+
+  useEffect(() => {
+    if (consumeMiniBindingReopen()) setBindingOpen(true);
+  }, []);
 
   const signIn = async () => {
     setAuthAction("sign-in");
@@ -196,6 +206,10 @@ export function AppSidebar() {
                     账户设置
                     <ExternalLinkIcon className="ml-auto" />
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setBindingOpen(true)}>
+                    <QrCodeIcon />
+                    微信小程序
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem disabled={authAction === "sign-out"} onClick={signOut}>
                     {authAction === "sign-out" ? <Spinner /> : <LogOutIcon />}
@@ -218,6 +232,7 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      {user && <MiniBindingDialog open={bindingOpen} onOpenChange={setBindingOpen} />}
     </Sidebar>
   );
 }

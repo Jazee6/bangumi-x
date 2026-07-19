@@ -1,4 +1,4 @@
-const API_BASE = "https://s.bgmx.jaze.top";
+export const API_BASE = "https://s.bgmx.jaze.top";
 
 interface BgmFetchOpts {
   query?: Record<string, string | number | undefined>;
