@@ -1,4 +1,4 @@
-import type { BetterAuthPlugin } from "better-auth";
+import { z, type BetterAuthPlugin } from "better-auth";
 import {
   APIError,
   createAuthEndpoint,
@@ -13,6 +13,7 @@ const REAUTH_ATTEMPT_TTL = 10 * 60 * 1000;
 const CREDENTIAL_GRANT_TTL = 10 * 60 * 1000;
 const CHALLENGE_TTL = 5 * 60 * 1000;
 const CHALLENGE_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+const challengeBody = z.object({ challenge: z.string().regex(CHALLENGE_PATTERN) });
 
 interface MiniBindingOptions {
   database: D1Database;
@@ -71,25 +72,6 @@ function randomSecret(): string {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
-}
-
-async function readChallenge(request: Request): Promise<string> {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    throw apiError("BAD_REQUEST", "MINI_BINDING_MALFORMED", "Binding request is malformed");
-  }
-  if (
-    typeof body !== "object" ||
-    body === null ||
-    !("challenge" in body) ||
-    typeof body.challenge !== "string" ||
-    !CHALLENGE_PATTERN.test(body.challenge)
-  ) {
-    throw apiError("BAD_REQUEST", "MINI_BINDING_MALFORMED", "Binding request is malformed");
-  }
-  return body.challenge;
 }
 
 async function expireChallenge(database: D1Database, row: ChallengeRow): Promise<ChallengeRow> {
@@ -183,13 +165,6 @@ export function miniBinding(options: MiniBindingOptions): BetterAuthPlugin {
             throw apiError("FORBIDDEN", "MINI_BINDING_SIGNED_IN_REQUIRED", "Signed-in account required");
           }
           const now = Date.now();
-          if (!(await hasRecentGrant(database, session.id, ctx.context.session.user.id))) {
-            throw apiError(
-              "FORBIDDEN",
-              "MINI_BINDING_RECENT_AUTH_REQUIRED",
-              "Recent authentication is required",
-            );
-          }
           if (await findMiniAccount(database, ctx.context.session.user.id)) {
             throw apiError("FORBIDDEN", "MINI_BINDING_TARGET_CONFLICT", "Account is already bound");
           }
@@ -258,12 +233,11 @@ export function miniBinding(options: MiniBindingOptions): BetterAuthPlugin {
       ),
       inspectMiniBindingChallenge: createAuthEndpoint(
         "/mini-binding/inspect",
-        { method: "POST", use: [sessionMiddleware], requireRequest: true },
+        { method: "POST", body: challengeBody, use: [sessionMiddleware] },
         async (ctx) => {
           const session = requireChannel(ctx.context.session.session, "mini");
           await touchMiniIdentity(database, session.userId);
-          const challenge = await readChallenge(ctx.request);
-          const secretHash = await sha256(challenge);
+          const secretHash = await sha256(ctx.body.challenge);
           const row = await database
             .prepare(
               "SELECT c.id, c.status, c.expires_at, c.inspector_user_id, c.target_user_id, u.name, u.image FROM mini_binding_challenge c JOIN user u ON u.id = c.target_user_id WHERE c.secret_hash = ?",
@@ -330,12 +304,11 @@ export function miniBinding(options: MiniBindingOptions): BetterAuthPlugin {
       ),
       rejectMiniBindingChallenge: createAuthEndpoint(
         "/mini-binding/reject",
-        { method: "POST", use: [sessionMiddleware], requireRequest: true },
+        { method: "POST", body: challengeBody, use: [sessionMiddleware] },
         async (ctx) => {
           const session = requireChannel(ctx.context.session.session, "mini");
           await touchMiniIdentity(database, session.userId);
-          const challenge = await readChallenge(ctx.request);
-          const secretHash = await sha256(challenge);
+          const secretHash = await sha256(ctx.body.challenge);
           const row = await database
             .prepare(
               "SELECT id, status, expires_at, inspector_user_id, target_user_id FROM mini_binding_challenge WHERE secret_hash = ?",
@@ -374,12 +347,11 @@ export function miniBinding(options: MiniBindingOptions): BetterAuthPlugin {
       ),
       confirmMiniBindingChallenge: createAuthEndpoint(
         "/mini-binding/confirm",
-        { method: "POST", use: [sessionMiddleware], requireRequest: true },
+        { method: "POST", body: challengeBody, use: [sessionMiddleware] },
         async (ctx) => {
           const sourceSession = requireChannel(ctx.context.session.session, "mini");
           await touchMiniIdentity(database, sourceSession.userId);
-          const challenge = await readChallenge(ctx.request);
-          const secretHash = await sha256(challenge);
+          const secretHash = await sha256(ctx.body.challenge);
           const row = await database
             .prepare(
               "SELECT id, status, expires_at, inspector_user_id, target_user_id, conflict_reason, merge_nonce FROM mini_binding_challenge WHERE secret_hash = ?",

@@ -104,12 +104,7 @@ export function MiniBindingDialog({
       setView({ kind: "pending", ...challenge });
     } catch (error) {
       if (createSequence.current !== sequence) return;
-      if (
-        error instanceof BindingApiError &&
-        error.code === "MINI_BINDING_RECENT_AUTH_REQUIRED"
-      ) {
-        setView({ kind: "reauth" });
-      } else if (error instanceof BindingApiError && error.code === "MINI_BINDING_TARGET_CONFLICT") {
+      if (error instanceof BindingApiError && error.code === "MINI_BINDING_TARGET_CONFLICT") {
         setView({ kind: "bound" });
       } else {
         setView({ kind: "error", message: "暂时无法创建绑定二维码" });

@@ -16,7 +16,7 @@
         </view>
         <view class="identity-card__copy" wx:elif="{{authStatus === 'error'}}">
           <text class="identity-card__title">身份暂不可用</text>
-          <text class="identity-card__subtitle">不影响浏览公开内容</text>
+          <text class="identity-card__subtitle">{{authError}}</text>
         </view>
         <view class="identity-card__copy" wx:else>
           <text class="identity-card__title">正在建立身份</text>

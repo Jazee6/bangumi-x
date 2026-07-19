@@ -11,15 +11,32 @@ export type MiniAuthState =
   | { status: "loading" }
   | { status: "unbound" }
   | { status: "bound"; profile: AccountProfile }
-  | { status: "error" };
+  | { status: "error"; message: string };
 
 type AuthListener = (state: MiniAuthState) => void;
 type PublicIdentity = Exclude<MiniAuthState, { status: "loading" | "error" }>;
 
 class AuthRequestError extends Error {
-  constructor(readonly rejected: boolean) {
-    super("Mini authentication request failed");
+  constructor(
+    readonly rejected: boolean,
+    readonly code?: string,
+  ) {
+    super(code ?? "Mini authentication request failed");
   }
+}
+
+function readErrorCode(value: unknown): string | undefined {
+  if (typeof value !== "object" || value === null || !("code" in value)) return undefined;
+  return typeof value.code === "string" ? value.code : undefined;
+}
+
+function authErrorMessage(error: unknown): string {
+  if (error instanceof AuthRequestError) {
+    if (error.code === "MINI_AUTH_INVALID_REQUEST") return "登录请求无效，请重试";
+    if (error.code === "MINI_AUTH_INVALID_CODE") return "微信登录凭证已失效，请重试";
+    if (error.code === "MINI_AUTH_UNAVAILABLE") return "身份服务暂不可用，请稍后重试";
+  }
+  return "微信登录失败，请重试";
 }
 
 let state: MiniAuthState = { status: "loading" };
@@ -136,10 +153,10 @@ function requestIdentity(
         ...(options.code ? { "Content-Type": "application/json" } : {}),
         ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
       },
-      data: options.code ? { code: options.code } : undefined,
+      data: options.code ? JSON.stringify({ code: options.code }) : undefined,
       success: (response) => {
         if (response.statusCode < 200 || response.statusCode >= 300) {
-          reject(new AuthRequestError(response.statusCode === 401));
+          reject(new AuthRequestError(response.statusCode === 401, readErrorCode(response.data)));
           return;
         }
         const identity = parseIdentity(response.data);
@@ -186,9 +203,9 @@ export function establishMiniIdentity(): Promise<void> {
 
   publish({ status: "loading" });
   inFlight = recover()
-    .catch(() => {
+    .catch((error) => {
       token = null;
-      publish({ status: "error" });
+      publish({ status: "error", message: authErrorMessage(error) });
     })
     .finally(() => {
       inFlight = null;
@@ -220,7 +237,7 @@ export function miniAuthRequest<T>(path: string, body: unknown): Promise<T> {
         "Content-Type": "application/json",
         Authorization: `Bearer ${requestToken}`,
       },
-      data: body as WechatMiniprogram.IAnyObject,
+      data: JSON.stringify(body),
       success: (response) => {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           if (response.statusCode === 401 && token === requestToken) {

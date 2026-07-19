@@ -1,4 +1,4 @@
-import type { BetterAuthPlugin } from "better-auth";
+import { z, type BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthEndpoint, sessionMiddleware } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import { touchMiniIdentity } from "./mini-identity-cleanup";
@@ -131,26 +131,12 @@ export function miniAuth(options: MiniAuthOptions): BetterAuthPlugin {
       ),
       signInMini: createAuthEndpoint(
         "/mini/wechat",
-        { method: "POST", requireRequest: true },
+        {
+          method: "POST",
+          body: z.object({ code: z.string().min(1).max(256) }),
+        },
         async (ctx) => {
-          let body: unknown;
-          try {
-            body = await ctx.request.json();
-          } catch {
-            throw publicError("BAD_REQUEST", "MINI_AUTH_INVALID_REQUEST", "A login code is required");
-          }
-          if (
-            typeof body !== "object" ||
-            body === null ||
-            !("code" in body) ||
-            typeof body.code !== "string" ||
-            body.code.length === 0 ||
-            body.code.length > 256
-          ) {
-            throw publicError("BAD_REQUEST", "MINI_AUTH_INVALID_REQUEST", "A login code is required");
-          }
-
-          const openId = await exchangeCode(options, body.code);
+          const openId = await exchangeCode(options, ctx.body.code);
           let userId = await resolveUserId(options.database, openId);
           let user = await ctx.context.internalAdapter.findUserById(userId);
           if (!user) {

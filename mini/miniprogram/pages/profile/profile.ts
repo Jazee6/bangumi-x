@@ -17,6 +17,7 @@ function authData(state: ReturnType<typeof getMiniAuthState>) {
     authStatus: state.status,
     profileName: state.status === "bound" ? state.profile.name : "",
     profileImage: state.status === "bound" ? state.profile.image ?? "" : "",
+    authError: state.status === "error" ? state.message : "",
   };
 }
 
