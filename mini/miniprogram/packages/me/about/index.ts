@@ -1,6 +1,6 @@
 import { CANONICAL_WEB_ORIGIN } from "share";
 
-import { APP_VERSION } from "../../../lib/app-version";
+import { APP_VERSION } from "./app-version";
 
 const GITHUB_URL = "https://github.com/Jazee6/bangumi-x";
 

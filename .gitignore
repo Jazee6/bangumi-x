@@ -5,7 +5,7 @@ node_modules
 out
 dist
 mini/miniprogram/miniprogram_npm/
-mini/miniprogram/lib/app-version.ts
+mini/miniprogram/packages/me/about/app-version.ts
 *.tgz
 
 # code coverage
