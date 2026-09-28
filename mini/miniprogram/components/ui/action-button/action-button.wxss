@@ -1,0 +1,30 @@
+@import "../button/button.wxss";
+
+.ui-action-button {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.ui-action-button__icon {
+  display: flex;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.ui-button--size-icon .ui-action-button__icon,
+.ui-button--size-icon-sm .ui-action-button__icon,
+.ui-button--size-icon-lg .ui-action-button__icon,
+.ui-button--size-fab .ui-action-button__icon {
+  margin-right: 0;
+}
+
+.ui-button--group-start {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.ui-button--group-end {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 0;
+}

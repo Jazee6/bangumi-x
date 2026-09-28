@@ -1,0 +1,10 @@
+{
+  "name": "mini",
+  "private": true,
+  "scripts": {
+    "typecheck": "bun ../scripts/prepare-mini.ts && tsc --noEmit"
+  },
+  "dependencies": {
+    "share": "workspace:*"
+  }
+}

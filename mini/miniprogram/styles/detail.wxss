@@ -1,0 +1,107 @@
+.detail-page {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  height: 100vh;
+  background: var(--background);
+  flex-direction: column;
+}
+
+.detail-page__header,
+.detail-page__chrome {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+
+.detail-page__chrome {
+  background: var(--background-blur);
+  backdrop-filter: blur(20px) saturate(180%);
+}
+
+.detail-page__scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.detail-page__hero-header {
+  position: relative;
+  z-index: 1;
+  background: var(--background);
+}
+
+/* Skyline 中 nested-scroll-header 总在 body 之上；吸顶后 hero 只剩藏在顶栏下的部分，隐藏它才能透出面板。 */
+.detail-page__hero-header--hidden {
+  opacity: 0;
+}
+
+.detail-page__tabs,
+.detail-page__chrome-tabs {
+  box-sizing: border-box;
+  height: 48px;
+}
+
+.detail-page__tabs {
+  position: relative;
+  z-index: 1;
+  background: var(--background);
+}
+
+.detail-page__tab-sentinel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.detail-page__tabs--placeholder {
+  background: transparent;
+}
+
+/* 面板向上延伸到页头与标签栏下方，吸顶后内容能从模糊的顶栏下滑过；延伸的高度由 panel-start 补回。 */
+.detail-page__swiper {
+  width: 100%;
+  height: calc(100% + var(--detail-panel-inset));
+  margin-top: calc(0px - var(--detail-panel-inset));
+}
+
+.detail-page__tab-scroll {
+  width: 100%;
+  height: 100%;
+  background: var(--muted);
+}
+
+.detail-page__panel-start {
+  height: calc(var(--detail-panel-inset) + 16px);
+}
+
+.detail-page__panel-end {
+  height: 24px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.detail-page__section-title {
+  display: block;
+  margin: 8px 16px 10px;
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.detail-page__actions {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 4px 16px 12px;
+}
+
+.detail-page__subject {
+  margin-top: 4px;
+  padding-bottom: 24px;
+}

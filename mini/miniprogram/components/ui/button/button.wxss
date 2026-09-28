@@ -1,0 +1,188 @@
+.ui-button {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-4xl);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease,
+    transform 100ms ease;
+}
+
+/* 原生 button 的默认宽度规则带属性选择器，宽度相关规则一律用双类名提高优先级。 */
+.ui-button.ui-button {
+  width: auto;
+}
+
+.ui-button.ui-button--block {
+  width: 100%;
+}
+
+.ui-button::after {
+  border: 0;
+}
+
+.ui-button--variant-default {
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.ui-button--variant-outline {
+  color: var(--foreground);
+  background: var(--background);
+  border-color: var(--border);
+}
+
+.ui-button--variant-secondary {
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+}
+
+.ui-button--variant-ghost {
+  color: var(--foreground);
+  background: transparent;
+}
+
+.ui-button--variant-destructive {
+  color: var(--destructive);
+  background: var(--destructive-soft);
+}
+
+.ui-button--variant-link,
+.ui-button--variant-summary {
+  color: var(--primary);
+  background: transparent;
+}
+
+.ui-button--variant-summary {
+  border-radius: 0;
+  background: var(--background);
+}
+
+.ui-button--pressed {
+  opacity: 0.7;
+}
+
+.ui-button--variant-outline.ui-button--pressed,
+.ui-button--variant-ghost.ui-button--pressed {
+  color: var(--foreground);
+  background: var(--muted);
+  opacity: 1;
+}
+
+.ui-button--variant-link.ui-button--pressed,
+.ui-button--variant-summary.ui-button--pressed {
+  text-decoration: underline;
+}
+
+.ui-button--disabled {
+  opacity: 0.5;
+}
+
+.ui-button--size-default {
+  height: 36px;
+  padding: 0 12px;
+}
+
+.ui-button--size-xs {
+  height: 24px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.ui-button--size-sm {
+  height: 32px;
+  padding: 0 12px;
+}
+
+.ui-button--size-lg {
+  height: 40px;
+  padding: 0 16px;
+}
+
+.ui-button--size-icon,
+.ui-button--size-icon-xs,
+.ui-button--size-icon-sm,
+.ui-button--size-icon-lg {
+  padding: 0;
+}
+
+.ui-button.ui-button--size-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.ui-button.ui-button--size-icon-xs {
+  width: 24px;
+  height: 24px;
+}
+
+.ui-button.ui-button--size-icon-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.ui-button.ui-button--size-icon-lg {
+  width: 40px;
+  height: 40px;
+}
+
+.ui-button.ui-button--size-fab {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+}
+
+.ui-button--size-inline {
+  width: auto;
+  height: auto;
+  padding: 0;
+  border: 0;
+  line-height: inherit;
+}
+
+.ui-button--size-summary {
+  height: 28px;
+  padding: 0 0 0 12px;
+}
+
+.ui-button__spinner {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  flex-shrink: 0;
+  animation: ui-button-spin 1s linear infinite;
+}
+
+.ui-button--size-xs .ui-button__spinner,
+.ui-button--size-icon-xs .ui-button__spinner {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+}
+
+.ui-button--size-icon .ui-button__spinner,
+.ui-button--size-icon-xs .ui-button__spinner,
+.ui-button--size-icon-sm .ui-button__spinner,
+.ui-button--size-icon-lg .ui-button__spinner {
+  margin-right: 0;
+}
+
+@keyframes ui-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

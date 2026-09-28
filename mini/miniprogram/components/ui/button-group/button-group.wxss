@@ -1,0 +1,7 @@
+.ui-button-group {
+  display: flex;
+  align-items: stretch;
+  width: auto;
+  flex-grow: 0;
+  flex-shrink: 0;
+}

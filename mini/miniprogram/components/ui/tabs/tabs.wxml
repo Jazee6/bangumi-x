@@ -1,0 +1,19 @@
+<view class="ui-tabs ui-tabs--{{variant}} {{fit ? 'ui-tabs--fit' : ''}}" aria-role="tablist">
+  <view
+    wx:for="{{tabs}}"
+    wx:key="value"
+    class="ui-tabs__trigger {{item.value === value ? 'ui-tabs__trigger--active' : ''}} {{item.disabled ? 'ui-tabs__trigger--disabled' : ''}}"
+    data-value="{{item.value}}"
+    data-disabled="{{item.disabled}}"
+    aria-role="tab"
+    aria-selected="{{item.value === value}}"
+    aria-disabled="{{item.disabled}}"
+    hover-class="{{item.disabled ? 'none' : 'ui-tabs__trigger--pressed'}}"
+    bindtap="onSelect"
+  >
+    <view class="ui-tabs__label {{item.value === value ? 'ui-tabs__label--active' : ''}}">
+      <text>{{item.label}}</text>
+      <text wx:if="{{item.count}}" class="ui-tabs__count">{{item.count}}</text>
+    </view>
+  </view>
+</view>

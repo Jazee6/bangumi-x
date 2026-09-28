@@ -1,0 +1,16 @@
+{
+  "navigationBarTitleText": "进度",
+  "usingComponents": {
+    "app-header": "/components/app-header/app-header",
+    "keyword-search": "/components/keyword-search/keyword-search",
+    "list-footer": "/components/ui/list-footer/list-footer",
+    "ui-action-button": "/components/ui/action-button/action-button",
+    "ui-badge": "/components/ui/badge/badge",
+    "ui-button": "/components/ui/button/button",
+    "ui-empty": "/components/ui/empty/empty",
+    "ui-select-trigger": "/components/ui/select-trigger/select-trigger",
+    "ui-skeleton": "/components/ui/skeleton/skeleton",
+    "ui-stepper": "/components/ui/stepper/stepper",
+    "ui-tabs": "/components/ui/tabs/tabs"
+  }
+}

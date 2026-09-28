@@ -1,0 +1,67 @@
+<view class="progress-page">
+  <view class="progress-page__header public-page-header--blur">
+    <app-header title="进度" back transparent bindback="onBack" bindheaderheightchange="onHeaderHeightChange"></app-header>
+    <view class="list-controls">
+      <view class="progress-controls__row">
+        <ui-tabs variant="pill" fit tabs="{{stageTabs}}" value="{{selectedStage}}" bindchange="onStageChange"></ui-tabs>
+        <picker class="progress-controls__select" mode="selector" range="{{typeLabels}}" value="{{typeIndex}}" bindchange="onTypeChange">
+          <ui-select-trigger label="{{typeLabels[typeIndex]}}"></ui-select-trigger>
+        </picker>
+      </view>
+    </view>
+  </view>
+  <scroll-view class="progress-page__scroll" type="custom" scroll-y enhanced show-scrollbar="{{false}}" lower-threshold="200" bindscrolltolower="onScrollLower">
+    <view style="height: {{headerHeight}}px;"></view>
+    <view class="list-controls-spacer"></view>
+    <view class="progress-controls">
+      <keyword-search value="{{keywordInput}}" loading="{{loading}}" bindinput="onKeywordInput" bindsearch="onSearch" bindclear="onClearKeyword"></keyword-search>
+    </view>
+
+    <view wx:if="{{loading && !loaded}}" class="progress-list">
+      <ui-skeleton variant="progress"></ui-skeleton>
+      <ui-skeleton variant="progress"></ui-skeleton>
+      <ui-skeleton variant="progress"></ui-skeleton>
+    </view>
+    <ui-empty has-action wx:elif="{{errorMessage}}" symbol="!" title="进度加载失败" description="{{errorMessage}}" variant="plain"><ui-button slot="action" variant="outline" size="sm" bindtap="onRetry">重试</ui-button></ui-empty>
+    <ui-empty wx:elif="{{loaded && items.length === 0}}" icon="{{keyword ? 'search' : 'list-checks-empty'}}" title="{{keyword ? '没有找到匹配进度' : '暂无进度'}}" description="{{keyword ? '可以尝试其他关键词。' : '可在条目详情中开始记录。'}}"></ui-empty>
+    <list-view wx:else class="progress-list-items" padding="{{[12, 16, 20, 16]}}">
+      <view wx:for="{{items}}" wx:key="id" class="progress-card">
+        <view class="progress-card__image-link" data-id="{{item.id}}" hover-class="progress-card__link--pressed" bindtap="onOpenSubject">
+          <image wx:if="{{item.imageUrlValue}}" class="progress-card__image" src="{{item.imageUrlValue}}" mode="aspectFill" lazy-load></image>
+          <view wx:else class="progress-card__image progress-card__image--empty"><text>暂无封面</text></view>
+        </view>
+        <view class="progress-card__body">
+          <view class="progress-card__heading">
+            <text class="progress-card__title" max-lines="2" overflow="ellipsis" data-id="{{item.id}}" hover-class="progress-card__link--pressed" bindtap="onOpenSubject">{{item.title}}</text>
+            <text class="progress-card__type">{{item.type}}</text>
+          </view>
+          <view wx:if="{{item.broadcastLabel}}" class="progress-card__broadcast">
+            <ui-badge value="{{item.broadcastLabel}}" variant="{{item.broadcastLabel === '已完结' ? 'outline' : 'secondary'}}"></ui-badge>
+          </view>
+          <view class="progress-card__actions">
+            <ui-stepper
+              wx:if="{{item.hasChapters}}"
+              value="{{item.completedChapters || 0}}"
+              total="{{item.totalChapters || 0}}"
+              disabled="{{mutatingId > 0}}"
+              loading="{{mutatingId === item.id && mutatingAction === 'chapter'}}"
+              data-id="{{item.id}}"
+              bindchange="onProgressStep"
+              bindconfirm="onChapterConfirm"
+            ></ui-stepper>
+            <ui-action-button
+              label="{{item.stage === 'in_progress' ? '完成' : '恢复'}}"
+              variant="outline"
+              loading="{{mutatingId === item.id && mutatingAction === 'stage'}}"
+              disabled="{{mutatingId > 0}}"
+              data-id="{{item.id}}"
+              bindpress="onToggleStage"
+            ></ui-action-button>
+            <ui-action-button icon="ellipsis" icon-only size="icon" variant="ghost" aria-label="更多进度操作" disabled="{{mutatingId > 0}}" data-id="{{item.id}}" bindpress="onOpenMore"></ui-action-button>
+          </view>
+        </view>
+      </view>
+    </list-view>
+    <list-footer state="{{footerState}}" bindretry="onRetryMore"></list-footer>
+  </scroll-view>
+</view>

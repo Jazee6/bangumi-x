@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "styleIsolation": "apply-shared",
+  "usingComponents": {
+    "ui-button": "/components/ui/button/button",
+    "ui-spinner": "/components/ui/spinner/spinner"
+  }
+}

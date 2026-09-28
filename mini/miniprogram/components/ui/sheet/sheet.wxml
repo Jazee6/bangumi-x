@@ -1,0 +1,44 @@
+<page-container
+  show="{{open}}"
+  duration="260"
+  position="bottom"
+  custom-style="height: 100%; background: transparent;"
+  overlay-style="background: rgba(0, 0, 0, 0.45);"
+  bind:clickoverlay="onClose"
+  bind:beforeleave="onBeforeLeave"
+  bind:afterleave="onAfterLeave"
+>
+  <!-- 内容区铺满整屏会盖住遮罩，clickoverlay 无法触发；点击面板外的透明区域在这里关闭。 -->
+  <view class="ui-sheet" aria-role="dialog" aria-label="{{title}}" bindtap="onClose">
+    <draggable-sheet
+      class="ui-sheet__draggable"
+      initial-child-size="{{initialSize}}"
+      min-child-size="0.1"
+      max-child-size="0.92"
+      snap
+      snap-sizes="{{snapSizes}}"
+      worklet:onsizeupdate="onSizeUpdate"
+    >
+      <view class="ui-sheet__surface" catchtap="onContentTap">
+        <view class="ui-sheet__handle"></view>
+        <view class="ui-sheet__header">
+          <text class="ui-sheet__title">{{title}}</text>
+          <view class="ui-sheet__close" aria-role="button" aria-label="关闭" hover-class="ui-sheet__close--pressed" bindtap="onClose">
+            <ui-icon name="x" size="16"></ui-icon>
+          </view>
+        </view>
+        <scroll-view
+          class="ui-sheet__scroll"
+          type="custom"
+          scroll-y
+          enhanced
+          show-scrollbar="{{false}}"
+          associative-container="draggable-sheet"
+        >
+          <view class="ui-sheet__content"><slot></slot></view>
+        </scroll-view>
+        <view wx:if="{{footerVisible}}" class="ui-sheet__footer"><slot name="footer"></slot></view>
+      </view>
+    </draggable-sheet>
+  </view>
+</page-container>

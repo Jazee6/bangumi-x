@@ -1,0 +1,4 @@
+<view class="ui-select-trigger" hover-class="touch-press--pressed">
+  <text class="ui-select-trigger__label">{{label}}</text>
+  <ui-icon name="chevron-down" tone="muted"></ui-icon>
+</view>

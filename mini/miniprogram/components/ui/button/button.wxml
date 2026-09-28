@@ -1,0 +1,36 @@
+<button
+  class="ui-button ui-button--variant-{{variant}} ui-button--size-{{size}} {{block ? 'ui-button--block' : ''}} {{disabled || loading ? 'ui-button--disabled' : ''}} custom-class"
+  disabled="{{disabled || loading}}"
+  form-type="{{formType}}"
+  open-type="{{openType}}"
+  hover-class="{{disabled || loading ? 'none' : hoverClass}}"
+  hover-stop-propagation="{{hoverStopPropagation}}"
+  hover-start-time="{{hoverStartTime}}"
+  hover-stay-time="{{hoverStayTime}}"
+  lang="{{lang}}"
+  session-from="{{sessionFrom}}"
+  send-message-title="{{sendMessageTitle}}"
+  send-message-path="{{sendMessagePath}}"
+  send-message-img="{{sendMessageImg}}"
+  app-parameter="{{appParameter}}"
+  show-message-card="{{showMessageCard}}"
+  phone-number-no-quota-toast="{{phoneNumberNoQuotaToast}}"
+  need-show-entrance="{{needShowEntrance}}"
+  entrance-path="{{entrancePath}}"
+  aria-label="{{ariaLabel}}"
+  bindgetuserinfo="forwardOpenTypeEvent"
+  bindcontact="forwardOpenTypeEvent"
+  bindcreateliveactivity="forwardOpenTypeEvent"
+  bindgetphonenumber="forwardOpenTypeEvent"
+  bindgetrealtimephonenumber="forwardOpenTypeEvent"
+  binderror="forwardOpenTypeEvent"
+  bindopensetting="forwardOpenTypeEvent"
+  bindlaunchapp="forwardOpenTypeEvent"
+  bindchooseavatar="forwardOpenTypeEvent"
+  bindagreeprivacyauthorization="forwardOpenTypeEvent"
+>
+  <view wx:if="{{loading}}" class="ui-button__spinner" aria-role="img" aria-label="加载中">
+    <ui-icon name="loader-circle" size="{{size === 'xs' || size === 'icon-xs' ? 12 : 16}}" tone="{{variant === 'default' ? 'inverse' : 'default'}}"></ui-icon>
+  </view>
+  <slot wx:if="{{!loading || !iconOnly}}"></slot>
+</button>

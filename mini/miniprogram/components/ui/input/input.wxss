@@ -1,0 +1,45 @@
+.ui-input {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-3xl);
+  background: var(--input-soft);
+}
+
+.ui-input--focused {
+  border-color: var(--ring);
+}
+
+.ui-input--disabled {
+  opacity: 0.5;
+}
+
+.ui-input__control {
+  box-sizing: border-box;
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  color: var(--foreground);
+  font-size: 14px;
+}
+
+.ui-input__control--clearable {
+  padding-right: 40px;
+}
+
+.ui-input__placeholder {
+  color: var(--muted-foreground);
+}
+
+.ui-input__clear {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}

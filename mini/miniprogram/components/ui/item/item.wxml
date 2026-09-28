@@ -1,0 +1,14 @@
+<view
+  class="ui-item {{bordered ? 'ui-item--bordered' : ''}} {{description ? 'ui-item--described' : ''}}"
+  hover-class="{{pressable ? 'ui-item--pressed' : 'none'}}"
+  aria-role="{{pressable ? 'button' : 'listitem'}}"
+>
+  <view class="ui-item__body">
+    <text class="ui-item__title {{destructive ? 'ui-item__title--destructive' : ''}}">{{title}}</text>
+    <text wx:if="{{description}}" class="ui-item__description">{{description}}</text>
+  </view>
+  <text wx:if="{{value}}" class="ui-item__value">{{value}}</text>
+  <slot name="end"></slot>
+  <view wx:if="{{chevron}}" class="ui-item__chevron"><ui-icon name="chevron-right" tone="muted"></ui-icon></view>
+  <slot></slot>
+</view>

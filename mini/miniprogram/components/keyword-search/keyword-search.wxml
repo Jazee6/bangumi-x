@@ -1,0 +1,18 @@
+<!-- 提交按钮用 view 实现的 ui-action-button：原生 button 的 disabled 在 Skyline 下偶尔不随数据恢复。 -->
+<view class="keyword-search">
+  <view class="keyword-search__field">
+    <ui-input
+      value="{{value}}"
+      maxlength="{{maxlength}}"
+      placeholder="输入关键词"
+      confirm-type="search"
+      clearable
+      bindinput="onInput"
+      bindconfirm="onSearch"
+      bindclear="onClear"
+    ></ui-input>
+  </view>
+  <view class="keyword-search__submit">
+    <ui-action-button label="搜索" variant="default" disabled="{{loading}}" bindpress="onSearch"></ui-action-button>
+  </view>
+</view>

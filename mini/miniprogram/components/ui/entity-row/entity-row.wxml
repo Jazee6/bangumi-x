@@ -1,0 +1,17 @@
+<view class="entity-row" hover-class="entity-row--pressed" bindtap="onSelect">
+  <view wx:if="{{imageUrl && !imageFailed}}" class="entity-row__media">
+    <image
+      class="entity-row__image {{imageTop ? 'entity-row__image--top' : ''}}"
+      src="{{imageUrl}}"
+      mode="{{imageTop ? 'widthFix' : 'aspectFill'}}"
+      lazy-load
+      binderror="onImageError"
+    ></image>
+  </view>
+  <view wx:else class="entity-row__placeholder {{plainPlaceholder ? 'entity-row__placeholder--plain' : ''}}"><text>{{placeholderText}}</text></view>
+  <view class="entity-row__content">
+    <text class="entity-row__title">{{name}}</text>
+    <text wx:if="{{description}}" max-lines="2" overflow="ellipsis" class="entity-row__description">{{description}}</text>
+  </view>
+  <navigator wx:if="{{publicLink && entityId > 0 && target}}" class="entity-row__link" url="/pages/{{target}}s/detail/index?id={{entityId}}" open-type="{{openType}}" aria-label="查看{{name}}" hover-class="none"></navigator>
+</view>

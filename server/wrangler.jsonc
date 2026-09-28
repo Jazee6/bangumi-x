@@ -1,0 +1,73 @@
+{
+  // Required Wrangler secrets: BETTER_AUTH_SECRET, EASY_AUTH_CLIENT_ID,
+  // EASY_AUTH_CLIENT_SECRET, WECHAT_MINI_APP_SECRET, and WECHAT_CALLBACK_TOKEN.
+  // Values are never committed.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bangumi-x",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-02",
+  "dev": {
+    "ip": "0.0.0.0",
+  },
+  "rules": [
+    {
+      "type": "CompiledWasm",
+      "globs": ["**/*.wasm"],
+      "fallthrough": true,
+    },
+    {
+      "type": "Data",
+      "globs": ["**/*.ttf"],
+      "fallthrough": true,
+    },
+  ],
+  "vars": {
+    "WEB_ORIGIN": "http://localhost:3000",
+    "SERVER_URL": "http://localhost:8787",
+    "WECHAT_MINI_APP_ID": "wx02ce91659b1acef4",
+    "EASY_AUTH_CLIENT_ID": "wbhIWqXuZuwLxsdCwHcwZffNKxwfcBYl",
+    "BGM_API_URL": "https://bgmapi.anibt.net"
+  },
+  "images": {
+    "binding": "IMAGES",
+  },
+  "r2_buckets": [
+    {
+      "binding": "AVATARS",
+      "bucket_name": "bangumi-x",
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bangumi-x-local",
+      "migrations_dir": "drizzle",
+    },
+  ],
+  "env": {
+    "production": {
+      "vars": {
+        "WEB_ORIGIN": "https://bgmx.jaze.top",
+        "SERVER_URL": "https://s.bgmx.jaze.top",
+        "WECHAT_MINI_APP_ID": "wx02ce91659b1acef4",
+        "EASY_AUTH_CLIENT_ID": "wbhIWqXuZuwLxsdCwHcwZffNKxwfcBYl",
+      },
+      "images": {
+        "binding": "IMAGES",
+      },
+      "r2_buckets": [
+        {
+          "binding": "AVATARS",
+          "bucket_name": "bangumi-x",
+        },
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "bangumi-x",
+          "migrations_dir": "drizzle"
+        },
+      ],
+    },
+  },
+}

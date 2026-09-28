@@ -1,0 +1,51 @@
+.app-header {
+  flex: none;
+  box-sizing: border-box;
+  width: 100%;
+  color: var(--foreground);
+  background: var(--background);
+}
+
+.app-header--blur {
+  background: var(--background-blur);
+  backdrop-filter: blur(20px);
+}
+
+.app-header--transparent {
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.app-header__inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.app-header__back {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+}
+
+.app-header__back--pressed {
+  opacity: 0.6;
+}
+
+.app-header__title {
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,59 @@
+<view class="detail-page">
+  <view class="detail-page__header">
+    <app-header
+      title="{{loaded && !blocked && !errorMessage && heroTitleHidden ? title : ''}}"
+      back
+      blur
+      bindback="onBack"
+      bindheaderheightchange="onHeaderHeightChange"
+    ></app-header>
+  </view>
+
+  <scroll-view class="detail-page__scroll" type="custom" scroll-y enhanced show-scrollbar="{{false}}">
+    <view style="height: {{headerHeight}}px;"></view>
+
+    <ui-skeleton wx:if="{{loading && !loaded}}" variant="detail-text"></ui-skeleton>
+
+    <ui-empty has-action
+      wx:elif="{{errorMessage}}"
+      symbol="!"
+      title="章节详情加载失败"
+      description="{{errorMessage}}"
+      variant="plain"
+    >
+      <ui-button slot="action" variant="outline" size="sm" bindtap="onRetry">重试</ui-button>
+    </ui-empty>
+
+    <ui-empty
+      wx:elif="{{blocked}}"
+      symbol="!"
+      title="内容不可访问"
+      description="该章节所属条目不在番迹的公开浏览范围内。"
+      variant="plain"
+    ></ui-empty>
+
+    <block wx:elif="{{loaded}}">
+      <detail-hero
+        title="{{title}}"
+        header-height="{{headerHeight}}"
+        bindtitlevisibilitychange="onTitleVisibilityChange"
+        image-url="{{imageUrl}}"
+        show-image="{{false}}"
+        badges="{{badges}}"
+        summary="{{summary}}"
+      ></detail-hero>
+      <view class="detail-page__actions"><detail-share-button></detail-share-button></view>
+      <view class="detail-page__subject">
+        <text class="detail-page__section-title">所属条目</text>
+        <entity-row
+          entity-id="{{subjectId}}"
+          target="subject"
+          name="{{subjectTitle}}"
+          image-url="{{imageUrl}}"
+          description="{{subjectType}}"
+          public-link
+        ></entity-row>
+      </view>
+    </block>
+  </scroll-view>
+</view>

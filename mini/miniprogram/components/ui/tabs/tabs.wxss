@@ -1,0 +1,112 @@
+.ui-tabs {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.ui-tabs__trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.ui-tabs--fit {
+  width: auto;
+}
+
+.ui-tabs--fit .ui-tabs__trigger {
+  flex: none;
+}
+
+.ui-tabs__trigger--disabled {
+  opacity: 0.5;
+}
+
+.ui-tabs__label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.ui-tabs__count {
+  color: var(--muted-foreground);
+}
+
+/* line */
+
+.ui-tabs--line {
+  height: 48px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ui-tabs--line .ui-tabs__trigger {
+  height: 48px;
+}
+
+.ui-tabs--line .ui-tabs__trigger--active {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.ui-tabs--line .ui-tabs__trigger--pressed {
+  background: var(--muted);
+}
+
+.ui-tabs--line .ui-tabs__label--active::after {
+  position: absolute;
+  right: -6px;
+  bottom: -1px;
+  left: -6px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--foreground);
+  content: "";
+}
+
+/* pill：筛选标签，选中项为 primary 实心胶囊。 */
+
+.ui-tabs--pill {
+  height: 34px;
+}
+
+.ui-tabs--pill .ui-tabs__trigger {
+  height: 34px;
+  border-radius: 999px;
+}
+
+.ui-tabs--pill.ui-tabs--fit .ui-tabs__trigger {
+  padding: 0 14px;
+}
+
+.ui-tabs--pill .ui-tabs__trigger--active {
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.ui-tabs--pill .ui-tabs__trigger--disabled {
+  opacity: 0.4;
+}
+
+.ui-tabs--pill .ui-tabs__trigger--pressed {
+  opacity: 0.65;
+}
+
+.ui-tabs--pill .ui-tabs__label {
+  gap: 6px;
+}
+
+.ui-tabs--pill .ui-tabs__count {
+  color: inherit;
+  opacity: 0.72;
+}

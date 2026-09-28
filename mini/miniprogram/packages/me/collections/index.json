@@ -1,0 +1,19 @@
+{
+  "navigationBarTitleText": "收藏",
+  "usingComponents": {
+    "app-header": "/components/app-header/app-header",
+    "keyword-search": "/components/keyword-search/keyword-search",
+    "list-footer": "/components/ui/list-footer/list-footer",
+    "poster-card": "/components/ui/poster-card/poster-card",
+    "ui-action-button": "/components/ui/action-button/action-button",
+    "ui-button": "/components/ui/button/button",
+    "ui-empty": "/components/ui/empty/empty",
+    "ui-icon": "/components/ui/icon/icon",
+    "ui-item": "/components/ui/item/item",
+    "ui-item-group": "/components/ui/item-group/item-group",
+    "ui-select-trigger": "/components/ui/select-trigger/select-trigger",
+    "ui-sheet": "/components/ui/sheet/sheet",
+    "ui-skeleton": "/components/ui/skeleton/skeleton",
+    "ui-tabs": "/components/ui/tabs/tabs"
+  }
+}

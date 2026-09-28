@@ -1,0 +1,117 @@
+page {
+  min-height: 100%;
+  color: #0a0a0a;
+  background: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+
+  /* 与 web/src/styles.css 的 neutral 主题一致（oklch 换算为 sRGB）。 */
+  --background: #ffffff;
+  --background-blur: rgba(255, 255, 255, 0.8);
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --primary: #171717;
+  --primary-foreground: #fafafa;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --destructive: #e7000b;
+  --destructive-soft: rgba(231, 0, 11, 0.1);
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --input-soft: rgba(229, 229, 229, 0.5);
+  --ring: #a3a3a3;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+  --radius-3xl: 22px;
+  --radius-4xl: 26px;
+}
+
+@media (prefers-color-scheme: dark) {
+  page {
+    color: #fafafa;
+    background: #0a0a0a;
+
+    --background: #0a0a0a;
+    --background-blur: rgba(10, 10, 10, 0.8);
+    --foreground: #fafafa;
+    --card: #171717;
+    --primary: #e5e5e5;
+    --primary-foreground: #171717;
+    --secondary: #262626;
+    --secondary-foreground: #fafafa;
+    --muted: #262626;
+    --muted-foreground: #a3a3a3;
+    --destructive: #ff6467;
+    --destructive-soft: rgba(255, 100, 103, 0.2);
+    --border: rgba(255, 255, 255, 0.1);
+    --input: rgba(255, 255, 255, 0.15);
+    --input-soft: rgba(255, 255, 255, 0.075);
+    --ring: #737373;
+  }
+}
+
+.public-page {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  height: 100vh;
+  background: var(--background);
+  flex-direction: column;
+}
+
+.public-page-header {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+
+.public-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.touch-press--pressed {
+  opacity: 0.65;
+}
+
+/* ui-item 默认插槽里铺满整行的透明 open-type 按钮（分享、选择头像）。 */
+/* 双类名压过原生 button 默认的 width 与 margin: auto。 */
+.ui-item-overlay.ui-item-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+}
+
+/* 列表页的筛选行：固定在页头容器内，与页头共用一层模糊，避免两层模糊在接缝处露出边缘。 */
+.public-page-header--blur {
+  background: var(--background-blur);
+  backdrop-filter: blur(20px);
+}
+
+.list-controls {
+  box-sizing: border-box;
+  width: 100%;
+  height: 56px;
+  padding: 12px 16px 8px;
+}
+
+/* 滚动区中占住筛选行的高度。 */
+.list-controls-spacer {
+  height: 56px;
+}

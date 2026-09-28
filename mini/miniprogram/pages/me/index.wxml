@@ -1,0 +1,41 @@
+<view class="me-page">
+  <view class="me-page__header">
+    <app-header title="我的" blur bindheaderheightchange="onHeaderHeightChange"></app-header>
+  </view>
+  <scroll-view class="me-page__scroll" type="custom" scroll-y enhanced show-scrollbar="{{false}}">
+    <view style="height: {{headerHeight}}px;"></view>
+
+    <ui-skeleton wx:if="{{loading && !loaded}}" variant="me"></ui-skeleton>
+
+    <ui-empty has-action wx:elif="{{errorMessage}}" symbol="!" title="身份加载失败" description="{{errorMessage}}" variant="plain">
+      <ui-button slot="action" variant="outline" size="sm" bindtap="onRetry">重试</ui-button>
+    </ui-empty>
+
+    <view wx:elif="{{user}}" class="me-content">
+      <view class="profile-card" hover-class="profile-card--pressed" bindtap="onOpenProfile">
+        <image wx:if="{{user.image}}" class="profile-card__avatar" src="{{user.image}}" mode="aspectFill" lazy-load></image>
+        <view wx:else class="profile-card__avatar profile-card__avatar--fallback">
+          <text>{{userInitial}}</text>
+        </view>
+        <view class="profile-card__body">
+          <text class="profile-card__name">{{user.name}}</text>
+          <text class="profile-card__status">{{user.editable ? '微信用户' : 'Bangumi X 账号'}}</text>
+        </view>
+        <view class="profile-card__chevron"><ui-icon name="chevron-right" tone="muted"></ui-icon></view>
+      </view>
+
+      <ui-item-group>
+        <ui-item title="收藏" description="整理你收藏的条目" chevron bindtap="onOpenCollections">
+          <ui-badge slot="end" value="{{collectionCount}}" variant="secondary"></ui-badge>
+        </ui-item>
+        <ui-item bordered title="进度" description="记录条目的进行阶段" chevron bindtap="onOpenProgress">
+          <ui-badge slot="end" value="{{progressCount}}" variant="secondary"></ui-badge>
+        </ui-item>
+      </ui-item-group>
+
+      <ui-item-group>
+        <ui-item title="关于" chevron bindtap="onOpenAbout"></ui-item>
+      </ui-item-group>
+    </view>
+  </scroll-view>
+</view>

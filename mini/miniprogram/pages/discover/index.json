@@ -1,0 +1,15 @@
+{
+  "navigationBarTitleText": "发现",
+  "usingComponents": {
+    "app-header": "/components/app-header/app-header",
+    "entity-row": "/components/ui/entity-row/entity-row",
+    "keyword-search": "/components/keyword-search/keyword-search",
+    "list-footer": "/components/ui/list-footer/list-footer",
+    "poster-card": "/components/ui/poster-card/poster-card",
+    "ui-button": "/components/ui/button/button",
+    "ui-empty": "/components/ui/empty/empty",
+    "ui-select-trigger": "/components/ui/select-trigger/select-trigger",
+    "ui-skeleton": "/components/ui/skeleton/skeleton",
+    "ui-tabs": "/components/ui/tabs/tabs"
+  }
+}

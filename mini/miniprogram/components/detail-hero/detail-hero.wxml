@@ -1,0 +1,57 @@
+<view class="detail-hero">
+  <view wx:if="{{showImage && imageUrl && !imageFailed}}" class="detail-hero__media detail-hero__media--{{imageVariant}}">
+    <image
+      class="detail-hero__image"
+      src="{{imageUrl}}"
+      mode="{{imageVariant === 'portrait' ? 'widthFix' : 'aspectFill'}}"
+      lazy-load
+      bindload="onImageLoad"
+      binderror="onImageError"
+    ></image>
+  </view>
+
+  <view class="detail-hero__title-row {{showImage && imageUrl && !imageFailed ? '' : 'detail-hero__title-row--first'}}">
+    <text class="detail-hero__title" aria-role="heading">{{title}}</text>
+    <view
+      class="detail-hero__copy-button"
+      hover-class="detail-hero__copy-button--pressed"
+      aria-role="button"
+      aria-label="复制标题"
+      bindtap="onCopyTitle"
+    >
+      <view class="detail-hero__copy-icon" aria-hidden="true"></view>
+    </view>
+  </view>
+  <text wx:if="{{originalTitle}}" class="detail-hero__original">{{originalTitle}}</text>
+
+  <view wx:if="{{badges.length}}" class="detail-hero__badges">
+    <ui-badge
+      wx:for="{{badges}}"
+      wx:key="value"
+      icon="{{item.icon || ''}}"
+      value="{{item.value}}"
+      variant="secondary"
+    ></ui-badge>
+  </view>
+
+  <view class="detail-hero__summary">
+    <text
+      wx:if="{{summary}}"
+      class="detail-hero__summary-text"
+      max-lines="{{summaryCollapsible && !summaryExpanded ? 6 : 1000}}"
+      overflow="ellipsis"
+    >{{summary}}</text>
+    <text wx:else class="detail-hero__summary-empty">暂无简介</text>
+    <view
+      wx:if="{{summaryCollapsible}}"
+      class="detail-hero__summary-toggle"
+      hover-class="detail-hero__summary-toggle--pressed"
+      aria-role="button"
+      bindtap="onToggleSummary"
+    >{{summaryExpanded ? '收起' : '展开'}}</view>
+  </view>
+
+  <view wx:if="{{tags.length}}" class="detail-hero__tags">
+    <ui-badge wx:for="{{tags}}" wx:key="*this" value="{{item}}" variant="secondary"></ui-badge>
+  </view>
+</view>

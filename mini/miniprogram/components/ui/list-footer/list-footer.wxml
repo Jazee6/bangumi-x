@@ -1,0 +1,7 @@
+<view wx:if="{{state === 'loading' || state === 'error'}}" class="list-footer">
+  <view wx:if="{{state === 'loading'}}" class="list-footer__loading">
+    <view class="list-footer__spinner"><ui-spinner></ui-spinner></view>
+    <text>正在加载更多</text>
+  </view>
+  <ui-button wx:elif="{{state === 'error'}}" variant="outline" size="sm" bindtap="onRetry">重试加载</ui-button>
+</view>

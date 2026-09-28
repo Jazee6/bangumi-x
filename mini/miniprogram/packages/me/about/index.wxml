@@ -1,0 +1,15 @@
+<view class="about-page">
+  <view class="about-page__header">
+    <app-header title="关于" back blur bindback="onBack" bindheaderheightchange="onHeaderHeightChange"></app-header>
+  </view>
+  <scroll-view class="about-page__scroll" type="custom" scroll-y enhanced show-scrollbar="{{false}}">
+    <view style="height: {{headerHeight}}px;"></view>
+    <view class="about-content">
+      <ui-item-group>
+        <ui-item title="Web 版" description="{{webUrl}}" chevron bindtap="onCopyWeb"></ui-item>
+        <ui-item bordered title="GitHub" description="{{githubUrl}}" chevron bindtap="onCopyGithub"></ui-item>
+        <ui-item bordered title="版本" value="v{{version}}" pressable="{{false}}"></ui-item>
+      </ui-item-group>
+    </view>
+  </scroll-view>
+</view>

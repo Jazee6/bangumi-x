@@ -1,0 +1,25 @@
+{
+  "name": "share",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./src/index.ts",
+        "default": "./src/index.ts"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.js"
+      },
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build:mini": "bun ../scripts/prepare-mini.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "miniprogram": "dist"
+}

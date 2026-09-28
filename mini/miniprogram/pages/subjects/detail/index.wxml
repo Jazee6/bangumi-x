@@ -1,0 +1,216 @@
+<view class="detail-page">
+  <view class="detail-page__chrome">
+    <app-header
+      title="{{loaded && !blocked && !errorMessage && heroTitleHidden ? title : ''}}"
+      back
+      transparent
+      bindback="onBack"
+      bindheaderheightchange="onHeaderHeightChange"
+    ></app-header>
+    <view wx:if="{{tabsStuck && loaded && !blocked}}" class="detail-page__chrome-tabs">
+      <ui-tabs value="{{tab}}" tabs="{{tabs}}" bindchange="onTabChange"></ui-tabs>
+    </view>
+  </view>
+
+  <scroll-view wx:if="{{!loaded || blocked}}" class="detail-page__scroll" type="custom" scroll-y show-scrollbar="{{false}}">
+    <view style="height: {{headerHeight}}px;"></view>
+    <ui-skeleton wx:if="{{loading}}" variant="detail-poster"></ui-skeleton>
+    <ui-empty has-action wx:elif="{{errorMessage}}" symbol="!" title="条目详情加载失败" description="{{errorMessage}}" variant="plain">
+      <ui-button slot="action" variant="outline" size="sm" bindtap="onRetry">重试</ui-button>
+    </ui-empty>
+    <ui-empty wx:elif="{{blocked}}" symbol="!" title="内容不可访问" description="该条目不在番迹的公开浏览范围内。" variant="plain"></ui-empty>
+  </scroll-view>
+
+  <scroll-view wx:else class="detail-page__scroll" type="nested" scroll-y show-scrollbar="{{false}}">
+    <nested-scroll-header>
+    <view class="detail-page__hero-header {{tabsStuck ? 'detail-page__hero-header--hidden' : ''}}">
+    <view style="height: {{headerHeight}}px;"></view>
+      <detail-hero
+        title="{{title}}"
+        header-height="{{headerHeight}}"
+        bindtitlevisibilitychange="onTitleVisibilityChange"
+        bindmedialayoutchange="onHeroMediaLayoutChange"
+        original-title="{{originalTitle}}"
+        image-url="{{imageUrl}}"
+        image-variant="poster"
+        badges="{{badges}}"
+        summary="{{summary}}"
+        tags="{{tags}}"
+      ></detail-hero>
+
+      <view class="subject-actions">
+        <scroll-view class="subject-actions__scroll" scroll-x enable-flex show-scrollbar="{{false}}">
+          <view class="subject-actions__row">
+            <ui-skeleton wx:if="{{personalLoading}}" variant="actions"></ui-skeleton>
+            <block wx:elif="{{personalState}}">
+              <ui-button-group label="收藏操作">
+                <ui-action-button label="{{personalState.collected ? '已收藏' : '收藏'}}" icon="{{personalState.collected ? 'bookmark-check' : 'bookmark'}}" group-position="start" variant="{{personalState.collected ? 'secondary' : 'outline'}}" loading="{{submitting}}" bindpress="onToggleCollection"></ui-action-button>
+                <ui-action-button icon="ellipsis" icon-only size="icon" group-position="end" variant="{{personalState.collected ? 'secondary' : 'outline'}}" disabled="{{submitting}}" aria-label="更多收藏操作" bindpress="onOpenLists"></ui-action-button>
+              </ui-button-group>
+              <block wx:if="{{progressSupported}}">
+                <ui-action-button wx:if="{{!personalState.progress}}" label="记录进度" icon="list-checks" loading="{{progressPending}}" bindpress="onRecordProgress"></ui-action-button>
+                <block wx:else>
+                  <ui-stepper wx:if="{{chapterProgressSupported}}" value="{{personalState.progress.completedChapters || 0}}" total="{{personalState.progress.totalChapters || 0}}" loading="{{progressPending}}" bindchange="onProgressStep" bindconfirm="onChapterConfirm"></ui-stepper>
+                  <ui-action-button icon="ellipsis" icon-only size="icon" variant="ghost" aria-label="更多进度操作" disabled="{{progressPending}}" bindpress="onOpenProgressActions"></ui-action-button>
+                </block>
+              </block>
+            </block>
+            <block wx:elif="{{!readOnly}}">
+              <ui-button-group label="收藏操作">
+                <ui-action-button label="收藏" icon="bookmark" group-position="start" variant="outline" loading="{{submitting}}" bindpress="onToggleCollection"></ui-action-button>
+                <ui-action-button icon="ellipsis" icon-only size="icon" group-position="end" variant="outline" aria-label="更多收藏操作" bindpress="onOpenLists"></ui-action-button>
+              </ui-button-group>
+              <ui-action-button wx:if="{{progressSupported}}" label="记录进度" icon="list-checks" loading="{{progressPending}}" bindpress="onRecordProgress"></ui-action-button>
+            </block>
+            <detail-share-button></detail-share-button>
+          </view>
+        </scroll-view>
+        <view class="subject-actions__fade subject-actions__fade--left" aria-hidden="true"></view>
+        <view class="subject-actions__fade subject-actions__fade--right" aria-hidden="true"></view>
+      </view>
+    </view>
+    </nested-scroll-header>
+
+    <nested-scroll-header>
+      <view class="detail-page__tabs {{tabsStuck ? 'detail-page__tabs--placeholder' : ''}}">
+        <view class="detail-page__tab-sentinel"></view>
+        <ui-tabs wx:if="{{!tabsStuck}}" value="{{tab}}" tabs="{{tabs}}" bindchange="onTabChange"></ui-tabs>
+      </view>
+    </nested-scroll-header>
+
+    <nested-scroll-body class="detail-page__body" offset-top="{{headerHeight + 48}}">
+      <swiper class="detail-page__swiper" style="--detail-panel-inset: {{headerHeight + 48}}px;" current="{{tabIndex}}" bindchange="onSwiperChange">
+        <swiper-item>
+          <scroll-view class="detail-page__tab-scroll" type="custom" scroll-y show-scrollbar="{{false}}" associative-container="nested-scroll-view" lower-threshold="200" bindscrolltolower="onScrollLower">
+            <view class="detail-page__panel-start"></view>
+            <list-view wx:if="{{chaptersLoading || !chaptersLoaded && !chaptersError}}">
+              <ui-skeleton wx:for="{{panelSkeletonRows}}" wx:key="*this" variant="entity"></ui-skeleton>
+            </list-view>
+            <ui-empty has-action wx:elif="{{chaptersError}}" symbol="!" title="关联内容加载失败" description="{{chaptersError}}" variant="plain">
+              <ui-button slot="action" variant="outline" size="sm" bindtap="onRetryPanel">重试</ui-button>
+            </ui-empty>
+            <ui-empty
+              wx:elif="{{chapters.length === 0}}"
+              icon="list-video"
+              title="暂无章节"
+              description="这个条目还没有可浏览的章节。"
+            ></ui-empty>
+            <list-view wx:else>
+              <entity-row
+                wx:for="{{chapters}}"
+                wx:key="id"
+                entity-id="{{item.id}}"
+                target="chapter"
+                name="{{item.title}}"
+                description="{{item.description}}"
+                placeholder-text="{{item.sequenceLabel}}"
+                plain-placeholder
+                public-link
+              ></entity-row>
+            </list-view>
+            <list-footer
+              wx:if="{{chaptersLoaded}}"
+              state="{{chapterLoadingMore ? 'loading' : chapterLoadMoreError ? 'error' : 'hidden'}}"
+              bindretry="onRetryMore"
+            ></list-footer>
+            <view class="detail-page__panel-end"></view>
+          </scroll-view>
+        </swiper-item>
+        <swiper-item>
+          <scroll-view class="detail-page__tab-scroll" type="custom" scroll-y show-scrollbar="{{false}}" associative-container="nested-scroll-view">
+            <view class="detail-page__panel-start"></view>
+            <list-view wx:if="{{charactersLoading || !charactersLoaded && !charactersError}}">
+              <ui-skeleton wx:for="{{panelSkeletonRows}}" wx:key="*this" variant="entity"></ui-skeleton>
+            </list-view>
+            <ui-empty has-action wx:elif="{{charactersError}}" symbol="!" title="关联内容加载失败" description="{{charactersError}}" variant="plain">
+              <ui-button slot="action" variant="outline" size="sm" bindtap="onRetryPanel">重试</ui-button>
+            </ui-empty>
+            <ui-empty
+              wx:elif="{{characters.length === 0}}"
+              title="暂无关联角色"
+              description="这个条目还没有可浏览的关联角色。"
+            ></ui-empty>
+            <block wx:else>
+              <block wx:for="{{characters}}" wx:key="relation" wx:for-item="group">
+                <view class="detail-page__section-title"><text>{{group.relation}}</text></view>
+                <list-view>
+                  <entity-row
+                    wx:for="{{group.items}}"
+                    wx:key="key"
+                    entity-id="{{item.id}}"
+                    target="{{item.target}}"
+                    name="{{item.name}}"
+                    image-url="{{item.imageUrl}}"
+                    image-top
+                    description="{{item.description}}"
+                    public-link
+                  ></entity-row>
+                </list-view>
+              </block>
+            </block>
+            <view class="detail-page__panel-end"></view>
+          </scroll-view>
+        </swiper-item>
+        <swiper-item>
+          <scroll-view class="detail-page__tab-scroll" type="custom" scroll-y show-scrollbar="{{false}}" associative-container="nested-scroll-view">
+            <view class="detail-page__panel-start"></view>
+            <list-view wx:if="{{personsLoading || !personsLoaded && !personsError}}">
+              <ui-skeleton wx:for="{{panelSkeletonRows}}" wx:key="*this" variant="entity"></ui-skeleton>
+            </list-view>
+            <ui-empty has-action wx:elif="{{personsError}}" symbol="!" title="关联内容加载失败" description="{{personsError}}" variant="plain">
+              <ui-button slot="action" variant="outline" size="sm" bindtap="onRetryPanel">重试</ui-button>
+            </ui-empty>
+            <ui-empty
+              wx:elif="{{persons.length === 0}}"
+              title="暂无关联人物"
+              description="这个条目还没有可浏览的关联人物。"
+            ></ui-empty>
+            <block wx:else>
+              <block wx:for="{{persons}}" wx:key="relation" wx:for-item="group">
+                <view class="detail-page__section-title"><text>{{group.relation}}</text></view>
+                <list-view>
+                  <entity-row
+                    wx:for="{{group.items}}"
+                    wx:key="key"
+                    entity-id="{{item.id}}"
+                    target="{{item.target}}"
+                    name="{{item.name}}"
+                    image-url="{{item.imageUrl}}"
+                    image-top
+                    description="{{item.description}}"
+                    public-link
+                  ></entity-row>
+                </list-view>
+              </block>
+            </block>
+            <view class="detail-page__panel-end"></view>
+          </scroll-view>
+        </swiper-item>
+      </swiper>
+    </nested-scroll-body>
+  </scroll-view>
+
+  <ui-sheet open="{{sheetOpen}}" title="{{sheetTitle}}" footer-visible="{{sheetMode === 'lists' && !listsLoading && !listsError}}" bindclose="onCloseSheet" bindclosed="onSheetClosed">
+    <view wx:if="{{sheetMode === 'lists'}}" class="detail-sheet">
+      <block wx:if="{{listsLoading}}"><ui-skeleton wx:for="{{listSkeletonRows}}" wx:key="*this" variant="collection-list"></ui-skeleton></block>
+      <ui-empty wx:elif="{{listsError}}" has-action symbol="!" title="加载收藏列表失败" description="{{listsError}}" variant="plain">
+        <ui-button slot="action" variant="outline" size="sm" bindtap="onRetryLists">重试</ui-button>
+      </ui-empty>
+      <block wx:else>
+        <ui-empty wx:if="{{collectionLists.length === 0}}" variant="flush" title="尚未创建收藏列表" description="可以先新建一个列表。"></ui-empty>
+        <checkbox-group wx:if="{{collectionLists.length > 0}}" class="detail-sheet__options" bindchange="onListSelectionChange">
+          <label wx:for="{{collectionLists}}" wx:key="id" class="detail-sheet__option {{item.selected ? 'detail-sheet__option--selected' : ''}}">
+            <checkbox value="{{item.id}}" checked="{{item.selected}}"></checkbox>
+            <text class="detail-sheet__option-name">{{item.name}}</text>
+            <ui-badge value="{{item.count || 0}}" variant="secondary"></ui-badge>
+          </label>
+        </checkbox-group>
+      </block>
+    </view>
+
+    <view slot="footer" class="detail-sheet__actions">
+      <ui-action-button label="新建列表" variant="outline" loading="{{creatingList}}" disabled="{{submitting}}" bindpress="onOpenCreateList"></ui-action-button>
+      <ui-action-button label="保存" variant="default" loading="{{submitting}}" disabled="{{creatingList}}" bindpress="onSaveLists"></ui-action-button>
+    </view>
+  </ui-sheet>
+</view>

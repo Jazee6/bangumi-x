@@ -1,0 +1,3 @@
+<view class="ui-spinner" aria-role="img" aria-label="加载中">
+  <ui-icon name="loader-circle" size="16"></ui-icon>
+</view>

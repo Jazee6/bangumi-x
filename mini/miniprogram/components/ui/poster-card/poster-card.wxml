@@ -1,0 +1,21 @@
+<view class="poster-card" hover-class="poster-card--pressed" bindtap="onSelect">
+  <view class="poster-card__media">
+    <image
+      wx:if="{{imageUrl && !imageFailed}}"
+      class="poster-card__image"
+      src="{{imageUrl}}"
+      mode="aspectFill"
+      lazy-load
+      binderror="onImageError"
+    ></image>
+    <view wx:else class="poster-card__placeholder"><text>暂无封面</text></view>
+    <view wx:if="{{scoreLabel}}" class="poster-card__badge poster-card__score">
+      <text class="poster-card__badge-text">{{scoreLabel}}</text>
+    </view>
+    <view wx:if="{{rankLabel}}" class="poster-card__badge poster-card__rank">
+      <text class="poster-card__badge-text">{{rankLabel}}</text>
+    </view>
+  </view>
+  <text max-lines="2" overflow="ellipsis" class="poster-card__title">{{title}}</text>
+  <navigator wx:if="{{publicLink && subjectId > 0}}" class="poster-card__link" url="/pages/subjects/detail/index?id={{subjectId}}" open-type="{{openType}}" aria-label="查看{{title}}" hover-class="none"></navigator>
+</view>

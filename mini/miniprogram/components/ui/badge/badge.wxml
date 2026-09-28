@@ -1,0 +1,4 @@
+<view class="ui-badge ui-badge--{{variant}}">
+  <view wx:if="{{icon === 'score'}}" class="ui-badge__score"><ui-icon name="star" size="12"></ui-icon></view>
+  <text class="ui-badge__value">{{value}}</text>
+</view>

@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "关于",
+  "usingComponents": {
+    "app-header": "/components/app-header/app-header",
+    "ui-icon": "/components/ui/icon/icon",
+    "ui-item": "/components/ui/item/item",
+    "ui-item-group": "/components/ui/item-group/item-group"
+  }
+}

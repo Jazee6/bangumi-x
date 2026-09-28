@@ -1,0 +1,492 @@
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.skeleton__avatar,
+.skeleton__list-check,
+.skeleton__link-input,
+.skeleton__control,
+.skeleton__detail-image,
+.skeleton__line,
+.skeleton__poster,
+.skeleton__profile-avatar,
+.skeleton__progress-image {
+  background: var(--ring);
+  opacity: 0.45;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton__line {
+  height: 20px;
+  border-radius: 999px;
+}
+
+.skeleton__line--full {
+  width: 100%;
+}
+
+.skeleton__line--wide {
+  width: 72%;
+}
+
+.skeleton__line--medium {
+  width: 48%;
+}
+
+.skeleton__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.skeleton--poster {
+  min-width: 0;
+  padding-bottom: 8px;
+}
+
+.skeleton__poster {
+  width: 100%;
+  height: 0;
+  padding-bottom: 150%;
+  border-radius: var(--radius-lg);
+}
+
+.skeleton__line--poster-title {
+  width: 88%;
+  margin-top: 8px;
+}
+
+.skeleton__line--poster-short {
+  width: 58%;
+  margin-top: 4px;
+}
+
+.skeleton--entity {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 80px;
+  margin: 0 16px 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--background);
+}
+
+.skeleton__avatar {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+}
+
+.skeleton--entity .skeleton__content {
+  margin-left: 12px;
+}
+
+.skeleton__line--title {
+  width: 45%;
+  height: 22px;
+}
+
+.skeleton__line--description {
+  width: 72%;
+  height: 18px;
+  margin-top: 4px;
+}
+
+.skeleton--detail {
+  padding: 16px 16px 12px;
+}
+
+.skeleton__detail-image {
+  border-radius: var(--radius-md);
+}
+
+.skeleton__detail-image--poster {
+  width: 44%;
+  max-width: 176px;
+  height: 240px;
+}
+
+.skeleton__detail-image--portrait {
+  width: 100%;
+  max-width: 248px;
+  height: 330px;
+}
+
+.skeleton__line--detail-title {
+  width: 72%;
+  height: 36px;
+  margin-top: 16px;
+}
+
+.skeleton--detail-text .skeleton__line--detail-title {
+  margin-top: 0;
+}
+
+.skeleton__line--detail-short {
+  width: 44%;
+  margin-top: 12px;
+}
+
+.skeleton__detail-badges {
+  display: flex;
+  margin-top: 12px;
+  gap: 8px;
+}
+
+.skeleton__line--badge {
+  width: 56px;
+  height: 20px;
+}
+
+.skeleton__detail-summary {
+  display: flex;
+  margin-top: 16px;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.skeleton__detail-summary .skeleton__line {
+  height: 25px;
+}
+
+.skeleton--collection-list {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  gap: 10px;
+}
+
+.skeleton__list-check {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.skeleton__line--count {
+  width: 24px;
+  margin-left: auto;
+}
+
+.skeleton--actions {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skeleton__control {
+  width: 80px;
+  height: 36px;
+  border-radius: var(--radius-md);
+}
+
+.skeleton--actions .skeleton__control {
+  border-radius: var(--radius-4xl);
+}
+
+.skeleton__control-group {
+  display: flex;
+}
+
+.skeleton__control-group .skeleton__control:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.skeleton__control-group .skeleton__control:last-child {
+  box-sizing: border-box;
+  border-left: 1px solid var(--background);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.skeleton__control--medium {
+  width: 80px;
+}
+
+.skeleton__control--wide {
+  width: 104px;
+}
+
+.skeleton__control--full {
+  width: 100%;
+  height: 36px;
+}
+
+.skeleton__control--icon {
+  width: 36px;
+}
+
+.skeleton--progress {
+  display: flex;
+  box-sizing: border-box;
+  min-width: 0;
+  margin-bottom: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--background);
+  gap: 8px;
+}
+
+.skeleton__progress-image {
+  width: 64px;
+  height: 108px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.skeleton__progress-body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton__progress-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skeleton__progress-heading .skeleton__line--wide {
+  flex: 1;
+  height: 22px;
+}
+
+.skeleton__line--type {
+  width: 32px;
+  height: 22px;
+}
+
+.skeleton__progress-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skeleton__progress-actions {
+  margin-top: auto;
+  padding-top: 12px;
+  flex-wrap: wrap;
+}
+
+.skeleton__progress-actions .skeleton__control {
+  border-radius: var(--radius-4xl);
+}
+
+.skeleton--summary {
+  padding: 20px 16px 8px;
+}
+
+.skeleton__line--summary-title {
+  width: 68%;
+  height: 32px;
+}
+
+.skeleton__line--summary-meta {
+  height: 20px;
+  margin-top: 6px;
+}
+
+.skeleton--page-stack {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 16px 16px 32px;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton__card {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background: var(--background);
+}
+
+.skeleton__me-profile {
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  padding: 12px;
+}
+
+.skeleton__profile-avatar {
+  flex: none;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+}
+
+.skeleton__profile-avatar--profile {
+  width: 48px;
+  height: 48px;
+}
+
+.skeleton__me-profile .skeleton__content {
+  margin-left: 14px;
+}
+
+.skeleton__line--me-name {
+  width: 130px;
+  height: 26px;
+}
+
+.skeleton__line--me-status {
+  width: 80px;
+  height: 19px;
+  margin-top: 2px;
+}
+
+.skeleton__menu-card {
+  overflow: hidden;
+}
+
+.skeleton__menu-row {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 72px;
+  margin: 0 16px;
+}
+
+.skeleton__menu-row--bordered {
+  border-top: 1px solid var(--border);
+}
+
+.skeleton__line--menu-label,
+.skeleton__line--profile-label {
+  width: 48px;
+  height: 22px;
+}
+
+.skeleton__line--menu-description,
+.skeleton__line--profile-description {
+  width: 150px;
+  height: 19px;
+  margin-top: 2px;
+}
+
+.skeleton--profile .skeleton__line--menu-label {
+  width: 30px;
+}
+
+.skeleton__line--profile-label {
+  width: 60px;
+}
+
+.skeleton__line--profile-description {
+  width: 180px;
+}
+
+.skeleton__menu-row--profile {
+  gap: 12px;
+}
+
+.skeleton__menu-row--profile .skeleton__chevron {
+  margin-left: 0;
+}
+
+.skeleton__line--profile-value {
+  width: 100px;
+  height: 20px;
+  margin-left: auto;
+}
+
+.skeleton__line--menu-count {
+  width: 24px;
+  height: 22px;
+  margin-left: 12px;
+  flex: none;
+}
+
+.skeleton__chevron {
+  box-sizing: border-box;
+  width: 9px;
+  height: 9px;
+  margin: 0 4px 0 12px;
+  border-top: 1px solid var(--muted-foreground);
+  border-right: 1px solid var(--muted-foreground);
+  transform: rotate(45deg);
+  flex: none;
+}
+
+.skeleton__chevron--end {
+  margin-left: auto;
+}
+
+.skeleton--account-link {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.skeleton__link-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton__line--link-title {
+  height: 24px;
+}
+
+.skeleton__link-description {
+  display: flex;
+  margin-top: 6px;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.skeleton__link-description .skeleton__line {
+  height: 21px;
+}
+
+.skeleton--account-link .skeleton__control--full {
+  margin-top: 16px;
+  border-radius: var(--radius-4xl);
+}
+
+.skeleton__link-divider {
+  height: 1px;
+  margin-top: 22px;
+  background: var(--border);
+}
+
+.skeleton__link-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 44px;
+  margin-top: 16px;
+  border-radius: var(--radius-lg);
+}
+
+.skeleton__link-note {
+  display: flex;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skeleton__link-note .skeleton__line {
+  height: 21px;
+}
+
+.skeleton__link-note .skeleton__line--link-title {
+  height: 24px;
+}

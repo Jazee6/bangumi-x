@@ -1,0 +1,78 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/discover/index",
+    "pages/rankings/index",
+    "pages/me/index",
+    "pages/collections/shared/index",
+    "pages/subjects/detail/index",
+    "pages/chapters/detail/index",
+    "pages/characters/detail/index",
+    "pages/persons/detail/index"
+  ],
+  "subpackages": [
+    {
+      "root": "packages/me",
+      "name": "me",
+      "pages": ["profile/index", "about/index", "collections/index", "progress/index"]
+    }
+  ],
+  "preloadRule": {
+    "pages/me/index": { "network": "all", "packages": ["me"] }
+  },
+  "window": {
+    "navigationBarBackgroundColor": "@navigationBarBackgroundColor",
+    "navigationBarTextStyle": "@navigationBarTextStyle",
+    "backgroundColor": "@backgroundColor",
+    "backgroundTextStyle": "@backgroundTextStyle",
+    "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "color": "@tabBarColor",
+    "selectedColor": "@tabBarSelectedColor",
+    "backgroundColor": "@tabBarBackgroundColor",
+    "borderStyle": "@tabBarBorderStyle",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "每日放送",
+        "iconPath": "@scheduleIcon",
+        "selectedIconPath": "@scheduleSelectedIcon"
+      },
+      {
+        "pagePath": "pages/discover/index",
+        "text": "发现",
+        "iconPath": "@discoverIcon",
+        "selectedIconPath": "@discoverSelectedIcon"
+      },
+      {
+        "pagePath": "pages/rankings/index",
+        "text": "排行榜",
+        "iconPath": "@rankingsIcon",
+        "selectedIconPath": "@rankingsSelectedIcon"
+      },
+      {
+        "pagePath": "pages/me/index",
+        "text": "我的",
+        "iconPath": "@meIcon",
+        "selectedIconPath": "@meSelectedIcon"
+      }
+    ]
+  },
+  "darkmode": true,
+  "themeLocation": "theme.json",
+  "style": "v2",
+  "renderer": "skyline",
+  "rendererOptions": {
+    "skyline": {
+      "defaultDisplayBlock": true,
+      "defaultContentBox": true,
+      "disableABTest": true,
+      "sdkVersionBegin": "3.2.0",
+      "sdkVersionEnd": "15.255.255"
+    }
+  },
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

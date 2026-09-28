@@ -1,0 +1,16 @@
+<view
+  class="ui-button ui-button--variant-{{variant}} ui-button--size-{{size}} {{groupPosition ? 'ui-button--group-' + groupPosition : ''}} {{disabled || loading ? 'ui-button--disabled' : ''}} ui-action-button"
+  hover-class="{{disabled || loading ? 'none' : 'ui-button--pressed'}}"
+  aria-role="button"
+  aria-label="{{ariaLabel || label}}"
+  aria-disabled="{{disabled || loading}}"
+  catchtap="onPress"
+>
+  <view wx:if="{{loading}}" class="ui-button__spinner" aria-role="img" aria-label="加载中">
+    <ui-icon name="loader-circle" size="{{size === 'xs' || size === 'icon-xs' ? 12 : 16}}" tone="{{variant === 'default' ? 'inverse' : 'default'}}"></ui-icon>
+  </view>
+  <view wx:elif="{{icon}}" class="ui-action-button__icon">
+    <ui-icon name="{{icon}}" size="{{size === 'fab' ? 24 : 16}}" tone="{{variant === 'default' ? 'inverse' : 'default'}}"></ui-icon>
+  </view>
+  <text wx:if="{{!iconOnly}}">{{label}}</text>
+</view>

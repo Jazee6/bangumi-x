@@ -1,0 +1,9 @@
+<view class="ui-empty ui-empty--{{variant}}">
+  <view class="ui-empty__symbol">
+    <text wx:if="{{symbol && symbol !== '!'}}">{{symbol}}</text>
+    <ui-icon wx:else name="{{symbol === '!' ? 'circle-alert' : icon}}" size="20"></ui-icon>
+  </view>
+  <text class="ui-empty__title">{{title}}</text>
+  <text wx:if="{{description}}" class="ui-empty__description">{{description}}</text>
+  <view wx:if="{{hasAction}}" class="ui-empty__action"><slot name="action"></slot></view>
+</view>

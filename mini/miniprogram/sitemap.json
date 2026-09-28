@@ -1,0 +1,14 @@
+{
+  "desc": "仅允许公开内容进入微信搜索，个人数据不收录",
+  "rules": [
+    { "action": "disallow", "page": "*" },
+    { "action": "allow", "page": "pages/index/index" },
+    { "action": "allow", "page": "pages/discover/index" },
+    { "action": "allow", "page": "pages/rankings/index" },
+    { "action": "allow", "page": "pages/collections/shared/index" },
+    { "action": "allow", "page": "pages/subjects/detail/index" },
+    { "action": "allow", "page": "pages/chapters/detail/index" },
+    { "action": "allow", "page": "pages/characters/detail/index" },
+    { "action": "allow", "page": "pages/persons/detail/index" }
+  ]
+}

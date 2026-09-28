@@ -1,0 +1,85 @@
+<view class="link-content">
+  <ui-skeleton wx:if="{{loading && !loaded}}" variant="account-link"></ui-skeleton>
+
+  <ui-empty has-action wx:elif="{{errorMessage}}" symbol="!" title="用户合并状态加载失败" description="{{errorMessage}}" variant="plain">
+    <ui-button slot="action" variant="outline" size="sm" bindtap="onRetry">重试</ui-button>
+  </ui-empty>
+
+  <ui-empty
+    wx:elif="{{loaded && !eligible}}"
+    symbol="✓"
+    title="用户合并已完成"
+    description="当前微信登录方式已属于这个 Bangumi X 账号，不能再次合并或撤销。"
+    variant="plain"
+  ></ui-empty>
+
+  <block wx:elif="{{loaded && !preview}}">
+    <view class="link-card">
+      <view class="link-card__header">
+        <text class="link-card__title">合并已有 Bangumi X 账号</text>
+        <text class="link-card__description">先在 Web 端账号菜单生成 10 分钟有效的二维码或短码，再由 Mini 完成确认。</text>
+      </view>
+      <ui-button block loading="{{claiming}}" bindtap="onScanCode">扫描二维码</ui-button>
+      <view class="link-divider"><view class="link-divider__line"></view><text>或</text><view class="link-divider__line"></view></view>
+      <input
+        class="link-code-input"
+        value="{{codeInput}}"
+        maxlength="9"
+        placeholder="输入 8 位短码"
+        bindinput="onCodeInput"
+      ></input>
+      <ui-button
+        block
+       
+        variant="outline"
+        loading="{{claiming}}"
+        disabled="{{codeInput.length !== 9}}"
+        bindtap="onSubmitCode"
+      >使用短码</ui-button>
+    </view>
+
+    <view class="link-note">
+      <text class="link-note__title">合并前请确认</text>
+      <text>• 合并不可逆，已有 Bangumi X 账号会继续存续。</text>
+      <text>• 当前微信用户的登录方式和个人数据会移入目标用户。</text>
+      <text>• 微信用户不再独立存在，资料改用目标用户资料。</text>
+    </view>
+  </block>
+
+  <block wx:elif="{{preview}}">
+    <view class="preview-parties">
+      <view class="preview-party">
+        <text class="preview-party__eyebrow">当前微信用户</text>
+        <text class="preview-party__name">{{preview.source.name}}</text>
+        <view class="preview-counts">
+          <text>收藏 {{preview.source.collections}}</text>
+          <text>进度 {{preview.source.progress}}</text>
+          <text>列表 {{preview.source.lists}}</text>
+        </view>
+      </view>
+      <view class="preview-arrow"><text>→</text></view>
+      <view class="preview-party">
+        <text class="preview-party__eyebrow">目标用户</text>
+        <text class="preview-party__name">{{preview.target.name}}</text>
+        <view class="preview-counts">
+          <text>收藏 {{preview.target.collections}}</text>
+          <text>进度 {{preview.target.progress}}</text>
+          <text>列表 {{preview.target.lists}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="link-note">
+      <text class="link-note__title">数据合并规则</text>
+      <text>• 重复收藏保留较早的收藏时间。</text>
+      <text>• 重复进度优先保留已完成，章节数取较大值。</text>
+      <text>• 重名收藏列表会添加“来自微信”后缀。</text>
+      <text>• 目标用户继续存续并使用其个人资料。</text>
+    </view>
+
+    <view class="link-actions">
+      <ui-button block loading="{{finalizing}}" bindtap="onContinueConfirm">继续确认</ui-button>
+      <ui-button block variant="ghost" loading="{{cancelling}}" disabled="{{finalizing}}" bindtap="onCancelClaim">取消本次合并</ui-button>
+    </view>
+  </block>
+</view>

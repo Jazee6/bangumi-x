@@ -1,0 +1,19 @@
+.rankings-controls {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.rankings-seasons {
+  width: 0;
+  min-width: 0;
+  height: 34px;
+  margin-right: 10px;
+  flex: 1;
+}
+
+.rankings-year-picker {
+  flex-shrink: 0;
+}

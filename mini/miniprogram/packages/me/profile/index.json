@@ -1,0 +1,14 @@
+{
+  "navigationBarTitleText": "个人资料",
+  "usingComponents": {
+    "account-link": "/packages/me/components/account-link/account-link",
+    "app-header": "/components/app-header/app-header",
+    "ui-button": "/components/ui/button/button",
+    "ui-empty": "/components/ui/empty/empty",
+    "ui-icon": "/components/ui/icon/icon",
+    "ui-item": "/components/ui/item/item",
+    "ui-item-group": "/components/ui/item-group/item-group",
+    "ui-sheet": "/components/ui/sheet/sheet",
+    "ui-skeleton": "/components/ui/skeleton/skeleton"
+  }
+}

@@ -1,0 +1,52 @@
+<view class="public-page">
+  <view class="public-page-header public-page-header--blur">
+    <app-header title="排行榜" transparent bindheaderheightchange="onHeaderHeightChange"></app-header>
+    <view class="list-controls rankings-controls">
+      <view class="rankings-seasons">
+        <ui-tabs variant="pill" tabs="{{seasons}}" value="{{season}}" bindchange="onSeasonChange"></ui-tabs>
+      </view>
+      <view class="rankings-year-picker">
+        <picker mode="selector" range="{{yearLabels}}" value="{{yearIndex}}" bindchange="onYearChange">
+          <ui-select-trigger label="{{year}} 年"></ui-select-trigger>
+        </picker>
+      </view>
+    </view>
+  </view>
+  <scroll-view
+    class="public-scroll"
+    type="custom"
+    scroll-y
+    enhanced
+    show-scrollbar="{{false}}"
+    lower-threshold="200"
+    bindscrolltolower="onScrollLower"
+  >
+    <view style="height: {{headerHeight}}px;"></view>
+    <view class="list-controls-spacer"></view>
+
+    <grid-view wx:if="{{loading}}" class="poster-grid" type="aligned" cross-axis-count="2" main-axis-gap="12" cross-axis-gap="12" padding="{{[16, 16, 16, 16]}}">
+      <ui-skeleton wx:for="{{posterSkeletons}}" wx:key="*this" variant="poster"></ui-skeleton>
+    </grid-view>
+
+    <ui-empty has-action wx:elif="{{errorMessage}}" symbol="!" title="排行榜加载失败" description="{{errorMessage}}" variant="plain">
+      <ui-button slot="action" variant="outline" size="sm" bindtap="onRetry">重试</ui-button>
+    </ui-empty>
+
+    <ui-empty wx:elif="{{loaded && posters.length === 0}}" icon="trophy" title="暂无排行榜条目" description="可以切换其他年份或季度继续浏览。"></ui-empty>
+
+    <grid-view wx:else class="poster-grid" type="aligned" cross-axis-count="2" main-axis-gap="12" cross-axis-gap="12" padding="{{[16, 16, 16, 16]}}">
+      <poster-card
+        wx:for="{{posters}}"
+        wx:key="id"
+        subject-id="{{item.id}}"
+        image-url="{{item.imageUrl}}"
+        rank-label="{{item.rankLabel}}"
+        score-label="{{item.scoreLabel}}"
+        title="{{item.title}}"
+        public-link
+      ></poster-card>
+    </grid-view>
+
+    <list-footer state="{{footerState}}" bindretry="onRetryMore"></list-footer>
+  </scroll-view>
+</view>

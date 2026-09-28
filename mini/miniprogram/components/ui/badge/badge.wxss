@@ -1,0 +1,40 @@
+.ui-badge {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  max-width: 100%;
+  height: 20px;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--primary-foreground);
+  background: var(--primary);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14px;
+  flex-shrink: 0;
+}
+
+.ui-badge--secondary {
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+}
+
+.ui-badge--outline {
+  border-color: var(--border);
+  color: var(--foreground);
+  background: var(--background);
+}
+
+.ui-badge__score {
+  display: flex;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+.ui-badge__value {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

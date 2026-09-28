@@ -1,0 +1,18 @@
+<view class="app-header {{blur ? 'app-header--blur' : ''}} {{transparent ? 'app-header--transparent' : ''}}" style="padding-top: {{statusBarHeight}}px;">
+  <view
+    class="app-header__inner"
+    style="height: {{navigationBarHeight}}px; padding-right: {{horizontalInset}}px; padding-left: {{horizontalInset}}px;"
+  >
+    <view
+      wx:if="{{back}}"
+      class="app-header__back"
+      aria-role="button"
+      aria-label="返回"
+      hover-class="app-header__back--pressed"
+      bindtap="onBack"
+    >
+      <ui-icon name="chevron-left" size="24"></ui-icon>
+    </view>
+    <text class="app-header__title" aria-role="heading">{{title}}</text>
+  </view>
+</view>

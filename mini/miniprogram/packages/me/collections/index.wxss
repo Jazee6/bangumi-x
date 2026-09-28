@@ -1,0 +1,69 @@
+.records-page {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  height: 100vh;
+  background: var(--background);
+  flex-direction: column;
+}
+
+.records-page__header {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+
+.records-page__scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.records-page__bottom-space {
+  height: 88px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.records-page__bottom-space--manage {
+  height: 156px;
+}
+
+.records-fab {
+  position: absolute;
+  z-index: 10;
+  right: 16px;
+  bottom: env(safe-area-inset-bottom);
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding-bottom: 16px;
+  flex-direction: column;
+}
+
+.records-controls {
+  padding: 4px 16px 0;
+}
+
+.records-controls__row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.scope-scroll {
+  width: 0;
+  height: 34px;
+  min-width: 0;
+  flex: 1;
+}
+
+.records-grid {
+  width: 100%;
+}
+
+.records-controls__select {
+  flex: none;
+  margin-left: 10px;
+}

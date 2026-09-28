@@ -1,0 +1,142 @@
+<view wx:if="{{variant === 'entity'}}" class="skeleton skeleton--entity" aria-hidden="true">
+  <view class="skeleton__avatar"></view>
+  <view class="skeleton__content">
+    <view class="skeleton__line skeleton__line--title"></view>
+    <view class="skeleton__line skeleton__line--description"></view>
+  </view>
+</view>
+
+<view wx:elif="{{variant === 'detail-poster' || variant === 'detail-portrait' || variant === 'detail-text'}}" class="skeleton skeleton--detail {{variant === 'detail-text' ? 'skeleton--detail-text' : ''}}" aria-hidden="true">
+  <view wx:if="{{variant !== 'detail-text'}}" class="skeleton__detail-image skeleton__detail-image--{{variant === 'detail-poster' ? 'poster' : 'portrait'}}"></view>
+  <view class="skeleton__line skeleton__line--detail-title"></view>
+  <view class="skeleton__line skeleton__line--detail-short"></view>
+  <view class="skeleton__detail-badges">
+    <view class="skeleton__line skeleton__line--badge"></view>
+    <view class="skeleton__line skeleton__line--badge"></view>
+  </view>
+  <view class="skeleton__detail-summary">
+    <view class="skeleton__line skeleton__line--full"></view>
+    <view class="skeleton__line skeleton__line--wide"></view>
+    <view class="skeleton__line skeleton__line--medium"></view>
+  </view>
+</view>
+
+<view wx:elif="{{variant === 'collection-list'}}" class="skeleton skeleton--collection-list" aria-hidden="true">
+  <view class="skeleton__list-check"></view>
+  <view class="skeleton__line skeleton__line--medium"></view>
+  <view class="skeleton__line skeleton__line--count"></view>
+</view>
+
+<view wx:elif="{{variant === 'actions'}}" class="skeleton skeleton--actions" aria-hidden="true">
+  <view class="skeleton__control-group">
+    <view class="skeleton__control skeleton__control--medium"></view>
+    <view class="skeleton__control skeleton__control--icon"></view>
+  </view>
+  <view class="skeleton__control skeleton__control--wide"></view>
+</view>
+
+<view wx:elif="{{variant === 'progress'}}" class="skeleton skeleton--progress" aria-hidden="true">
+  <view class="skeleton__progress-image"></view>
+  <view class="skeleton__progress-body">
+    <view class="skeleton__progress-heading">
+      <view class="skeleton__line skeleton__line--wide"></view>
+      <view class="skeleton__line skeleton__line--type"></view>
+    </view>
+    <view class="skeleton__line skeleton__line--badge"></view>
+    <view class="skeleton__progress-actions">
+      <view class="skeleton__control skeleton__control--wide"></view>
+      <view class="skeleton__control skeleton__control--medium"></view>
+      <view class="skeleton__control skeleton__control--icon"></view>
+    </view>
+  </view>
+</view>
+
+<view wx:elif="{{variant === 'summary'}}" class="skeleton skeleton--summary" aria-hidden="true">
+  <view class="skeleton__line skeleton__line--summary-title"></view>
+  <view class="skeleton__line skeleton__line--wide skeleton__line--summary-meta"></view>
+</view>
+
+<view wx:elif="{{variant === 'me'}}" class="skeleton skeleton--page-stack" aria-hidden="true">
+  <view class="skeleton__card skeleton__me-profile">
+    <view class="skeleton__profile-avatar"></view>
+    <view class="skeleton__content">
+      <view class="skeleton__line skeleton__line--me-name"></view>
+      <view class="skeleton__line skeleton__line--me-status"></view>
+    </view>
+    <view class="skeleton__chevron"></view>
+  </view>
+  <view class="skeleton__card skeleton__menu-card">
+    <view class="skeleton__menu-row">
+      <view class="skeleton__content">
+        <view class="skeleton__line skeleton__line--menu-label"></view>
+        <view class="skeleton__line skeleton__line--menu-description"></view>
+      </view>
+      <view class="skeleton__line skeleton__line--menu-count"></view>
+      <view class="skeleton__chevron"></view>
+    </view>
+    <view class="skeleton__menu-row skeleton__menu-row--bordered">
+      <view class="skeleton__content">
+        <view class="skeleton__line skeleton__line--menu-label"></view>
+        <view class="skeleton__line skeleton__line--menu-description"></view>
+      </view>
+      <view class="skeleton__line skeleton__line--menu-count"></view>
+      <view class="skeleton__chevron"></view>
+    </view>
+  </view>
+  <view class="skeleton__card skeleton__menu-card">
+    <view class="skeleton__menu-row">
+      <view class="skeleton__line skeleton__line--menu-label"></view>
+      <view class="skeleton__chevron skeleton__chevron--end"></view>
+    </view>
+  </view>
+</view>
+
+<view wx:elif="{{variant === 'profile'}}" class="skeleton skeleton--page-stack skeleton--profile" aria-hidden="true">
+  <view class="skeleton__card skeleton__menu-card">
+    <view class="skeleton__menu-row skeleton__menu-row--profile">
+      <view class="skeleton__content">
+        <view class="skeleton__line skeleton__line--menu-label"></view>
+      </view>
+      <view class="skeleton__profile-avatar skeleton__profile-avatar--profile"></view>
+      <view class="skeleton__chevron"></view>
+    </view>
+    <view class="skeleton__menu-row skeleton__menu-row--bordered">
+      <view class="skeleton__line skeleton__line--menu-label"></view>
+      <view class="skeleton__line skeleton__line--profile-value"></view>
+      <view class="skeleton__chevron"></view>
+    </view>
+    <view class="skeleton__menu-row skeleton__menu-row--bordered">
+      <view class="skeleton__content">
+        <view class="skeleton__line skeleton__line--profile-label"></view>
+        <view class="skeleton__line skeleton__line--profile-description"></view>
+      </view>
+      <view class="skeleton__chevron"></view>
+    </view>
+  </view>
+</view>
+
+<view wx:elif="{{variant === 'account-link'}}" class="skeleton skeleton--account-link" aria-hidden="true">
+  <view class="skeleton__link-card">
+    <view class="skeleton__line skeleton__line--medium skeleton__line--link-title"></view>
+    <view class="skeleton__link-description">
+      <view class="skeleton__line skeleton__line--full"></view>
+      <view class="skeleton__line skeleton__line--wide"></view>
+    </view>
+    <view class="skeleton__control skeleton__control--full"></view>
+    <view class="skeleton__link-divider"></view>
+    <view class="skeleton__link-input"></view>
+    <view class="skeleton__control skeleton__control--full"></view>
+  </view>
+  <view class="skeleton__link-note">
+    <view class="skeleton__line skeleton__line--medium skeleton__line--link-title"></view>
+    <view class="skeleton__line skeleton__line--full"></view>
+    <view class="skeleton__line skeleton__line--wide"></view>
+    <view class="skeleton__line skeleton__line--medium"></view>
+  </view>
+</view>
+
+<view wx:else class="skeleton skeleton--poster" aria-hidden="true">
+  <view class="skeleton__poster"></view>
+  <view class="skeleton__line skeleton__line--poster-title"></view>
+  <view class="skeleton__line skeleton__line--poster-short"></view>
+</view>

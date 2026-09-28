@@ -1,0 +1,20 @@
+.ui-select-trigger {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 10px 0 12px;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-3xl);
+  color: var(--foreground);
+  background: var(--input-soft);
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.ui-select-trigger__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

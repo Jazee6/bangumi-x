@@ -1,0 +1,5 @@
+<view class="ui-button ui-button--variant-outline ui-button--size-default detail-share-button" hover-class="ui-button--pressed">
+  <view class="detail-share-button__icon"><ui-icon name="share-2" size="16"></ui-icon></view>
+  <text>分享</text>
+  <button class="detail-share-button__trigger" open-type="share" aria-label="分享"></button>
+</view>

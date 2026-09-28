@@ -1,0 +1,45 @@
+<view class="public-list-page">
+  <view class="public-list-page__header"><app-header title="{{loaded && !errorMessage && summaryTitleHidden ? listName : ''}}" back blur bindback="onBack" bindheaderheightchange="onHeaderHeightChange"></app-header></view>
+  <scroll-view class="public-list-page__scroll" type="custom" scroll-y enhanced show-scrollbar="{{false}}" lower-threshold="200" bindscrolltolower="onScrollLower">
+    <view style="height: {{headerHeight}}px;"></view>
+    <block wx:if="{{loading && !loaded}}">
+      <ui-skeleton variant="summary"></ui-skeleton>
+      <grid-view class="public-list-grid" type="aligned" cross-axis-count="2" main-axis-gap="12" cross-axis-gap="12" padding="{{[12, 16, 16, 16]}}">
+        <ui-skeleton variant="poster"></ui-skeleton>
+        <ui-skeleton variant="poster"></ui-skeleton>
+        <ui-skeleton variant="poster"></ui-skeleton>
+        <ui-skeleton variant="poster"></ui-skeleton>
+        <ui-skeleton variant="poster"></ui-skeleton>
+        <ui-skeleton variant="poster"></ui-skeleton>
+      </grid-view>
+    </block>
+    <ui-empty has-action wx:elif="{{errorMessage}}" symbol="!" title="收藏列表不可访问" description="{{errorMessage}}" variant="plain"><ui-button wx:if="{{shareId}}" slot="action" variant="outline" size="sm" bindtap="onRetry">重试</ui-button></ui-empty>
+    <block wx:else>
+      <view wx:if="{{loaded}}" class="public-list-summary">
+        <text class="public-list-summary__title">{{listName}}</text>
+        <text class="public-list-summary__meta">{{ownerName}} · {{total}} 个条目 · 更新于 {{updatedLabel}}</text>
+      </view>
+      <ui-empty wx:if="{{loaded && items.length === 0}}" icon="list-x" title="列表暂时为空" description="所有者还没有添加可浏览的条目。"></ui-empty>
+      <grid-view wx:else class="public-list-grid" type="aligned" cross-axis-count="2" main-axis-gap="12" cross-axis-gap="12" padding="{{[12, 16, 16, 16]}}">
+        <poster-card wx:for="{{items}}" wx:key="id" subject-id="{{item.id}}" image-url="{{item.imageUrl}}" title="{{item.title}}" public-link></poster-card>
+      </grid-view>
+    </block>
+    <list-footer state="{{footerState}}" bindretry="onRetryMore"></list-footer>
+    <view class="public-list-page__bottom-space" aria-hidden="true"></view>
+  </scroll-view>
+
+  <view wx:if="{{loaded && !errorMessage}}" class="public-list-fab">
+    <ui-action-button icon="ellipsis" icon-only size="fab" variant="default" aria-label="列表操作" bindpress="onOpenActions"></ui-action-button>
+  </view>
+
+  <ui-sheet open="{{actionsOpen}}" title="列表操作" initial-size="{{0.5}}" footer-visible="{{false}}" bindclose="onCloseActions">
+    <view>
+      <ui-item-group>
+        <ui-item title="分享给微信好友" chevron pressable="{{false}}">
+          <button class="ui-item-overlay" open-type="share" aria-label="分享给微信好友"></button>
+        </ui-item>
+        <ui-item bordered title="复制 Web 链接" chevron bindtap="onCopyWebLink"></ui-item>
+      </ui-item-group>
+    </view>
+  </ui-sheet>
+</view>

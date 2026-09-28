@@ -1,0 +1,26 @@
+<view class="ui-input {{focused ? 'ui-input--focused' : ''}} {{disabled ? 'ui-input--disabled' : ''}}">
+  <input
+    class="ui-input__control {{clearable && value ? 'ui-input__control--clearable' : ''}}"
+    value="{{value}}"
+    type="{{type}}"
+    maxlength="{{maxlength}}"
+    placeholder="{{placeholder}}"
+    placeholder-class="ui-input__placeholder"
+    confirm-type="{{confirmType}}"
+    disabled="{{disabled}}"
+    bindinput="onInput"
+    bindconfirm="onConfirm"
+    bindfocus="onFocus"
+    bindblur="onBlur"
+  ></input>
+  <view
+    wx:if="{{clearable && value && !disabled}}"
+    class="ui-input__clear"
+    aria-role="button"
+    aria-label="清除"
+    hover-class="touch-press--pressed"
+    catchtap="onClear"
+  >
+    <ui-icon name="x" tone="muted"></ui-icon>
+  </view>
+</view>

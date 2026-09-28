@@ -1,0 +1,38 @@
+{
+  "light": {
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#ffffff",
+    "backgroundTextStyle": "light",
+    "tabBarColor": "#737373",
+    "tabBarSelectedColor": "#171717",
+    "tabBarBackgroundColor": "#ffffff",
+    "tabBarBorderStyle": "black",
+    "scheduleIcon": "assets/tab-bar/calendar-days.light-default.png",
+    "scheduleSelectedIcon": "assets/tab-bar/calendar-days.light-selected.png",
+    "discoverIcon": "assets/tab-bar/compass.light-default.png",
+    "discoverSelectedIcon": "assets/tab-bar/compass.light-selected.png",
+    "rankingsIcon": "assets/tab-bar/trophy.light-default.png",
+    "rankingsSelectedIcon": "assets/tab-bar/trophy.light-selected.png",
+    "meIcon": "assets/tab-bar/user-round.light-default.png",
+    "meSelectedIcon": "assets/tab-bar/user-round.light-selected.png"
+  },
+  "dark": {
+    "navigationBarBackgroundColor": "#0a0a0a",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0a0a0a",
+    "backgroundTextStyle": "dark",
+    "tabBarColor": "#a3a3a3",
+    "tabBarSelectedColor": "#e5e5e5",
+    "tabBarBackgroundColor": "#0a0a0a",
+    "tabBarBorderStyle": "white",
+    "scheduleIcon": "assets/tab-bar/calendar-days.dark-default.png",
+    "scheduleSelectedIcon": "assets/tab-bar/calendar-days.dark-selected.png",
+    "discoverIcon": "assets/tab-bar/compass.dark-default.png",
+    "discoverSelectedIcon": "assets/tab-bar/compass.dark-selected.png",
+    "rankingsIcon": "assets/tab-bar/trophy.dark-default.png",
+    "rankingsSelectedIcon": "assets/tab-bar/trophy.dark-selected.png",
+    "meIcon": "assets/tab-bar/user-round.dark-default.png",
+    "meSelectedIcon": "assets/tab-bar/user-round.dark-selected.png"
+  }
+}

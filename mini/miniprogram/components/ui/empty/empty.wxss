@@ -1,0 +1,55 @@
+.ui-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 280px;
+  margin: 16px;
+  padding: 32px 24px;
+  border-radius: var(--radius-2xl);
+  background: var(--background);
+  text-align: center;
+  flex-direction: column;
+}
+
+/* Skyline 的 dashed 边框不支持圆角，用实线保留圆角。 */
+.ui-empty--outline,
+.ui-empty--flush {
+  border: 1px solid var(--border);
+}
+
+.ui-empty--flush {
+  margin: 0;
+}
+
+.ui-empty__symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-xl);
+  color: var(--foreground);
+  background: var(--muted);
+  font-size: 20px;
+}
+
+.ui-empty__title {
+  margin-top: 16px;
+  color: var(--foreground);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 26px;
+}
+
+.ui-empty__description {
+  max-width: 260px;
+  margin-top: 6px;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.ui-empty__action {
+  margin-top: 16px;
+}

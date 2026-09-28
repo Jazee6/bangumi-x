@@ -1,0 +1,38 @@
+.ui-stepper {
+  display: flex;
+  align-items: center;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.ui-stepper__value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 54px;
+  height: 36px;
+  margin-left: -1px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--background);
+}
+
+.ui-stepper__input {
+  width: 36px;
+  height: 34px;
+  color: var(--foreground);
+  background: transparent;
+  font-size: 14px;
+  line-height: 34px;
+  text-align: center;
+}
+
+.ui-stepper__total {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 34px;
+  white-space: nowrap;
+  transform: translateY(1px);
+}

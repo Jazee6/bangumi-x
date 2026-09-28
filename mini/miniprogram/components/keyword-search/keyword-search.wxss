@@ -1,0 +1,18 @@
+.keyword-search {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  gap: 8px;
+}
+
+.keyword-search__field {
+  width: 0;
+  min-width: 0;
+  flex: 1;
+}
+
+.keyword-search__submit {
+  flex: none;
+}

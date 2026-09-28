@@ -1,0 +1,1 @@
+<view class="ui-button-group" aria-role="group" aria-label="{{label}}"><slot></slot></view>

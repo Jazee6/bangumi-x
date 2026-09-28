@@ -1,0 +1,44 @@
+<view class="public-page schedule-page">
+  <view class="schedule-chrome">
+    <app-header
+      title="每日放送"
+      transparent
+      bindheaderheightchange="onHeaderHeightChange"
+    ></app-header>
+    <view class="schedule-weekdays">
+      <ui-tabs variant="pill" tabs="{{weekdays}}" value="{{selectedWeekday}}" bindchange="onSelectWeekday"></ui-tabs>
+    </view>
+  </view>
+  <scroll-view
+    class="public-scroll"
+    type="custom"
+    scroll-y
+    enhanced
+    show-scrollbar="{{false}}"
+  >
+    <view style="height: {{contentInsetTop}}px;"></view>
+
+    <grid-view wx:if="{{loading}}" class="poster-grid" type="aligned" cross-axis-count="2" main-axis-gap="12" cross-axis-gap="12" padding="{{[16, 16, 16, 16]}}">
+      <ui-skeleton wx:for="{{posterSkeletons}}" wx:key="*this" variant="poster"></ui-skeleton>
+    </grid-view>
+
+    <ui-empty has-action wx:elif="{{errorMessage}}" symbol="!" title="每日放送加载失败" description="{{errorMessage}}" variant="plain">
+      <ui-button slot="action" variant="outline" size="sm" bindtap="onRetry">重试</ui-button>
+    </ui-empty>
+
+    <ui-empty wx:elif="{{loaded && items.length === 0}}" icon="image-off" title="当天暂无条目" description="可以切换其他星期继续浏览。"></ui-empty>
+
+    <grid-view wx:else class="poster-grid" type="aligned" cross-axis-count="2" main-axis-gap="12" cross-axis-gap="12" padding="{{[16, 16, 16, 16]}}">
+      <poster-card
+        wx:for="{{items}}"
+        wx:key="id"
+        subject-id="{{item.id}}"
+        image-url="{{item.imageUrl}}"
+        rank-label="{{item.rankLabel}}"
+        score-label="{{item.scoreLabel}}"
+        title="{{item.title}}"
+        public-link
+      ></poster-card>
+    </grid-view>
+  </scroll-view>
+</view>

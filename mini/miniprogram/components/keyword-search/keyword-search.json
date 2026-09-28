@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "styleIsolation": "apply-shared",
+  "usingComponents": {
+    "ui-action-button": "/components/ui/action-button/action-button",
+    "ui-input": "/components/ui/input/input"
+  }
+}

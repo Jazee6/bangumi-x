@@ -1,0 +1,16 @@
+<view class="ui-stepper">
+  <ui-action-button icon="minus" icon-only size="icon" group-position="start" variant="outline" disabled="{{disabled || value <= 0}}" loading="{{loading}}" bindpress="onMinus" aria-label="减少一章"></ui-action-button>
+  <view class="ui-stepper__value">
+    <input
+      class="ui-stepper__input"
+      type="number"
+      value="{{inputValue}}"
+      disabled="{{disabled || loading}}"
+      bindinput="onInput"
+      bindconfirm="onConfirm"
+      bindblur="onConfirm"
+    ></input>
+    <text wx:if="{{total > 0}}" class="ui-stepper__total">/ {{total}}</text>
+  </view>
+  <ui-action-button icon="plus" icon-only size="icon" group-position="end" variant="outline" disabled="{{disabled || value >= 9007199254740991 || (total > 0 && value >= total)}}" loading="{{loading}}" bindpress="onPlus" aria-label="增加一章"></ui-action-button>
+</view>

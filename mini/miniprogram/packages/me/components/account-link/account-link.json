@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "ui-button": "/components/ui/button/button",
+    "ui-empty": "/components/ui/empty/empty",
+    "ui-skeleton": "/components/ui/skeleton/skeleton"
+  }
+}

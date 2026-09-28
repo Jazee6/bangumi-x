@@ -1,0 +1,71 @@
+<view class="profile-page">
+  <view class="profile-page__header">
+    <app-header title="个人资料" back blur bindback="onBack" bindheaderheightchange="onHeaderHeightChange"></app-header>
+  </view>
+  <scroll-view class="profile-page__scroll" type="custom" scroll-y enhanced show-scrollbar="{{false}}">
+    <view style="height: {{headerHeight}}px;"></view>
+
+    <ui-skeleton wx:if="{{loading && !loaded}}" variant="profile"></ui-skeleton>
+
+    <ui-empty has-action wx:elif="{{errorMessage}}" symbol="!" title="个人资料加载失败" description="{{errorMessage}}" variant="plain">
+      <ui-button slot="action" variant="outline" size="sm" bindtap="onRetry">重试</ui-button>
+    </ui-empty>
+
+    <view wx:elif="{{user}}" class="profile-content">
+      <ui-item-group>
+        <ui-item
+          title="头像"
+          description="{{user.avatarReviewPending ? '新头像审核中' : ''}}"
+          chevron="{{user.editable}}"
+          pressable="{{user.editable && !uploadingAvatar}}"
+        >
+          <image wx:if="{{user.image}}" slot="end" class="profile-avatar" src="{{user.image}}" mode="aspectFill" lazy-load></image>
+          <view wx:else slot="end" class="profile-avatar profile-avatar--fallback"><text>{{userInitial}}</text></view>
+          <button
+            wx:if="{{user.editable}}"
+            class="ui-item-overlay"
+            open-type="chooseAvatar"
+            disabled="{{uploadingAvatar}}"
+            aria-label="修改头像"
+            bindchooseavatar="onChooseAvatar"
+          ></button>
+        </ui-item>
+        <ui-item bordered title="昵称" value="{{user.name}}" chevron="{{user.editable}}" pressable="{{user.editable}}" bindtap="onEditName"></ui-item>
+        <ui-item
+          bordered
+          title="用户合并"
+          description="{{user.editable ? '合并至已有 Bangumi X 账号' : '已合并至 Bangumi X 账号'}}"
+          chevron="{{user.editable}}"
+          pressable="{{user.editable}}"
+          bindtap="onOpenAccountLink"
+        ></ui-item>
+      </ui-item-group>
+    </view>
+  </scroll-view>
+
+  <ui-sheet
+    open="{{sheetOpen}}"
+    initial-size="{{sheetMode === 'account' ? 0.75 : 0.6}}"
+    title="{{sheetMode === 'account' ? '用户合并' : '修改昵称'}}"
+    footer-visible="{{sheetMode === 'name'}}"
+    bindclose="onCloseSheet"
+    bindclosed="onSheetClosed"
+    binddismiss="onSheetDismissed"
+  >
+    <view wx:if="{{sheetMode === 'name'}}" class="profile-name-form">
+      <text class="profile-name-form__description">公开展示，需为 2 至 20 个字符。每天最多修改 5 次。</text>
+      <input
+        class="profile-name-form__input"
+        type="nickname"
+        value="{{nameDraft}}"
+        focus="{{sheetOpen && sheetMode === 'name'}}"
+        maxlength="20"
+        placeholder="输入昵称或使用微信昵称"
+        bindinput="onNameInput"
+      ></input>
+      <text wx:if="{{nameError}}" class="profile-name-form__error">{{nameError}}</text>
+    </view>
+    <account-link wx:if="{{sheetMode === 'account' && accountLinkSheetMounted}}" bindcomplete="onAccountLinkComplete"></account-link>
+    <ui-button wx:if="{{sheetMode === 'name'}}" slot="footer" block loading="{{savingName}}" bindtap="onSaveName">保存昵称</ui-button>
+  </ui-sheet>
+</view>

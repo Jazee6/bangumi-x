@@ -1,0 +1,29 @@
+@import "../ui/button/button.wxss";
+
+.detail-share-button {
+  position: relative;
+  overflow: hidden;
+  width: 90px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+/* 双类名压过原生 button 默认的 width 与 margin: auto。 */
+.detail-share-button__trigger.detail-share-button__trigger {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 90px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+}
+
+.detail-share-button__icon {
+  display: flex;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
