@@ -134,4 +134,23 @@ describe("normalizeSchedule", () => {
       },
     ]);
   });
+  test("sorts each day by doing count, then rating total, keeping upstream order on ties", () => {
+    const upstreamSchedule = [
+      {
+        weekday: { id: 1 },
+        items: [
+          { id: 401, name: "No stats" },
+          { id: 402, name: "Low doing", collection: { doing: 92 }, rating: { total: 106 } },
+          { id: 403, name: "Tie A", collection: { doing: 883 }, rating: { total: 400 } },
+          { id: 404, name: "High doing", collection: { doing: 5151 }, rating: { total: 3235 } },
+          { id: 405, name: "Tie B", collection: { doing: 883 }, rating: { total: 432 } },
+          { id: 406, name: "No stats twin" },
+        ],
+      },
+    ];
+
+    const result = normalizeSchedule(upstreamSchedule, "http://localhost:8787");
+
+    expect(result.days[0]?.items.map((item) => item.id)).toEqual([404, 405, 403, 402, 401, 406]);
+  });
 });
