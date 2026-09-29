@@ -6,7 +6,6 @@
     "dev": "wrangler dev",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "og:sample": "bun scripts/render-og-sample.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply bangumi-x-local --local",
     "db:migrate:prod": "wrangler d1 migrations apply bangumi-x --env production --remote",
@@ -16,11 +15,9 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings --include-runtime=false"
   },
   "dependencies": {
-    "@resvg/resvg-wasm": "2.6.2",
     "better-auth": "^1.7.2",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.13.5",
-    "satori": "0.32.0",
     "share": "workspace:*",
     "uuid": "^14.0.2"
   },

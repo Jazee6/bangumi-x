@@ -20,8 +20,6 @@ import {
   type SubjectType,
 } from "share";
 
-import { serverUrl } from "./server-url";
-
 const SITE_NAME = "Bangumi X";
 const DEFAULT_DESCRIPTION =
   "Bangumi X 提供每日放送、本年度热门、排行榜与条目资料，并支持个人收藏和进度管理。";
@@ -31,7 +29,8 @@ export interface PageMetadataInput {
   description?: string;
   canonicalPath?: string;
   publication?: PublicationDecision;
-  imagePath?: string | null;
+  /** 分享图绝对地址；省略时使用品牌图，null 时不输出社交元数据。 */
+  image?: string | null;
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
@@ -39,8 +38,11 @@ function absoluteWebUrl(path = "/") {
   return new URL(path, CANONICAL_WEB_ORIGIN).toString();
 }
 
-function absoluteImageUrl(path = "/og/brand") {
-  return new URL(path, serverUrl).toString();
+// 分享图不在服务端渲染（免费版 Worker 的 CPU 预算不够），详情页用封面，其余用静态品牌图。
+const BRAND_IMAGE = absoluteWebUrl("/og-brand.png");
+
+export function coverShareImage(imageUrl: string | null | undefined, nsfw = false) {
+  return !nsfw && imageUrl ? imageUrl : undefined;
 }
 
 export function buildPageHead({
@@ -48,7 +50,7 @@ export function buildPageHead({
   description = DEFAULT_DESCRIPTION,
   canonicalPath = "/",
   publication = PUBLICATION.index("public-page"),
-  imagePath = "/og/brand",
+  image,
   jsonLd,
 }: PageMetadataInput = {}) {
   const isRestricted =
@@ -65,8 +67,9 @@ export function buildPageHead({
     { name: "robots", content: getRobotsDirective(publication) },
   ];
   if (isRestricted) return { meta, links: [] };
-  if (imagePath !== null) {
-    const image = absoluteImageUrl(imagePath);
+  if (image !== null) {
+    const isBrand = image === undefined;
+    const imageUrl = image ?? BRAND_IMAGE;
     meta.push(
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: SITE_NAME },
@@ -74,13 +77,18 @@ export function buildPageHead({
       { property: "og:title", content: fullTitle },
       { property: "og:description", content: description },
       { property: "og:url", content: canonical },
-      { property: "og:image", content: image },
-      { property: "og:image:width", content: "1200" },
-      { property: "og:image:height", content: "630" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:image", content: imageUrl },
+      ...(isBrand
+        ? [
+            { property: "og:image:width", content: "1200" },
+            { property: "og:image:height", content: "630" },
+          ]
+        : []),
+      // 封面是竖图，用小卡片避免被裁成横幅。
+      { name: "twitter:card", content: isBrand ? "summary_large_image" : "summary" },
       { name: "twitter:title", content: fullTitle },
       { name: "twitter:description", content: description },
-      { name: "twitter:image", content: image },
+      { name: "twitter:image", content: imageUrl },
     );
   }
   if (jsonLd) {

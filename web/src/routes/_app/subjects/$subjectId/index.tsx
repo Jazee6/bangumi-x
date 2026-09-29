@@ -12,6 +12,7 @@ import {
   buildSubjectChaptersJsonLd,
   buildSubjectJsonLd,
   CACHE_CONTROL,
+  coverShareImage,
   getSubjectBreadcrumbs,
 } from "@/lib/seo";
 import { validatePageSearch } from "@/lib/search-params";
@@ -48,7 +49,6 @@ export const Route = createFileRoute("/_app/subjects/$subjectId/")({
     if (!loaderData) {
       return buildPageHead({
         canonicalPath: `/subjects/${params.subjectId}`,
-        imagePath: `/og/subjects/${params.subjectId}`,
       });
     }
     const { subject, chapters, page } = loaderData;
@@ -65,7 +65,7 @@ export const Route = createFileRoute("/_app/subjects/$subjectId/")({
         subject.summary?.trim() ||
         `${subject.title}（${subject.type}）${subject.date ? `，首播/发售日期 ${subject.date}` : ""}${subject.score ? `，评分 ${subject.score}` : ""}。`,
       canonicalPath,
-      imagePath: `/og/subjects/${params.subjectId}`,
+      image: coverShareImage(subject.imageUrl, subject.nsfw),
       publication,
       jsonLd: [
         buildBreadcrumbJsonLd(getSubjectBreadcrumbs(subject)),

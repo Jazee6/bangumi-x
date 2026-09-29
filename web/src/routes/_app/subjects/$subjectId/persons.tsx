@@ -15,6 +15,7 @@ import {
   buildPageHead,
   buildSubjectPersonsJsonLd,
   CACHE_CONTROL,
+  coverShareImage,
   getSubjectBreadcrumbs,
 } from "@/lib/seo";
 
@@ -47,7 +48,6 @@ export const Route = createFileRoute("/_app/subjects/$subjectId/persons")({
     if (!loaderData) {
       return buildPageHead({
         canonicalPath: `/subjects/${params.subjectId}/persons`,
-        imagePath: `/og/subjects/${params.subjectId}/persons`,
       });
     }
     const { subject } = loaderData;
@@ -59,7 +59,7 @@ export const Route = createFileRoute("/_app/subjects/$subjectId/persons")({
       title: `${subject.title} 的制作与演出人员`,
       description: `浏览 ${subject.title} 的制作人员与演出阵容。`,
       canonicalPath: `/subjects/${params.subjectId}/persons`,
-      imagePath: `/og/subjects/${params.subjectId}/persons`,
+      image: coverShareImage(subject.imageUrl, subject.nsfw),
       publication,
       jsonLd: [
         buildBreadcrumbJsonLd(getSubjectBreadcrumbs(subject, "persons")),

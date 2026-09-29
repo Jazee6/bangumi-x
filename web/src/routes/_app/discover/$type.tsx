@@ -136,7 +136,7 @@ export const Route = createFileRoute("/_app/discover/$type")({
         ? `搜索 Bangumi X 中的${label}条目。`
         : `浏览 ${loaderData?.year ?? getCurrentYear()} 年度热门${label}，按 Bangumi 全站排名整理。`,
       canonicalPath: path,
-      imagePath: keyword ? null : `/og/discover/${type}`,
+      image: keyword ? null : undefined,
       publication: keyword
         ? { state: "noindex-follow", reason: "keyword-search" }
         : { state: "index", reason: "annual-popular" },

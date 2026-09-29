@@ -155,11 +155,11 @@ export function registerEntityDetailPage(kind: EntityDetailKind): void {
     },
 
     onShareAppMessage() {
-      return detailShare(kind, this.data.entityId, this.data.title).friend;
+      return detailShare(kind, this.data.entityId, this.data.title, this.data.imageUrl).friend;
     },
 
     onShareTimeline() {
-      return detailShare(kind, this.data.entityId, this.data.title).timeline;
+      return detailShare(kind, this.data.entityId, this.data.title, this.data.imageUrl).timeline;
     },
 
     async loadEntity() {

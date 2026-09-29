@@ -109,7 +109,6 @@ export const Route = createFileRoute("/_app/rankings/$year/$season")({
       title: `${year} 年${seasonLabel}排行榜${page > 1 ? `（第 ${page} 页）` : ""}`,
       description: `浏览 ${year} 年${seasonLabel}动画排行榜，按 Bangumi 全站排名排列。`,
       canonicalPath,
-      imagePath: `/og/rankings/${year}/${season}`,
       publication: isEmpty
         ? { state: "noindex-follow", reason: "empty-rankings" }
         : { state: "index", reason: "rankings" },

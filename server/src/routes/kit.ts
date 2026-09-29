@@ -9,7 +9,6 @@ import type { CollectionRepository, SubjectSnapshotRecord } from "../collections
 import { BANGUMI_USER_AGENT } from "../constants";
 import type { DirectoryDiscovery, DirectoryRepository } from "../directory";
 import { isMaintenanceRequest } from "../maintenance";
-import type { OgCache, OgImageRenderer } from "../og";
 import {
   createUpstreamClient,
   upstreamRateLimited,
@@ -32,8 +31,6 @@ export interface AnonymousBindings {
 export interface AnonymousRuntime {
   fetch: (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
   now: () => Date;
-  renderOgImage?: OgImageRenderer;
-  ogCache?: OgCache;
   updateSubjectSnapshot?: (
     bindings: AnonymousBindings,
     snapshot: SubjectSnapshotRecord,

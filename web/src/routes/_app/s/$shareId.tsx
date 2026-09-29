@@ -66,7 +66,6 @@ export const Route = createFileRoute("/_app/s/$shareId")({
       title,
       description: `${currentPage.ownerName} 分享的公开收藏列表「${currentPage.name}」，共收录 ${currentPage.total} 个条目。`,
       canonicalPath,
-      imagePath: `/og/collection-lists/${shareId}`,
       publication: qualified
         ? PUBLICATION.index("public-collection-list")
         : PUBLICATION.noindexFollow("insufficient-items"),

@@ -6,7 +6,6 @@ import { registerDirectoryRoutes } from "./routes/directory";
 import { registerDiscoveryRoutes } from "./routes/discovery";
 import { registerEntityRoutes } from "./routes/entities";
 import { registerImageRoutes } from "./routes/images";
-import { registerOgRoutes } from "./routes/og";
 import { registerScheduleRoutes } from "./routes/schedule";
 
 export type { AnonymousBindings, AnonymousRuntime } from "./routes/kit";
@@ -23,7 +22,6 @@ export function createAnonymousRoutes(
   });
 
   app.use("/schedule", webCors);
-  app.use("/og/*", webCors);
   app.use("/subjects/*", webCors);
   app.use("/chapters/*", webCors);
   app.use("/persons/*", webCors);
@@ -32,7 +30,6 @@ export function createAnonymousRoutes(
   app.use("/rankings", webCors);
 
   registerScheduleRoutes(app, kit);
-  registerOgRoutes(app, kit);
   registerDiscoveryRoutes(app, kit);
   registerEntityRoutes(app, kit);
   registerDirectoryRoutes(app, kit);

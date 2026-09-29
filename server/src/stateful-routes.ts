@@ -34,7 +34,6 @@ import {
   type BroadcastRepository,
   type BroadcastSnapshotRecord,
 } from "./broadcast";
-import { createOgCacheRequest, getDefaultOgCache } from "./og";
 import { getProxiedImageUrl } from "./poster";
 import { normalizeSubjectSnapshot } from "./subject-snapshot";
 import type { UpstreamClient, UpstreamLoadOptions, UpstreamPriority } from "./upstream-client";
@@ -472,14 +471,6 @@ async function withdrawCollectionList(
     ],
     verifiedAt,
   );
-  const cache = runtime.ogCache ?? getDefaultOgCache();
-  if (cache?.delete) {
-    const requestUrl = new URL(
-      `/og/collection-lists/${encodeURIComponent(shareToken)}`,
-      bindings.SERVER_URL ?? "http://localhost",
-    ).toString();
-    await cache.delete(createOgCacheRequest(requestUrl, `collection-list-${shareToken}`));
-  }
 }
 
 async function requireVisibility(request: Request) {

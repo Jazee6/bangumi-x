@@ -31,7 +31,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: ({ matches }) => {
     const notFound = matches.some(isNotFoundMatch);
     const page = buildPageHead({
-      imagePath: null,
+      image: null,
       jsonLd: notFound ? undefined : buildWebSiteJsonLd(),
       publication: notFound
         ? { state: "not-found", reason: "route-not-found" }

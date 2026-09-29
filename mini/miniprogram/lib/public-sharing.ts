@@ -2,23 +2,21 @@ import {
   SEASON_LABELS,
   SUBJECT_TYPE_FILTER_LABELS,
   WEEKDAY_LABELS,
-  WEEKDAY_SLUG_BY_ISO,
   type IsoWeekday,
   type Season,
   type SubjectTypeFilter,
 } from "share";
 
-import { getServerUrl } from "./config";
 import type { DetailTarget } from "./detail-pages";
 import type { DiscoverTab } from "./public-pages";
 
-export type ShareFormat = "friend" | "timeline";
+// 分享图不在服务端渲染（免费版 Worker 的 CPU 预算不够），详情页用封面，其余用代码包内的品牌图。
+export const BRAND_IMAGES = {
+  friend: "/assets/share/friend.png",
+  timeline: "/assets/share/timeline.png",
+};
 
-export function ogImage(path: string, format: ShareFormat): string {
-  return `${getServerUrl()}${path}${path.includes("?") ? "&" : "?"}mini=${format}`;
-}
-
-export function detailShare(target: DetailTarget, id: number, title: string) {
+export function detailShare(target: DetailTarget, id: number, title: string, imageUrl = "") {
   const plural = {
     subject: "subjects",
     chapter: "chapters",
@@ -26,27 +24,29 @@ export function detailShare(target: DetailTarget, id: number, title: string) {
     person: "persons",
   }[target];
   const path = `/pages/${plural}/detail/index?id=${id}`;
-  const imagePath = `/og/${plural}/${id}`;
   return {
-    friend: { title: `${title || "详情"} · 番迹`, path, imageUrl: ogImage(imagePath, "friend") },
+    friend: {
+      title: `${title || "详情"} · 番迹`,
+      path,
+      imageUrl: imageUrl || BRAND_IMAGES.friend,
+    },
     timeline: {
       title: `${title || "详情"} · 番迹`,
       query: `id=${id}`,
-      imageUrl: ogImage(imagePath, "timeline"),
+      imageUrl: imageUrl || BRAND_IMAGES.timeline,
     },
   };
 }
 
 export function scheduleShare(weekday: IsoWeekday) {
   const title = `${WEEKDAY_LABELS[weekday]}放送 · 番迹`;
-  const imagePath = `/og/schedule/${WEEKDAY_SLUG_BY_ISO[weekday]}`;
   return {
     friend: {
       title,
       path: `/pages/index/index?weekday=${weekday}`,
-      imageUrl: ogImage(imagePath, "friend"),
+      imageUrl: BRAND_IMAGES.friend,
     },
-    timeline: { title, query: `weekday=${weekday}`, imageUrl: ogImage(imagePath, "timeline") },
+    timeline: { title, query: `weekday=${weekday}`, imageUrl: BRAND_IMAGES.timeline },
   };
 }
 
@@ -55,43 +55,38 @@ export function discoverShare(tab: DiscoverTab, type: SubjectTypeFilter, keyword
   const title = keyword
     ? `搜索「${keyword}」· 番迹`
     : `${SUBJECT_TYPE_FILTER_LABELS[type]}本年度热门 · 番迹`;
-  const imagePath = keyword
-    ? `/og/mini-search/${tab}?keyword=${encodeURIComponent(keyword)}`
-    : `/og/discover/${type}`;
   return {
     friend: {
       title,
       path: `/pages/discover/index?${query}`,
-      imageUrl: ogImage(imagePath, "friend"),
+      imageUrl: BRAND_IMAGES.friend,
     },
-    timeline: { title, query, imageUrl: ogImage(imagePath, "timeline") },
+    timeline: { title, query, imageUrl: BRAND_IMAGES.timeline },
   };
 }
 
 export function rankingsShare(year: number, season: Season) {
   const title = `${year} 年${SEASON_LABELS[season]}排行榜 · 番迹`;
   const query = `year=${year}&season=${season}`;
-  const imagePath = `/og/rankings/${year}/${season}`;
   return {
     friend: {
       title,
       path: `/pages/rankings/index?${query}`,
-      imageUrl: ogImage(imagePath, "friend"),
+      imageUrl: BRAND_IMAGES.friend,
     },
-    timeline: { title, query, imageUrl: ogImage(imagePath, "timeline") },
+    timeline: { title, query, imageUrl: BRAND_IMAGES.timeline },
   };
 }
 
 export function collectionShare(shareId: string, name: string, owner: string) {
   const query = `shareId=${encodeURIComponent(shareId)}`;
-  const imagePath = `/og/collection-lists/${encodeURIComponent(shareId)}`;
   const title = `${name} · ${owner || "番迹"}`;
   return {
     friend: {
       title,
       path: `/pages/collections/shared/index?${query}`,
-      imageUrl: ogImage(imagePath, "friend"),
+      imageUrl: BRAND_IMAGES.friend,
     },
-    timeline: { title, query, imageUrl: ogImage(imagePath, "timeline") },
+    timeline: { title, query, imageUrl: BRAND_IMAGES.timeline },
   };
 }

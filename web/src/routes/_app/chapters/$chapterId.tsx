@@ -11,6 +11,7 @@ import {
   buildChapterJsonLd,
   buildPageHead,
   CACHE_CONTROL,
+  coverShareImage,
   getChapterBreadcrumbs,
   NOT_FOUND_HEADERS,
 } from "@/lib/seo";
@@ -73,7 +74,7 @@ export const Route = createFileRoute("/_app/chapters/$chapterId")({
       title: `${chapter.title} - ${subject.title}`,
       description,
       canonicalPath: `/chapters/${params.chapterId}`,
-      imagePath: `/og/chapters/${params.chapterId}`,
+      image: coverShareImage(subject.imageUrl, subject.nsfw),
       publication,
       jsonLd: [
         buildBreadcrumbJsonLd(getChapterBreadcrumbs(chapter, subject)),

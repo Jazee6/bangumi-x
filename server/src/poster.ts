@@ -46,19 +46,6 @@ export function getProxiedImageUrl(
   return proxyUrl.toString();
 }
 
-export function parseProxiedImageSource(value: unknown): URL | null {
-  if (typeof value !== "string") return null;
-  try {
-    const proxyUrl = new URL(value);
-    if (proxyUrl.pathname !== "/images" || !parseImageVariant(proxyUrl.searchParams.get("size"))) {
-      return null;
-    }
-    return parseAllowedPosterUrl(proxyUrl.searchParams.get("url"));
-  } catch {
-    return null;
-  }
-}
-
 export function parseAllowedPosterUrl(value: unknown): URL | null {
   if (typeof value !== "string") return null;
 

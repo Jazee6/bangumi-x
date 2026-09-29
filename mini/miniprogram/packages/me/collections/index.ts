@@ -21,7 +21,7 @@ import {
 import { getErrorMessage } from "../../../lib/request";
 import { pagePatch } from "../../../lib/public-pages";
 import { checkCollectionListName, checkSearchKeyword } from "../../../lib/validation";
-import { collectionShare, ogImage } from "../../../lib/public-sharing";
+import { BRAND_IMAGES, collectionShare } from "../../../lib/public-sharing";
 
 interface CollectionCardViewModel {
   id: number;
@@ -93,7 +93,7 @@ Page({
       : {
           title: "每日放送 · 番迹",
           path: "/pages/index/index",
-          imageUrl: ogImage("/og/brand", "friend"),
+          imageUrl: BRAND_IMAGES.friend,
         };
   },
 

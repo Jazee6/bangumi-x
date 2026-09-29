@@ -35,9 +35,6 @@ test("assembles every route responsibility without omissions or shadowing", asyn
     ["/persons/1", 502],
     ["/characters/1", 502],
     ["/images?url=invalid", 400],
-    ["/og/brand", 200],
-    ["/og/brand?title=invalid", 400],
-    ["/og/subjects/1", 502],
     ["/auth/status", 200],
     ["/me/collections", 401],
   ] as const;

@@ -29,6 +29,7 @@ import {
   buildPageHead,
   buildPersonJsonLd,
   CACHE_CONTROL,
+  coverShareImage,
   getEntityBreadcrumbs,
   NOT_FOUND_HEADERS,
 } from "@/lib/seo";
@@ -139,7 +140,7 @@ export function createEntityRouteOptions<K extends EntityKind>(kind: K) {
           detail.summary?.trim() ||
           `${detail.name}是 Bangumi 收录的${detail.type}，关联 ${subjects.total} 个实体。`,
         canonicalPath: path,
-        imagePath: `/og${path}`,
+        image: coverShareImage(detail.imageUrl),
         publication: isIndexableEntity(kind, loaderData)
           ? PUBLICATION.index(kind)
           : PUBLICATION.noindexFollow(

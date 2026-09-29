@@ -219,11 +219,12 @@ Page({
   },
 
   onShareAppMessage() {
-    return detailShare("subject", this.data.subjectId, this.data.title).friend;
+    return detailShare("subject", this.data.subjectId, this.data.title, this.data.imageUrl).friend;
   },
 
   onShareTimeline() {
-    return detailShare("subject", this.data.subjectId, this.data.title).timeline;
+    return detailShare("subject", this.data.subjectId, this.data.title, this.data.imageUrl)
+      .timeline;
   },
 
   async onToggleCollection() {

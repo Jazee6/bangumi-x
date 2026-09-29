@@ -55,7 +55,6 @@ export const Route = createFileRoute("/_app/_schedule/schedule/$weekday")({
       title: `${label}每日放送`,
       description: `Bangumi X ${label}每周放送编排与公开条目。`,
       canonicalPath: `/schedule/${weekday}`,
-      imagePath: `/og/schedule/${weekday}`,
       jsonLd: [
         buildBreadcrumbJsonLd([
           { name: "每日放送", path: "/" },

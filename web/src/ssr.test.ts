@@ -311,7 +311,7 @@ describe("Web production SSR HTTP handler", () => {
     expect(html).toContain('rel="next"');
     expect(html).not.toContain('aria-label="面包屑"');
     expect(html).toContain('"@type":"BreadcrumbList"');
-    expect(html).toContain("/og/rankings/1980/winter");
+    expect(html).toContain("https://bgmx.jaze.top/og-brand.png");
   });
 
   test("renders current-year rankings without crawlable links to future quarters", async () => {

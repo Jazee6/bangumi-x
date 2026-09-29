@@ -64,11 +64,12 @@ Page({
   },
 
   onShareAppMessage() {
-    return detailShare("chapter", this.data.chapterId, this.data.title).friend;
+    return detailShare("chapter", this.data.chapterId, this.data.title, this.data.imageUrl).friend;
   },
 
   onShareTimeline() {
-    return detailShare("chapter", this.data.chapterId, this.data.title).timeline;
+    return detailShare("chapter", this.data.chapterId, this.data.title, this.data.imageUrl)
+      .timeline;
   },
 
   async loadChapter() {

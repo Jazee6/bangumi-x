@@ -6,8 +6,6 @@ import type { ProgressStage } from "share";
 import { createMemoryDirectoryRepository } from "./directory";
 import { createApp } from "./index";
 
-import type { OgCard } from "./og";
-
 import type { AuthBoundary } from "./auth";
 import type {
   CollectionRepository,
@@ -1065,29 +1063,12 @@ describe("public collection-list HTTP contract", () => {
   test("updates directory at the three-item threshold and withdraws immediately", async () => {
     const localRepository = new MemoryCollections();
     const directory = createMemoryDirectoryRepository();
-    const deletedCacheKeys: string[] = [];
-    const renderOgImage = vi.fn(async (card: OgCard) => {
-      expect(card.context).toBe("由 Alice 创建");
-      expect(card.badges).toEqual(["3 个条目"]);
-      expect(card.imageUrls).toHaveLength(3);
-      expect(card.mediaLayout).toBe("stack");
-      return { bytes: Uint8Array.of(1), cacheable: true };
-    });
     const localApp = createApp({
       auth,
       collections: () => localRepository,
       directory: () => directory,
       fetch: upstreamFetch,
       now: () => currentTime,
-      renderOgImage,
-      ogCache: {
-        match: async () => undefined,
-        put: async () => undefined,
-        delete: async (request) => {
-          deletedCacheKeys.push(request.url);
-          return true;
-        },
-      },
     });
     const list = await (
       await localApp.request(
@@ -1129,10 +1110,6 @@ describe("public collection-list HTTP contract", () => {
       }),
     ]);
 
-    const og = await localApp.request(`/og/collection-lists/${list.shareId}`, {}, bindings);
-    expect(og.status).toBe(200);
-    expect(renderOgImage).toHaveBeenCalledTimes(1);
-
     currentTime = new Date(currentTime.getTime() + 1_000);
     await localApp.request(
       `/me/collection-lists/${list.id}/subjects/43`,
@@ -1160,9 +1137,8 @@ describe("public collection-list HTTP contract", () => {
       bindings,
     );
     expect(
-      (await localApp.request(`/og/collection-lists/${list.shareId}`, {}, bindings)).status,
+      (await localApp.request(`/public/collection-lists/${list.shareId}`, {}, bindings)).status,
     ).toBe(404);
-    expect(deletedCacheKeys.some((key) => key.includes("collection-list-"))).toBe(true);
   });
 
   test("public collection list exposes ownerName and no public write contract", async () => {
