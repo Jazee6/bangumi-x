@@ -329,12 +329,38 @@ export function createMiniIdentityRoutes(runtime: MiniIdentityRuntime) {
 
   app.post("/mini/wechat/content-security-callback", async (context) => {
     await requireWechatCallbackSignature(context.req.raw, context.env.WECHAT_CALLBACK_TOKEN);
-    const body = await requireJson(context.req.raw);
+    // 签名已通过的推送一律回复 success：非 2xx 只会让微信重复推送同一条消息。
+    const raw = await context.req.raw.text();
+    let body: Record<string, unknown> | null = null;
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (isRecord(parsed)) body = parsed;
+    } catch {
+      // Logged below.
+    }
+    if (!body) {
+      console.warn("WeChat callback is not a JSON object", {
+        contentType: context.req.header("Content-Type"),
+        length: raw.length,
+      });
+      return context.text("success");
+    }
     const traceId = typeof body.trace_id === "string" ? body.trace_id : "";
     const result = isRecord(body.result) ? body.result : {};
     const suggest = typeof result.suggest === "string" ? result.suggest : "";
-    if (!traceId || !suggest) {
-      throw new ApiError(400, { code: "INVALID_MINI_PROFILE", message: "微信回调无效。" });
+    if (!traceId) {
+      console.warn("WeChat callback without trace_id ignored", { event: body.Event });
+      return context.text("success");
+    }
+    if (!suggest) {
+      // 检测失败（如下载图片失败）时没有 result，按未通过处理以释放审核中的头像。
+      console.warn("WeChat media check returned no result", {
+        traceId,
+        event: body.Event,
+        errcode: body.errcode,
+        errmsg: body.errmsg,
+        detail: body.detail,
+      });
     }
     await completeAvatarReview(context.env, traceId, suggest, runtime.now());
     return context.text("success");

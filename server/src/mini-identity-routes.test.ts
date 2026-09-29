@@ -136,6 +136,16 @@ describe("Mini identity HTTP boundary", () => {
     );
     expect(response.status).toBe(200);
     expect(await response.text()).toBe("success");
+
+    for (const body of ["<xml></xml>", JSON.stringify({ trace_id: "failed-check", errcode: 1 })]) {
+      const failed = await app.request(
+        `/mini/wechat/content-security-callback?${new URLSearchParams({ timestamp, nonce, signature })}`,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body },
+        { ...bindings, WECHAT_CALLBACK_TOKEN: token },
+      );
+      expect(failed.status).toBe(200);
+      expect(await failed.text()).toBe("success");
+    }
   });
 
   test("rejects unsigned or incorrectly signed WeChat callbacks", async () => {
