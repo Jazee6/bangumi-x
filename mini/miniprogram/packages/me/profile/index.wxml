@@ -19,7 +19,7 @@
           chevron="{{user.editable}}"
           pressable="{{user.editable && !uploadingAvatar}}"
         >
-          <image wx:if="{{user.image}}" slot="end" class="profile-avatar" src="{{user.image}}" mode="aspectFill" lazy-load></image>
+          <image wx:if="{{user.image}}" slot="end" class="profile-avatar" src="{{user.image}}" mode="aspectFill" webp lazy-load></image>
           <view wx:else slot="end" class="profile-avatar profile-avatar--fallback"><text>{{userInitial}}</text></view>
           <button
             wx:if="{{user.editable}}"

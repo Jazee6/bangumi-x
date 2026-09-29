@@ -1,6 +1,7 @@
 import { applyD1Migrations, env } from "cloudflare:test";
 import { beforeAll, describe, expect, test } from "vitest";
 
+import { createApp } from "./index";
 import { completeAvatarReview } from "./mini-identity";
 
 const db = env.DB;
@@ -55,5 +56,9 @@ describe("Mini avatar review", () => {
     expect(user?.image).toBe(`https://server.example.test/mini/${profile?.avatar_key}`);
     expect(await env.AVATARS.head(profile?.avatar_key ?? "")).not.toBeNull();
     expect(await env.AVATARS.head("candidates/review")).toBeNull();
+
+    const served = await createApp().request(new URL(user?.image ?? "").pathname, {}, bindings);
+    expect(served.status).toBe(200);
+    expect(served.headers.get("Content-Type")).toBe("image/webp");
   });
 });

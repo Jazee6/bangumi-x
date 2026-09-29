@@ -306,8 +306,12 @@ export function createMiniIdentityRoutes(runtime: MiniIdentityRuntime) {
     return response;
   });
 
-  app.get("/mini/avatars/:avatarId.webp", async (context) => {
-    const object = await getAvatar(context.env, context.req.param("avatarId") ?? "");
+  // Hono 会把 `:avatarId.webp` 整体当作参数名，扩展名需要写进正则参数里。
+  app.get("/mini/avatars/:file{[a-f0-9]{32}\\.webp}", async (context) => {
+    const object = await getAvatar(
+      context.env,
+      context.req.param("file").slice(0, -".webp".length),
+    );
     if (!object) return context.notFound();
     const response = await objectResponse(object);
     response.headers.set("Cache-Control", "public, max-age=31536000, immutable");

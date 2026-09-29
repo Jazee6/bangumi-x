@@ -796,7 +796,10 @@ export async function completeAvatarReview(
   suggest: string,
   now = new Date(),
 ) {
-  if (!bindings.AVATARS || !bindings.IMAGES || !bindings.SERVER_URL) return false;
+  if (!bindings.AVATARS || !bindings.IMAGES || !bindings.SERVER_URL) {
+    console.warn("Avatar review skipped: bindings unavailable", { traceId });
+    return false;
+  }
   const database = requireDatabase(bindings);
   const profile = await database
     .prepare(
@@ -806,7 +809,10 @@ export async function completeAvatarReview(
     )
     .bind(traceId)
     .first<MiniProfileRow>();
-  if (!profile?.pending_avatar_key) return false;
+  if (!profile?.pending_avatar_key) {
+    console.warn("Avatar review skipped: no pending avatar for trace", { traceId, suggest });
+    return false;
+  }
   const candidateKey = profile.pending_avatar_key;
 
   if (suggest !== "pass" || (profile.pending_avatar_expires_at ?? 0) <= now.getTime()) {
@@ -822,12 +828,18 @@ export async function completeAvatarReview(
   }
 
   const candidate = await bindings.AVATARS.get(candidateKey);
-  if (!candidate?.body) return false;
+  if (!candidate?.body) {
+    console.warn("Avatar review skipped: candidate missing", { traceId });
+    return false;
+  }
   const transformed = await bindings.IMAGES.input(candidate.body)
     .transform({ width: 512, height: 512, fit: "cover" })
     .output({ format: "image/webp", quality: 82 });
   const response = transformed.response();
-  if (!response.ok || !response.body) return false;
+  if (!response.ok || !response.body) {
+    console.warn("Avatar review skipped: transform failed", { traceId, status: response.status });
+    return false;
+  }
   const avatarId = crypto.randomUUID().replaceAll("-", "");
   const avatarKey = `avatars/${avatarId}.webp`;
   // R2 rejects streams without a known length, which the Images binding output is.
