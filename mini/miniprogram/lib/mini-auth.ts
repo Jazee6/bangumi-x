@@ -21,8 +21,7 @@ function isMiniIdentityUser(value: unknown): value is MiniIdentityUser {
   return (
     typeof user.name === "string" &&
     (typeof user.image === "string" || user.image === null) &&
-    typeof user.editable === "boolean" &&
-    typeof user.avatarReviewPending === "boolean"
+    typeof user.editable === "boolean"
   );
 }
 

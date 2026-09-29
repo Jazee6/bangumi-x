@@ -117,7 +117,7 @@ Page({
     try {
       const user = await uploadMiniAvatar(filePath);
       this.setProfile(user);
-      wx.showToast({ title: "头像已提交审核", icon: "success" });
+      wx.showToast({ title: "头像已更新", icon: "success" });
     } catch (error) {
       wx.showToast({ title: getErrorMessage(error), icon: "none" });
     } finally {

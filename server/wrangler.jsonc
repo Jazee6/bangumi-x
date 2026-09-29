@@ -1,6 +1,6 @@
 {
   // Required Wrangler secrets: BETTER_AUTH_SECRET, EASY_AUTH_CLIENT_ID,
-  // EASY_AUTH_CLIENT_SECRET, WECHAT_MINI_APP_SECRET, and WECHAT_CALLBACK_TOKEN.
+  // EASY_AUTH_CLIENT_SECRET, and WECHAT_MINI_APP_SECRET.
   // Values are never committed.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "bangumi-x",

@@ -25,7 +25,6 @@ const LINK_QR_PREFIX = "bgmx:pair:";
 const SHORT_CODE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const PROFILE_DAILY_LIMIT = 5;
-const AVATAR_REVIEW_TTL_MS = 2 * 60 * 60 * 1000;
 
 export interface MiniIdentityBindings {
   DB?: D1Database;
@@ -33,7 +32,6 @@ export interface MiniIdentityBindings {
   SERVER_URL?: string;
   WECHAT_MINI_APP_ID?: string;
   WECHAT_MINI_APP_SECRET?: string;
-  WECHAT_CALLBACK_TOKEN?: string;
   AVATARS?: R2Bucket;
   IMAGES?: ImagesBinding;
 }
@@ -68,9 +66,6 @@ interface LinkRow {
 interface MiniProfileRow {
   user_id: string;
   avatar_key: string | null;
-  pending_avatar_key: string | null;
-  pending_avatar_trace_id: string | null;
-  pending_avatar_expires_at: number | null;
   mutation_day: string | null;
   mutation_count: number;
   link_claim_window_started_at: number | null;
@@ -120,24 +115,11 @@ async function sha256(value: string) {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-async function sha1(value: string) {
-  const bytes = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-1", bytes);
-  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-function avatarReviewPending(profile: MiniProfileRow | null, now: Date) {
-  return Boolean(
-    profile?.pending_avatar_key && (profile.pending_avatar_expires_at ?? 0) > now.getTime(),
-  );
-}
-
-function miniUser(row: Pick<UserRow, "name" | "image" | "is_anonymous">, pending = false) {
+function miniUser(row: Pick<UserRow, "name" | "image" | "is_anonymous">) {
   return {
     name: row.name,
     image: row.image,
     editable: row.is_anonymous === 1,
-    avatarReviewPending: pending,
   } satisfies MiniIdentityUser;
 }
 
@@ -174,8 +156,7 @@ async function getProfile(database: D1Database, userId: string) {
   return (
     (await database
       .prepare(
-        `select user_id, avatar_key, pending_avatar_key, pending_avatar_trace_id,
-                pending_avatar_expires_at, mutation_day, mutation_count,
+        `select user_id, avatar_key, mutation_day, mutation_count,
                 link_claim_window_started_at, link_claim_failure_count
          from mini_profile where user_id = ?`,
       )
@@ -468,26 +449,17 @@ export async function signInWithWechat(
     }
   }
 
-  const profile = await getProfile(database, row.id);
   const createdSession = await insertSession(database, row.id, now);
   return {
     token: createdSession.token,
     expiresAt: createdSession.expiresAt.toISOString(),
-    user: miniUser(row, avatarReviewPending(profile, now)),
+    user: miniUser(row),
   };
 }
 
-export async function getMiniIdentity(
-  bindings: MiniIdentityBindings,
-  userId: string,
-  now = new Date(),
-) {
-  const database = requireDatabase(bindings);
-  const [row, profile] = await Promise.all([
-    getUser(database, userId),
-    getProfile(database, userId),
-  ]);
-  return row ? miniUser(row, avatarReviewPending(profile, now)) : null;
+export async function getMiniIdentity(bindings: MiniIdentityBindings, userId: string) {
+  const row = await getUser(requireDatabase(bindings), userId);
+  return row ? miniUser(row) : null;
 }
 
 async function getWechatOpenId(bindings: MiniIdentityBindings, userId: string) {
@@ -638,6 +610,9 @@ export async function updateMiniDisplayName(
   return getMiniIdentity(bindings, userId);
 }
 
+const AVATAR_EXTENSIONS = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+const AVATAR_FILE_PATTERN = /^[a-f0-9]{32}\.(?:jpg|png|webp)$/;
+
 export function detectMiniAvatarMediaType(bytes: Uint8Array): "image/jpeg" | "image/png" | null {
   if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
     return "image/jpeg";
@@ -657,7 +632,6 @@ export async function submitMiniAvatar(
   userId: string,
   file: File,
   now = new Date(),
-  fetcher: Fetcher = fetch,
 ) {
   if (!bindings.AVATARS || !bindings.IMAGES || !bindings.SERVER_URL) {
     throw new MiniIdentityError("MINI_AUTH_UNAVAILABLE", "头像服务暂时不可用。", 503, true);
@@ -682,189 +656,47 @@ export async function submitMiniAvatar(
   await assertEditableUser(database, userId);
   await consumeProfileMutation(database, userId, now);
   const previousProfile = await getProfile(database, userId);
-  const candidateId = randomToken();
-  const candidateKey = `candidates/${candidateId}`;
-  const reservation = await database
-    .prepare(
-      `update mini_profile set pending_avatar_key = ?, pending_avatar_trace_id = null,
-       pending_avatar_expires_at = ?, updated_at = ?
-       where user_id = ? and
-         (pending_avatar_key is null or pending_avatar_expires_at <= ?)`,
-    )
-    .bind(candidateKey, now.getTime() + AVATAR_REVIEW_TTL_MS, now.getTime(), userId, now.getTime())
-    .run();
-  if (Number(reservation.meta.changes) !== 1) {
-    throw new MiniIdentityError(
-      "INVALID_MINI_PROFILE",
-      "已有头像正在审核，请稍后再试。",
-      409,
-      true,
-    );
-  }
 
-  if (previousProfile?.pending_avatar_key) {
-    await bindings.AVATARS.delete(previousProfile.pending_avatar_key);
-  }
-
-  try {
-    await bindings.AVATARS.put(candidateKey, contents, {
-      httpMetadata: { contentType: mediaType },
-    });
-    const openid = await getWechatOpenId(bindings, userId);
-    if (!openid) throw new MiniIdentityError("INVALID_MINI_PROFILE", "微信身份无效。", 403);
-    const accessToken = await getWechatAccessToken(bindings, now, fetcher);
-    const response = await fetcher(
-      `https://api.weixin.qq.com/wxa/media_check_async?access_token=${encodeURIComponent(accessToken)}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          media_url: `${bindings.SERVER_URL}/mini/avatar-candidates/${candidateId}`,
-          media_type: 2,
-          version: 2,
-          scene: 1,
-          openid,
-        }),
-      },
-    );
-    const body = (await response.json()) as { errcode?: number; trace_id?: string };
-    if (!response.ok || body.errcode || !body.trace_id) {
-      throw new MiniIdentityError(
-        "MINI_PROFILE_REVIEW_FAILED",
-        "头像审核暂时无法开始。",
-        503,
-        true,
-      );
-    }
-    const traceUpdate = await database
-      .prepare(
-        `update mini_profile set pending_avatar_trace_id = ?, updated_at = ?
-         where user_id = ? and pending_avatar_key = ?`,
-      )
-      .bind(body.trace_id, now.getTime(), userId, candidateKey)
-      .run();
-    if (Number(traceUpdate.meta.changes) !== 1) {
-      throw new MiniIdentityError("MINI_PROFILE_REVIEW_FAILED", "头像审核状态已失效。", 409, true);
-    }
-    return { pending: true };
-  } catch (error) {
-    await database
-      .prepare(
-        `update mini_profile set pending_avatar_key = null, pending_avatar_trace_id = null,
-         pending_avatar_expires_at = null, updated_at = ?
-         where user_id = ? and pending_avatar_key = ?`,
-      )
-      .bind(now.getTime(), userId, candidateKey)
-      .run();
-    await bindings.AVATARS.delete(candidateKey);
-    throw error;
-  }
-}
-
-export async function getAvatarCandidate(bindings: MiniIdentityBindings, candidateId: string) {
-  if (!bindings.AVATARS || !/^[a-f0-9]{64}$/.test(candidateId)) return null;
-  const key = `candidates/${candidateId}`;
-  const profile = await requireDatabase(bindings)
-    .prepare(
-      `select pending_avatar_expires_at from mini_profile
-       where pending_avatar_key = ? and pending_avatar_expires_at > ?`,
-    )
-    .bind(key, Date.now())
-    .first<{ pending_avatar_expires_at: number }>();
-  if (!profile) return null;
-  return bindings.AVATARS.get(key);
-}
-
-export async function getAvatar(bindings: MiniIdentityBindings, avatarId: string) {
-  if (!bindings.AVATARS || !/^[a-f0-9]{32}$/.test(avatarId)) return null;
-  return bindings.AVATARS.get(`avatars/${avatarId}.webp`);
-}
-
-export async function verifyWechatCallbackSignature(
-  token: string,
-  timestamp: string,
-  nonce: string,
-  signature: string,
-) {
-  const expected = await sha1([token, timestamp, nonce].sort().join(""));
-  return expected === signature;
-}
-
-export async function completeAvatarReview(
-  bindings: MiniIdentityBindings,
-  traceId: string,
-  suggest: string,
-  now = new Date(),
-) {
-  if (!bindings.AVATARS || !bindings.IMAGES || !bindings.SERVER_URL) {
-    console.warn("Avatar review skipped: bindings unavailable", { traceId });
-    return false;
-  }
-  const database = requireDatabase(bindings);
-  const profile = await database
-    .prepare(
-      `select user_id, avatar_key, pending_avatar_key, pending_avatar_trace_id,
-              pending_avatar_expires_at, mutation_day, mutation_count
-       from mini_profile where pending_avatar_trace_id = ?`,
-    )
-    .bind(traceId)
-    .first<MiniProfileRow>();
-  if (!profile?.pending_avatar_key) {
-    console.warn("Avatar review skipped: no pending avatar for trace", { traceId, suggest });
-    return false;
-  }
-  const candidateKey = profile.pending_avatar_key;
-
-  if (suggest !== "pass" || (profile.pending_avatar_expires_at ?? 0) <= now.getTime()) {
-    await database
-      .prepare(
-        `update mini_profile set pending_avatar_key = null, pending_avatar_trace_id = null,
-         pending_avatar_expires_at = null, updated_at = ? where user_id = ?`,
-      )
-      .bind(now.getTime(), profile.user_id)
-      .run();
-    await bindings.AVATARS.delete(candidateKey);
-    return true;
-  }
-
-  const candidate = await bindings.AVATARS.get(candidateKey);
-  if (!candidate?.body) {
-    console.warn("Avatar review skipped: candidate missing", { traceId });
-    return false;
-  }
-  const transformed = await bindings.IMAGES.input(candidate.body)
+  // 头像来自 chooseAvatar，基础库 2.24.4 起微信已对其做内容安全检测，未通过的图片不会回调。
+  // 服务端不再调用 mediaCheckAsync：微信服务器经常无法下载 Cloudflare 上的候选图（-1008）。
+  // DOM 与 workers-types 的 ReadableStream 声明不兼容，运行时是同一个对象。
+  const source = file.stream() as unknown as Parameters<ImagesBinding["input"]>[0];
+  const transformed = await bindings.IMAGES.input(source)
     .transform({ width: 512, height: 512, fit: "cover" })
     .output({ format: "image/webp", quality: 82 });
   const response = transformed.response();
   if (!response.ok || !response.body) {
-    console.warn("Avatar review skipped: transform failed", { traceId, status: response.status });
-    return false;
+    throw new MiniIdentityError("MINI_AUTH_UNAVAILABLE", "头像处理失败，请稍后重试。", 503, true);
   }
-  const avatarId = crypto.randomUUID().replaceAll("-", "");
-  const avatarKey = `avatars/${avatarId}.webp`;
   // R2 rejects streams without a known length, which the Images binding output is.
-  await bindings.AVATARS.put(avatarKey, await response.arrayBuffer(), {
+  const webp = await response.arrayBuffer();
+  // chooseAvatar 给的通常已是裁剪压缩过的小图，转 webp 未必更小，保留体积更小的一份。
+  const [bytes, contentType] =
+    webp.byteLength < contents.byteLength ? [webp, "image/webp" as const] : [contents, mediaType];
+  const avatarFile = `${crypto.randomUUID().replaceAll("-", "")}.${AVATAR_EXTENSIONS[contentType]}`;
+  const avatarKey = `avatars/${avatarFile}`;
+  await bindings.AVATARS.put(avatarKey, bytes, {
     httpMetadata: {
-      contentType: "image/webp",
+      contentType,
       cacheControl: "public, max-age=31536000, immutable",
     },
   });
-  const imageUrl = `${bindings.SERVER_URL}/mini/avatars/${avatarId}.webp`;
+  const imageUrl = `${bindings.SERVER_URL}/mini/avatars/${avatarFile}`;
   await database.batch([
     database
       .prepare(`update user set image = ?, updated_at = ? where id = ? and is_anonymous = 1`)
-      .bind(imageUrl, now.getTime(), profile.user_id),
+      .bind(imageUrl, now.getTime(), userId),
     database
-      .prepare(
-        `update mini_profile set avatar_key = ?, pending_avatar_key = null,
-         pending_avatar_trace_id = null, pending_avatar_expires_at = null, updated_at = ?
-         where user_id = ?`,
-      )
-      .bind(avatarKey, now.getTime(), profile.user_id),
+      .prepare(`update mini_profile set avatar_key = ?, updated_at = ? where user_id = ?`)
+      .bind(avatarKey, now.getTime(), userId),
   ]);
-  await bindings.AVATARS.delete(candidateKey);
-  if (profile.avatar_key) await bindings.AVATARS.delete(profile.avatar_key);
-  return true;
+  if (previousProfile?.avatar_key) await bindings.AVATARS.delete(previousProfile.avatar_key);
+  return (await getMiniIdentity(bindings, userId)) as MiniIdentityUser;
+}
+
+export async function getAvatar(bindings: MiniIdentityBindings, avatarFile: string) {
+  if (!bindings.AVATARS || !AVATAR_FILE_PATTERN.test(avatarFile)) return null;
+  return bindings.AVATARS.get(`avatars/${avatarFile}`);
 }
 
 function accountLinkParty(user: UserRow, counts: MergeCounts) {
@@ -1280,8 +1112,6 @@ export async function confirmAccountLink(
   );
   await database.batch(statements as [D1PreparedStatement, ...D1PreparedStatement[]]);
   if (sourceProfile?.avatar_key) await bindings.AVATARS?.delete(sourceProfile.avatar_key);
-  if (sourceProfile?.pending_avatar_key)
-    await bindings.AVATARS?.delete(sourceProfile.pending_avatar_key);
 
   return { state: "complete" };
 }

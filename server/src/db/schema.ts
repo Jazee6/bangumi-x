@@ -76,24 +76,17 @@ export const verification = sqliteTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const miniProfile = sqliteTable(
-  "mini_profile",
-  {
-    userId: text("user_id")
-      .primaryKey()
-      .references(() => user.id, { onDelete: "cascade" }),
-    avatarKey: text("avatar_key"),
-    pendingAvatarKey: text("pending_avatar_key"),
-    pendingAvatarTraceId: text("pending_avatar_trace_id"),
-    pendingAvatarExpiresAt: integer("pending_avatar_expires_at", { mode: "timestamp_ms" }),
-    mutationDay: text("mutation_day"),
-    mutationCount: integer("mutation_count").notNull().default(0),
-    linkClaimWindowStartedAt: integer("link_claim_window_started_at", { mode: "timestamp_ms" }),
-    linkClaimFailureCount: integer("link_claim_failure_count").notNull().default(0),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
-  },
-  (table) => [uniqueIndex("mini_profile_pending_trace_unique").on(table.pendingAvatarTraceId)],
-);
+export const miniProfile = sqliteTable("mini_profile", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  avatarKey: text("avatar_key"),
+  mutationDay: text("mutation_day"),
+  mutationCount: integer("mutation_count").notNull().default(0),
+  linkClaimWindowStartedAt: integer("link_claim_window_started_at", { mode: "timestamp_ms" }),
+  linkClaimFailureCount: integer("link_claim_failure_count").notNull().default(0),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
 
 export const miniAccountLinkRequest = sqliteTable(
   "mini_account_link_request",

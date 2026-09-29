@@ -53,9 +53,12 @@ export async function updateMiniDisplayName(name: string) {
 }
 
 export async function uploadMiniAvatar(filePath: string) {
-  await authenticatedUpload<{ pending: true }>("/mini/me/avatar", filePath);
-  const user = await getMiniIdentity();
-  return user;
+  const response = await authenticatedUpload<{ user: MiniIdentityUser }>(
+    "/mini/me/avatar",
+    filePath,
+  );
+  updateMiniSessionUser(response.user);
+  return response.user;
 }
 
 export async function claimMiniAccountLink(credential: string) {

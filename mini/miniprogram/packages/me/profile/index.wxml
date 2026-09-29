@@ -15,7 +15,6 @@
       <ui-item-group>
         <ui-item
           title="头像"
-          description="{{user.avatarReviewPending ? '新头像审核中' : ''}}"
           chevron="{{user.editable}}"
           pressable="{{user.editable && !uploadingAvatar}}"
         >

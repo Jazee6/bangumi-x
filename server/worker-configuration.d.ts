@@ -12,7 +12,6 @@ interface __BaseEnv_CloudflareBindings {
   EASY_AUTH_CLIENT_SECRET: string;
   BGM_API_URL: string;
   WECHAT_MINI_APP_SECRET: string;
-  WECHAT_CALLBACK_TOKEN: string;
 }
 declare namespace Cloudflare {
   interface GlobalProps {
@@ -30,7 +29,6 @@ declare namespace Cloudflare {
     EASY_AUTH_CLIENT_SECRET: string;
     BGM_API_URL: string;
     WECHAT_MINI_APP_SECRET: string;
-    WECHAT_CALLBACK_TOKEN: string;
   }
   interface Env extends __BaseEnv_CloudflareBindings {}
 }
@@ -50,7 +48,6 @@ declare namespace NodeJS {
       | "EASY_AUTH_CLIENT_SECRET"
       | "BGM_API_URL"
       | "WECHAT_MINI_APP_SECRET"
-      | "WECHAT_CALLBACK_TOKEN"
     >
   > {}
 }

@@ -11,20 +11,17 @@ import {
   acknowledgeAccountLinkResult,
   cancelAccountLink,
   claimAccountLink,
-  completeAvatarReview,
   confirmAccountLink,
   consumeAccountLinkResult,
   createAccountLink,
   getAccountLinkPreview,
   getAccountLinkWebStatus,
   getAvatar,
-  getAvatarCandidate,
   getMiniIdentity,
   isMiniIdentityAvailable,
   signInWithWechat,
   submitMiniAvatar,
   updateMiniDisplayName,
-  verifyWechatCallbackSignature,
 } from "./mini-identity";
 import { isRecord } from "./validation";
 
@@ -83,22 +80,6 @@ async function objectResponse(object: R2ObjectBody) {
   return new Response(await object.arrayBuffer(), { headers });
 }
 
-async function requireWechatCallbackSignature(request: Request, token?: string) {
-  const { searchParams } = new URL(request.url);
-  const timestamp = searchParams.get("timestamp") ?? "";
-  const nonce = searchParams.get("nonce") ?? "";
-  const signature = searchParams.get("signature") ?? "";
-  if (
-    !token ||
-    !timestamp ||
-    !nonce ||
-    !signature ||
-    !(await verifyWechatCallbackSignature(token, timestamp, nonce, signature))
-  ) {
-    throw new ApiError(403, { code: "INVALID_ORIGIN", message: "微信回调签名无效。" });
-  }
-}
-
 export function createMiniIdentityRoutes(runtime: MiniIdentityRuntime) {
   const app = new Hono<{ Bindings: Bindings }>();
   const webCors = cors({
@@ -142,7 +123,7 @@ export function createMiniIdentityRoutes(runtime: MiniIdentityRuntime) {
 
   app.get("/mini/me", async (context) => {
     const userId = await requireUserId(context.req.raw, context.env, runtime.auth);
-    const user = await getMiniIdentity(context.env, userId, runtime.now());
+    const user = await getMiniIdentity(context.env, userId);
     if (!user) throw new ApiError(401, { code: "UNAUTHORIZED", message: "登录已失效。" });
     return context.json({ user });
   });
@@ -177,10 +158,9 @@ export function createMiniIdentityRoutes(runtime: MiniIdentityRuntime) {
       throw new ApiError(400, { code: "INVALID_MINI_PROFILE", message: "请选择头像图片。" });
     }
     try {
-      return context.json(
-        await submitMiniAvatar(context.env, userId, avatar, runtime.now(), runtime.fetch),
-        202,
-      );
+      return context.json({
+        user: await submitMiniAvatar(context.env, userId, avatar, runtime.now()),
+      });
     } catch (error) {
       rethrow(error);
     }
@@ -298,72 +278,13 @@ export function createMiniIdentityRoutes(runtime: MiniIdentityRuntime) {
     }
   });
 
-  app.get("/mini/avatar-candidates/:candidateId", async (context) => {
-    const object = await getAvatarCandidate(context.env, context.req.param("candidateId"));
-    if (!object) return context.notFound();
-    const response = await objectResponse(object);
-    response.headers.set("Cache-Control", "private, no-store");
-    return response;
-  });
-
-  // Hono 会把 `:avatarId.webp` 整体当作参数名，扩展名需要写进正则参数里。
-  app.get("/mini/avatars/:file{[a-f0-9]{32}\\.webp}", async (context) => {
-    const object = await getAvatar(
-      context.env,
-      context.req.param("file").slice(0, -".webp".length),
-    );
+  // 扩展名写在参数里：Hono 会把 `:id.webp` 整体当作参数名。
+  app.get("/mini/avatars/:file", async (context) => {
+    const object = await getAvatar(context.env, context.req.param("file"));
     if (!object) return context.notFound();
     const response = await objectResponse(object);
     response.headers.set("Cache-Control", "public, max-age=31536000, immutable");
     return response;
-  });
-
-  app.get("/mini/wechat/content-security-callback", async (context) => {
-    await requireWechatCallbackSignature(context.req.raw, context.env.WECHAT_CALLBACK_TOKEN);
-    const echostr = context.req.query("echostr");
-    if (!echostr) {
-      throw new ApiError(400, { code: "INVALID_MINI_PROFILE", message: "微信验证请求无效。" });
-    }
-    return context.text(echostr);
-  });
-
-  app.post("/mini/wechat/content-security-callback", async (context) => {
-    await requireWechatCallbackSignature(context.req.raw, context.env.WECHAT_CALLBACK_TOKEN);
-    // 签名已通过的推送一律回复 success：非 2xx 只会让微信重复推送同一条消息。
-    const raw = await context.req.raw.text();
-    let body: Record<string, unknown> | null = null;
-    try {
-      const parsed: unknown = JSON.parse(raw);
-      if (isRecord(parsed)) body = parsed;
-    } catch {
-      // Logged below.
-    }
-    if (!body) {
-      console.warn("WeChat callback is not a JSON object", {
-        contentType: context.req.header("Content-Type"),
-        length: raw.length,
-      });
-      return context.text("success");
-    }
-    const traceId = typeof body.trace_id === "string" ? body.trace_id : "";
-    const result = isRecord(body.result) ? body.result : {};
-    const suggest = typeof result.suggest === "string" ? result.suggest : "";
-    if (!traceId) {
-      console.warn("WeChat callback without trace_id ignored", { event: body.Event });
-      return context.text("success");
-    }
-    if (!suggest) {
-      // 检测失败（如下载图片失败）时没有 result，按未通过处理以释放审核中的头像。
-      console.warn("WeChat media check returned no result", {
-        traceId,
-        event: body.Event,
-        errcode: body.errcode,
-        errmsg: body.errmsg,
-        detail: body.detail,
-      });
-    }
-    await completeAvatarReview(context.env, traceId, suggest, runtime.now());
-    return context.text("success");
   });
 
   return app;

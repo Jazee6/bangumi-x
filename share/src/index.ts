@@ -473,7 +473,6 @@ export interface MiniIdentityUser {
   name: string;
   image: string | null;
   editable: boolean;
-  avatarReviewPending: boolean;
 }
 
 export interface MiniIdentitySession {
