@@ -65,4 +65,32 @@ describe("expired record retention", () => {
       ),
     ).toEqual(["link-recent"]);
   });
+
+  test("purges pending directory rows of retired relation types", async () => {
+    const rows = [
+      ["retired-person", "person", "pending"],
+      ["retired-character", "character", "pending"],
+      ["retired-chapter", "chapter", "pending"],
+      ["kept-subject", "subject", "pending"],
+      ["kept-person", "person", "index"],
+    ];
+    await db.batch(
+      rows.map(([id, resourceType, indexStatus]) =>
+        db
+          .prepare(
+            `insert into public_entity_directory
+             (id, resource_type, external_id, discovery_source, first_discovered_at,
+              last_verified_at, index_status, index_reason)
+             values (?, ?, ?, 'relation', ?, null, ?, 'retention')`,
+          )
+          .bind(id, resourceType, id, now.getTime(), indexStatus),
+      ),
+    );
+
+    await purgeExpiredRecords(db, now);
+
+    expect(
+      await ids("select id from public_entity_directory where index_reason = 'retention'"),
+    ).toEqual(["kept-person", "kept-subject"]);
+  });
 });

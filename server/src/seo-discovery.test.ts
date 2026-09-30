@@ -327,7 +327,7 @@ describe("SEO discovery HTTP side effects", () => {
     ]);
   });
 
-  test("subject chapters relation discovers pending chapters", async () => {
+  test("subject chapters relation does not record chapters", async () => {
     const directory = createMemoryDirectoryRepository();
     const fetch = vi.fn(async () =>
       Response.json({
@@ -344,19 +344,14 @@ describe("SEO discovery HTTP side effects", () => {
     const body = await response.json();
     expect(body.fetchedAt).toBeDefined();
 
-    const entries = await directory.listEntries({
-      resourceType: "chapter",
-      indexStatus: "pending",
-      limit: 10,
-      offset: 0,
-    });
-    expect(entries).toEqual([
-      expect.objectContaining({
-        externalId: "1001",
-        discoverySource: "relation",
+    expect(
+      await directory.listEntries({
+        resourceType: "chapter",
         indexStatus: "pending",
+        limit: 10,
+        offset: 0,
       }),
-    ]);
+    ).toEqual([]);
   });
 
   test("character and person detail quality plus relations update the directory", async () => {
@@ -446,6 +441,11 @@ describe("SEO discovery HTTP side effects", () => {
         offset: 0,
       }),
     ).toEqual([expect.objectContaining({ externalId: "42", discoverySource: "relation" })]);
+    for (const resourceType of ["character", "person"] as const) {
+      expect(
+        await directory.listEntries({ resourceType, indexStatus: "pending", limit: 10, offset: 0 }),
+      ).toEqual([]);
+    }
   });
 
   test("entity detail records unnamed and thin publication reasons", async () => {

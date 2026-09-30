@@ -43,7 +43,7 @@ import {
   type AnonymousApp,
   type AnonymousContext,
   type AnonymousKit,
-  relatedDiscoveries,
+  relatedSubjectDiscoveries,
   subjectIndexDecision,
 } from "./kit";
 
@@ -140,7 +140,6 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
         { code: "SUBJECT_NOT_FOUND", message: "条目不存在。" },
       );
       const fetchedAt = runtime.now();
-      await recordDiscoveries(context.env, relatedDiscoveries("chapter", page.data), fetchedAt);
       return context.json({ ...page, fetchedAt: fetchedAt.toISOString() });
     },
   );
@@ -163,14 +162,6 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
         { code: "SUBJECT_NOT_FOUND", message: "条目不存在。" },
       );
       const fetchedAt = runtime.now();
-      await recordDiscoveries(
-        context.env,
-        relatedDiscoveries(
-          "person",
-          persons.groups.flatMap((group) => group.items),
-        ),
-        fetchedAt,
-      );
       return context.json({ ...persons, fetchedAt: fetchedAt.toISOString() });
     },
   );
@@ -193,14 +184,6 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
         { code: "SUBJECT_NOT_FOUND", message: "条目不存在。" },
       );
       const fetchedAt = runtime.now();
-      await recordDiscoveries(
-        context.env,
-        relatedDiscoveries(
-          "character",
-          characters.groups.flatMap((group) => group.items),
-        ),
-        fetchedAt,
-      );
       return context.json({ ...characters, fetchedAt: fetchedAt.toISOString() });
     },
   );
@@ -353,13 +336,7 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
       const fetchedAt = runtime.now();
       await recordDiscoveries(
         context.env,
-        [
-          ...relatedDiscoveries("person", [{ id: personId }]),
-          ...relatedDiscoveries(
-            "subject",
-            subjects.groups.flatMap((group) => group.items),
-          ),
-        ],
+        relatedSubjectDiscoveries(subjects.groups.flatMap((group) => group.items)),
         fetchedAt,
       );
       return context.json({ ...subjects, fetchedAt: fetchedAt.toISOString() });
@@ -384,17 +361,6 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
         { code: "PERSON_NOT_FOUND", message: "人物不存在。" },
       );
       const fetchedAt = runtime.now();
-      await recordDiscoveries(
-        context.env,
-        [
-          ...relatedDiscoveries("person", [{ id: personId }]),
-          ...relatedDiscoveries(
-            "character",
-            characters.groups.flatMap((group) => group.items),
-          ),
-        ],
-        fetchedAt,
-      );
       return context.json({ ...characters, fetchedAt: fetchedAt.toISOString() });
     },
   );
@@ -479,13 +445,7 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
       const fetchedAt = runtime.now();
       await recordDiscoveries(
         context.env,
-        [
-          ...relatedDiscoveries("character", [{ id: characterId }]),
-          ...relatedDiscoveries(
-            "subject",
-            subjects.groups.flatMap((group) => group.items),
-          ),
-        ],
+        relatedSubjectDiscoveries(subjects.groups.flatMap((group) => group.items)),
         fetchedAt,
       );
       return context.json({ ...subjects, fetchedAt: fetchedAt.toISOString() });
@@ -510,17 +470,6 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
         { code: "CHARACTER_NOT_FOUND", message: "角色不存在。" },
       );
       const fetchedAt = runtime.now();
-      await recordDiscoveries(
-        context.env,
-        [
-          ...relatedDiscoveries("character", [{ id: characterId }]),
-          ...relatedDiscoveries(
-            "person",
-            persons.groups.flatMap((group) => group.items),
-          ),
-        ],
-        fetchedAt,
-      );
       return context.json({ ...persons, fetchedAt: fetchedAt.toISOString() });
     },
   );

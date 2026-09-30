@@ -1,6 +1,6 @@
 import type { Context, Hono } from "hono";
 import { cache } from "hono/cache";
-import type { ApiErrorCode, DirectoryResourceType } from "share";
+import type { ApiErrorCode } from "share";
 import type { D1Database } from "@cloudflare/workers-types";
 
 import { ApiError } from "../api-error";
@@ -54,17 +54,18 @@ const UPSTREAM_ERROR_MESSAGES = {
 
 type UpstreamErrorCode = keyof typeof UPSTREAM_ERROR_MESSAGES;
 
-/** Entities reached through another resource are recorded as pending until opened directly. */
-export function relatedDiscoveries(
-  resourceType: DirectoryResourceType,
-  items: readonly { id: number }[],
-): DirectoryDiscovery[] {
+/**
+ * Subjects reached through another resource are recorded as pending until opened directly.
+ * Related persons, characters and chapters are not recorded: they vastly outnumber the entities
+ * maintenance can verify, and opening them directly already records their index decision.
+ */
+export function relatedSubjectDiscoveries(items: readonly { id: number }[]): DirectoryDiscovery[] {
   return items.map((item) => ({
-    resourceType,
+    resourceType: "subject",
     externalId: item.id.toString(),
     discoverySource: "relation",
     indexStatus: "pending",
-    indexReason: `${resourceType}_unverified`,
+    indexReason: "subject_unverified",
   }));
 }
 
