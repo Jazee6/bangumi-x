@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, inArray, isNull, lt, lte, or } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { v7 as uuidv7 } from "uuid";
 
@@ -60,7 +60,7 @@ export interface DirectoryRepository {
   ): Promise<boolean>;
 }
 
-const REVERIFY_AFTER_MS = 24 * 60 * 60 * 1000;
+const REVERIFY_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
 const EXISTING_LOOKUP_CHUNK = 90;
 
 type ExistingDirectoryState = Pick<
@@ -70,7 +70,8 @@ type ExistingDirectoryState = Pick<
 
 /**
  * Pending discoveries only ever create rows. A verified row is rewritten when its index decision
- * changes, or at most once a day to refresh its verification time; this keeps D1 writes bounded.
+ * changes, or at most once a week to refresh its verification time; this keeps D1 writes bounded.
+ * The discovery source is the first one and is never rewritten.
  */
 function needsDirectoryWrite(
   existing: ExistingDirectoryState | undefined,
@@ -89,6 +90,17 @@ function needsDirectoryWrite(
 
 function directoryKey(item: Pick<DirectoryDiscovery, "resourceType" | "externalId">) {
   return `${item.resourceType}:${item.externalId}`;
+}
+
+/** Unverified entries come first, then the longest-unverified ones. */
+function compareStaleness(left: DirectoryEntry, right: DirectoryEntry) {
+  if (left.lastVerifiedAt === null && right.lastVerifiedAt !== null) return -1;
+  if (left.lastVerifiedAt !== null && right.lastVerifiedAt === null) return 1;
+  return (
+    (left.lastVerifiedAt?.getTime() ?? 0) - (right.lastVerifiedAt?.getTime() ?? 0) ||
+    left.resourceType.localeCompare(right.resourceType) ||
+    left.externalId.localeCompare(right.externalId)
+  );
 }
 
 function boundedLimit(limit: number) {
@@ -128,7 +140,6 @@ export function createMemoryDirectoryRepository(): DirectoryRepository {
           });
         } else {
           Object.assign(existing, {
-            discoverySource: item.discoverySource,
             indexStatus: item.indexStatus,
             indexReason: item.indexReason,
             lastVerifiedAt: verifiedAt,
@@ -157,15 +168,7 @@ export function createMemoryDirectoryRepository(): DirectoryRepository {
             allowed.has(entry.resourceType) &&
             (entry.lastVerifiedAt === null || entry.lastVerifiedAt <= verifiedBefore),
         )
-        .sort((left, right) => {
-          if (left.lastVerifiedAt === null && right.lastVerifiedAt !== null) return -1;
-          if (left.lastVerifiedAt !== null && right.lastVerifiedAt === null) return 1;
-          return (
-            (left.lastVerifiedAt?.getTime() ?? 0) - (right.lastVerifiedAt?.getTime() ?? 0) ||
-            left.resourceType.localeCompare(right.resourceType) ||
-            left.externalId.localeCompare(right.externalId)
-          );
-        })
+        .sort(compareStaleness)
         .slice(0, boundedLimit(limit));
     },
     async getSyncState(key) {
@@ -283,7 +286,6 @@ export function createD1DirectoryRepository(database: D1Database): DirectoryRepo
             .onConflictDoUpdate({
               target: [publicEntityDirectory.resourceType, publicEntityDirectory.externalId],
               set: {
-                discoverySource: item.discoverySource,
                 lastVerifiedAt: verifiedAt,
                 indexStatus: item.indexStatus,
                 indexReason: item.indexReason,
@@ -314,25 +316,38 @@ export function createD1DirectoryRepository(database: D1Database): DirectoryRepo
 
     async listStaleEntries({ resourceTypes, verifiedBefore, limit }) {
       if (resourceTypes.length === 0) return [];
-      return db
-        .select(selection)
-        .from(publicEntityDirectory)
-        .where(
-          and(
-            inArray(publicEntityDirectory.resourceType, [...resourceTypes]),
-            or(
-              isNull(publicEntityDirectory.lastVerifiedAt),
-              lt(publicEntityDirectory.lastVerifiedAt, verifiedBefore),
-              eq(publicEntityDirectory.lastVerifiedAt, verifiedBefore),
+      const safeLimit = boundedLimit(limit);
+      // One indexed lookup per (type, status) lane: a single cross-type query cannot use the
+      // directory indexes and scans the whole table. Pending rows are exactly the unverified ones.
+      const lanes = resourceTypes.flatMap((resourceType) => [
+        db
+          .select(selection)
+          .from(publicEntityDirectory)
+          .where(
+            and(
+              eq(publicEntityDirectory.resourceType, resourceType),
+              eq(publicEntityDirectory.indexStatus, "pending"),
             ),
-          ),
-        )
-        .orderBy(
-          asc(publicEntityDirectory.lastVerifiedAt),
-          asc(publicEntityDirectory.resourceType),
-          asc(publicEntityDirectory.externalId),
-        )
-        .limit(boundedLimit(limit));
+          )
+          .orderBy(asc(publicEntityDirectory.externalId))
+          .limit(safeLimit),
+        ...(["index", "noindex"] as const).map((indexStatus) =>
+          db
+            .select(selection)
+            .from(publicEntityDirectory)
+            .where(
+              and(
+                eq(publicEntityDirectory.resourceType, resourceType),
+                eq(publicEntityDirectory.indexStatus, indexStatus),
+                lte(publicEntityDirectory.lastVerifiedAt, verifiedBefore),
+              ),
+            )
+            .orderBy(asc(publicEntityDirectory.lastVerifiedAt))
+            .limit(safeLimit),
+        ),
+      ]);
+      const rows = (await db.batch(lanes as [(typeof lanes)[number], ...typeof lanes])).flat();
+      return rows.sort(compareStaleness).slice(0, safeLimit);
     },
 
     async getSyncState(key) {

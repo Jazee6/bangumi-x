@@ -54,21 +54,6 @@ const UPSTREAM_ERROR_MESSAGES = {
 
 type UpstreamErrorCode = keyof typeof UPSTREAM_ERROR_MESSAGES;
 
-/**
- * Subjects reached through another resource are recorded as pending until opened directly.
- * Related persons, characters and chapters are not recorded: they vastly outnumber the entities
- * maintenance can verify, and opening them directly already records their index decision.
- */
-export function relatedSubjectDiscoveries(items: readonly { id: number }[]): DirectoryDiscovery[] {
-  return items.map((item) => ({
-    resourceType: "subject",
-    externalId: item.id.toString(),
-    discoverySource: "relation",
-    indexStatus: "pending",
-    indexReason: "subject_unverified",
-  }));
-}
-
 export function subjectIndexDecision(subject: {
   title: string;
   nsfw: boolean;

@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, test } from "vitest";
 import { createD1DirectoryRepository, createMemoryDirectoryRepository } from "./directory";
 
 describe("demand-driven public directory", () => {
-  test("keeps first discovery time and never treats pending discovery as verification", async () => {
+  test("keeps first discovery time and source, and never treats pending discovery as verification", async () => {
     const repository = createMemoryDirectoryRepository();
     const first = new Date("2026-01-01T00:00:00.000Z");
     const second = new Date("2026-01-02T00:00:00.000Z");
@@ -58,7 +58,7 @@ describe("demand-driven public directory", () => {
       {
         resourceType: "subject",
         externalId: "42",
-        discoverySource: "annual_popular",
+        discoverySource: "daily_broadcast",
         indexStatus: "index",
         indexReason: "annual_popular_ranked",
         firstDiscoveredAt: first,
@@ -158,7 +158,7 @@ describe("D1 public directory writes", () => {
     await applyD1Migrations(env.DB, env.TEST_MIGRATIONS);
   });
 
-  test("skips unchanged rows and re-verifies at most once a day", async () => {
+  test("skips unchanged rows and re-verifies at most once a week", async () => {
     const repository = createD1DirectoryRepository(env.DB);
     const first = new Date("2026-02-01T00:00:00.000Z");
     const pending = Array.from({ length: 150 }, (_, index) => ({
@@ -175,12 +175,11 @@ describe("D1 public directory writes", () => {
       indexStatus: "index" as const,
       indexReason: "chapter_verified",
     };
-    const verifiedAt = async () =>
-      (
-        await env.DB.prepare(
-          "select last_verified_at as value from public_entity_directory where external_id = 'd1-0'",
-        ).first<{ value: number | null }>()
-      )?.value;
+    const row = () =>
+      env.DB.prepare(
+        "select last_verified_at as verifiedAt, discovery_source as source from public_entity_directory where external_id = 'd1-0'",
+      ).first<{ verifiedAt: number | null; source: string }>();
+    const verifiedAt = async () => (await row())?.verifiedAt;
 
     await repository.recordDiscoveries(pending, first);
     await repository.recordDiscoveries([verified], first);
@@ -189,18 +188,65 @@ describe("D1 public directory writes", () => {
     ).first<{ value: number }>();
     expect(count?.value).toBe(150);
 
-    await repository.recordDiscoveries([verified], new Date("2026-02-01T12:00:00.000Z"));
+    expect((await row())?.source).toBe("relation");
+
+    await repository.recordDiscoveries([verified], new Date("2026-02-07T12:00:00.000Z"));
     expect(await verifiedAt()).toBe(first.getTime());
 
-    const nextDay = new Date("2026-02-02T00:00:00.000Z");
-    await repository.recordDiscoveries([verified], nextDay);
-    expect(await verifiedAt()).toBe(nextDay.getTime());
+    const nextWeek = new Date("2026-02-08T00:00:00.000Z");
+    await repository.recordDiscoveries([verified], nextWeek);
+    expect(await verifiedAt()).toBe(nextWeek.getTime());
 
-    const later = new Date("2026-02-02T01:00:00.000Z");
+    const later = new Date("2026-02-08T01:00:00.000Z");
     await repository.recordDiscoveries(
       [{ ...verified, indexStatus: "noindex", indexReason: "not_found" }],
       later,
     );
     expect(await verifiedAt()).toBe(later.getTime());
+  });
+  test("selects stale entries in the same order as the memory repository", async () => {
+    const d1 = createD1DirectoryRepository(env.DB);
+    const memory = createMemoryDirectoryRepository();
+    const old = new Date("2026-03-01T00:00:00.000Z");
+    const older = new Date("2026-02-01T00:00:00.000Z");
+    const fresh = new Date("2026-04-01T00:00:00.000Z");
+    const discoveries = [
+      { at: older, resourceType: "person", externalId: "st-2", indexStatus: "index" },
+      { at: old, resourceType: "subject", externalId: "st-3", indexStatus: "noindex" },
+      { at: old, resourceType: "subject", externalId: "st-1", indexStatus: "index" },
+      { at: fresh, resourceType: "subject", externalId: "st-4", indexStatus: "index" },
+      { at: fresh, resourceType: "subject", externalId: "st-6", indexStatus: "pending" },
+      { at: fresh, resourceType: "character", externalId: "st-5", indexStatus: "pending" },
+    ] as const;
+    for (const repository of [d1, memory]) {
+      for (const { at, ...item } of discoveries) {
+        await repository.recordDiscoveries(
+          [{ ...item, discoverySource: "direct_access", indexReason: "stale_order" }],
+          at,
+        );
+      }
+    }
+
+    const query = {
+      resourceTypes: ["subject", "character", "person"] as const,
+      verifiedBefore: old,
+      limit: 10,
+    };
+    const keys = (entries: Awaited<ReturnType<typeof d1.listStaleEntries>>) =>
+      entries
+        .filter((entry) => entry.indexReason === "stale_order")
+        .map((entry) => `${entry.resourceType}:${entry.externalId}`);
+    const expected = [
+      "character:st-5",
+      "subject:st-6",
+      "person:st-2",
+      "subject:st-1",
+      "subject:st-3",
+    ];
+    expect(keys(await memory.listStaleEntries(query))).toEqual(expected);
+    expect(keys(await d1.listStaleEntries(query))).toEqual(expected);
+    expect(
+      keys(await d1.listStaleEntries({ ...query, resourceTypes: ["subject"], limit: 2 })),
+    ).toEqual(["subject:st-6", "subject:st-1"]);
   });
 });

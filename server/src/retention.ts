@@ -7,15 +7,15 @@ import type { D1Database } from "@cloudflare/workers-types";
 
 const RETENTION_GRACE_MS = 24 * 60 * 60 * 1000;
 const PURGE_BATCH_SIZE = 500;
-// Deleting a directory row also rewrites each of its indexes, so these batches stay smaller.
-const DIRECTORY_PURGE_BATCH_SIZE = 200;
-// Relations no longer record these types as pending; earlier rows are removed gradually.
-const RETIRED_PENDING_TYPES = ["person", "character", "chapter"] as const;
+// D1 bills one written row per deleted directory row, so a larger batch drains the backlog faster.
+const DIRECTORY_PURGE_BATCH_SIZE = 1000;
+// Relations no longer record pending entities; earlier rows are removed gradually.
+const RETIRED_PENDING_TYPES = ["subject", "person", "character", "chapter"] as const;
 
 /**
  * Removes credentials and account-link requests that expired more than a day ago. Each table is
  * purged in bounded batches so one maintenance run never turns into a large D1 write.
- * Merge audits are kept. Pending directory rows of retired relation types are purged the same way.
+ * Merge audits are kept. Pending directory rows discovered through relations are purged the same way.
  */
 export async function purgeExpiredRecords(database: D1Database, now: Date) {
   const db = drizzle(database);
@@ -67,6 +67,7 @@ export async function purgeExpiredRecords(database: D1Database, now: Date) {
             and(
               inArray(publicEntityDirectory.resourceType, [...RETIRED_PENDING_TYPES]),
               eq(publicEntityDirectory.indexStatus, "pending"),
+              eq(publicEntityDirectory.discoverySource, "relation"),
             ),
           )
           .limit(DIRECTORY_PURGE_BATCH_SIZE),

@@ -440,7 +440,7 @@ describe("SEO discovery HTTP side effects", () => {
         limit: 10,
         offset: 0,
       }),
-    ).toEqual([expect.objectContaining({ externalId: "42", discoverySource: "relation" })]);
+    ).toEqual([]);
     for (const resourceType of ["character", "person"] as const) {
       expect(
         await directory.listEntries({ resourceType, indexStatus: "pending", limit: 10, offset: 0 }),

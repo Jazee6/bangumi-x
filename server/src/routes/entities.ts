@@ -43,7 +43,6 @@ import {
   type AnonymousApp,
   type AnonymousContext,
   type AnonymousKit,
-  relatedSubjectDiscoveries,
   subjectIndexDecision,
 } from "./kit";
 
@@ -334,11 +333,6 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
         { code: "PERSON_NOT_FOUND", message: "人物不存在。" },
       );
       const fetchedAt = runtime.now();
-      await recordDiscoveries(
-        context.env,
-        relatedSubjectDiscoveries(subjects.groups.flatMap((group) => group.items)),
-        fetchedAt,
-      );
       return context.json({ ...subjects, fetchedAt: fetchedAt.toISOString() });
     },
   );
@@ -443,11 +437,6 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
         { code: "CHARACTER_NOT_FOUND", message: "角色不存在。" },
       );
       const fetchedAt = runtime.now();
-      await recordDiscoveries(
-        context.env,
-        relatedSubjectDiscoveries(subjects.groups.flatMap((group) => group.items)),
-        fetchedAt,
-      );
       return context.json({ ...subjects, fetchedAt: fetchedAt.toISOString() });
     },
   );
