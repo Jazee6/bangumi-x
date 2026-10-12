@@ -18,7 +18,6 @@ export function registerDirectoryRoutes(app: AnonymousApp, kit: AnonymousKit) {
       const type = context.req.query("type");
       const validResourceTypes = new Set<string>([
         "subject",
-        "chapter",
         "character",
         "person",
         "collection_list",

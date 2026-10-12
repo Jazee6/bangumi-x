@@ -1092,7 +1092,7 @@ describe("Web production SSR HTTP handler", () => {
       expect(text).toContain("未授权模型训练抓取");
     });
 
-    test("serves sitemap index (/sitemap.xml) pointing to the 6 chunked sub-sitemaps", async () => {
+    test("serves sitemap index (/sitemap.xml) pointing to the 5 chunked sub-sitemaps", async () => {
       const response = await server.fetch(new Request("https://bgmx.jaze.top/sitemap.xml"));
 
       expect(response.status).toBe(200);
@@ -1106,7 +1106,7 @@ describe("Web production SSR HTTP handler", () => {
       expect(xml).toContain('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
       expect(xml).toContain("<loc>https://bgmx.jaze.top/sitemap/static.xml</loc>");
       expect(xml).toContain("<loc>https://bgmx.jaze.top/sitemap/subjects.xml</loc>");
-      expect(xml).toContain("<loc>https://bgmx.jaze.top/sitemap/chapters.xml</loc>");
+      expect(xml).not.toContain("chapters.xml");
       expect(xml).toContain("<loc>https://bgmx.jaze.top/sitemap/characters.xml</loc>");
       expect(xml).toContain("<loc>https://bgmx.jaze.top/sitemap/persons.xml</loc>");
       expect(xml).toContain("<loc>https://bgmx.jaze.top/sitemap/collections.xml</loc>");
@@ -1206,12 +1206,11 @@ describe("Web production SSR HTTP handler", () => {
       expect(xml).toContain("<lastmod>2026-03-11T08:00:00.000Z</lastmod>");
     });
 
-    test("generates /sitemap/chapters.xml, /characters.xml, /persons.xml, and /collections.xml", async () => {
+    test("generates /sitemap/characters.xml, /persons.xml, and /collections.xml", async () => {
       globalThis.fetch = mock(async (input: string | URL | Request) => {
         const url = new URL(input instanceof Request ? input.url : String(input));
         const type = url.searchParams.get("type");
         const idMap: Record<string, string> = {
-          chapter: "1001",
           character: "2001",
           person: "3001",
           collection_list: "share-xyz",
@@ -1227,14 +1226,6 @@ describe("Web production SSR HTTP handler", () => {
           nextCursor: null,
         });
       }) as unknown as typeof fetch;
-
-      const chaptersRes = await server.fetch(
-        new Request("https://bgmx.jaze.top/sitemap/chapters.xml"),
-      );
-      expect(chaptersRes.status).toBe(200);
-      const chaptersXml = await chaptersRes.text();
-      expect(validateXmlWellFormedness(chaptersXml)).toEqual({ valid: true });
-      expect(chaptersXml).toContain("<loc>https://bgmx.jaze.top/chapters/1001</loc>");
 
       const charactersRes = await server.fetch(
         new Request("https://bgmx.jaze.top/sitemap/characters.xml"),

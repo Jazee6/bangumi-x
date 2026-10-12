@@ -21,7 +21,6 @@ export const REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS = 2;
 
 const ENTITY_RESOURCE_TYPES = [
   "subject",
-  "chapter",
   "character",
   "person",
 ] as const satisfies readonly DirectoryResourceType[];
@@ -73,8 +72,6 @@ function entityPath(entry: DirectoryEntry) {
   switch (entry.resourceType) {
     case "subject":
       return `/subjects/${entry.externalId}`;
-    case "chapter":
-      return `/chapters/${entry.externalId}`;
     case "character":
       return `/characters/${entry.externalId}`;
     case "person":
@@ -184,6 +181,7 @@ export async function runRequestMaintenance({
             },
           ],
           now,
+          { reverify: true },
         );
       }
       if (response.ok || response.status === 404) refreshedEntities = 1;

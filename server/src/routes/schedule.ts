@@ -15,7 +15,7 @@ export function registerScheduleRoutes(app: AnonymousApp, kit: AnonymousKit) {
     );
     const fetchedAt = runtime.now();
     await recordDiscoveries(
-      context.env,
+      context,
       schedule.days.flatMap((day) =>
         day.items.map((item) => ({
           resourceType: "subject" as const,

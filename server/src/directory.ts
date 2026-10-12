@@ -1,6 +1,5 @@
 import { and, asc, eq, gt, inArray, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import { v7 as uuidv7 } from "uuid";
 
 import type { DirectoryDiscoverySource, DirectoryIndexStatus, DirectoryResourceType } from "share";
 
@@ -45,8 +44,19 @@ export interface DirectorySyncState {
   updatedAt: Date;
 }
 
+export interface RecordDiscoveryOptions {
+  /** Maintenance re-verification: also rewrite unchanged rows verified over a week ago. */
+  reverify?: boolean;
+  /** Crawler visits may correct an existing decision but never add an entity. */
+  existingOnly?: boolean;
+}
+
 export interface DirectoryRepository {
-  recordDiscoveries(items: readonly DirectoryDiscovery[], verifiedAt: Date): Promise<void>;
+  recordDiscoveries(
+    items: readonly DirectoryDiscovery[],
+    verifiedAt: Date,
+    options?: RecordDiscoveryOptions,
+  ): Promise<void>;
   listEntries(query: DirectoryQuery): Promise<DirectoryEntry[]>;
   listPage(query: DirectoryQuery): Promise<DirectoryPage>;
   listStaleEntries(query: StaleDirectoryQuery): Promise<DirectoryEntry[]>;
@@ -69,22 +79,26 @@ type ExistingDirectoryState = Pick<
 >;
 
 /**
- * Pending discoveries only ever create rows. A verified row is rewritten when its index decision
- * changes, or at most once a week to refresh its verification time; this keeps D1 writes bounded.
- * The discovery source is the first one and is never rewritten.
+ * Only indexable or pending entities create rows; a noindex decision is kept only to withdraw an
+ * entity that was indexable. Existing rows are rewritten when their index decision changes, and
+ * unchanged rows only when maintenance re-verifies them, so ordinary visits cost no D1 writes.
+ * The discovery source is the first one and is never rewritten. See ADR 0014.
  */
 function needsDirectoryWrite(
   existing: ExistingDirectoryState | undefined,
   item: DirectoryDiscovery,
   verifiedAt: Date,
+  { reverify = false, existingOnly = false }: RecordDiscoveryOptions,
 ) {
-  if (!existing) return true;
+  if (!existing) return !existingOnly && item.indexStatus !== "noindex";
   if (item.indexStatus === "pending") return false;
+  if (existing.indexStatus !== item.indexStatus || existing.indexReason !== item.indexReason) {
+    return true;
+  }
   return (
-    existing.indexStatus !== item.indexStatus ||
-    existing.indexReason !== item.indexReason ||
-    existing.lastVerifiedAt === null ||
-    verifiedAt.getTime() - existing.lastVerifiedAt.getTime() >= REVERIFY_AFTER_MS
+    reverify &&
+    (existing.lastVerifiedAt === null ||
+      verifiedAt.getTime() - existing.lastVerifiedAt.getTime() >= REVERIFY_AFTER_MS)
   );
 }
 
@@ -127,11 +141,11 @@ export function createMemoryDirectoryRepository(): DirectoryRepository {
   }
 
   return {
-    async recordDiscoveries(items, verifiedAt) {
+    async recordDiscoveries(items, verifiedAt, options = {}) {
       for (const item of items) {
         const key = directoryKey(item);
         const existing = entries.get(key);
-        if (!needsDirectoryWrite(existing, item, verifiedAt)) continue;
+        if (!needsDirectoryWrite(existing, item, verifiedAt, options)) continue;
         if (!existing) {
           entries.set(key, {
             ...item,
@@ -256,16 +270,17 @@ export function createD1DirectoryRepository(database: D1Database): DirectoryRepo
   }
 
   return {
-    async recordDiscoveries(items, verifiedAt) {
+    async recordDiscoveries(items, verifiedAt, options = {}) {
       const uniqueItems = [...new Map(items.map((item) => [directoryKey(item), item])).values()];
       if (uniqueItems.length === 0) return;
 
       const existing = await selectExistingStates(uniqueItems);
       const statements = uniqueItems
-        .filter((item) => needsDirectoryWrite(existing.get(directoryKey(item)), item, verifiedAt))
+        .filter((item) =>
+          needsDirectoryWrite(existing.get(directoryKey(item)), item, verifiedAt, options),
+        )
         .map((item) => {
           const values = {
-            id: uuidv7(),
             ...item,
             firstDiscoveredAt: verifiedAt,
             lastVerifiedAt: item.indexStatus === "pending" ? null : verifiedAt,
@@ -329,7 +344,9 @@ export function createD1DirectoryRepository(database: D1Database): DirectoryRepo
               eq(publicEntityDirectory.indexStatus, "pending"),
             ),
           )
-          .orderBy(asc(publicEntityDirectory.externalId))
+          // Pending rows all have a null verification time; ordering by it keeps the lane on the
+          // staleness index instead of scanning the primary key.
+          .orderBy(asc(publicEntityDirectory.lastVerifiedAt))
           .limit(safeLimit),
         ...(["index", "noindex"] as const).map((indexStatus) =>
           db

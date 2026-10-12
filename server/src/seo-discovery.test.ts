@@ -9,6 +9,9 @@ const bindings = {
   WEB_ORIGIN: "https://web.example.test",
 };
 const originalCaches = globalThis.caches;
+const visitor = {
+  headers: { "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Safari/604.1" },
+};
 
 afterEach(() => {
   globalThis.caches = originalCaches;
@@ -211,15 +214,7 @@ describe("SEO discovery HTTP side effects", () => {
       limit: 10,
       offset: 0,
     });
-    expect(noindexRankings).toEqual([
-      expect.objectContaining({
-        resourceType: "ranking",
-        externalId: "2026/winter",
-        discoverySource: "rankings",
-        indexStatus: "noindex",
-        indexReason: "empty_rankings",
-      }),
-    ]);
+    expect(noindexRankings).toEqual([]);
   });
 
   test("subject detail records indexable subject and exposes scoreCount and fetchedAt", async () => {
@@ -236,7 +231,7 @@ describe("SEO discovery HTTP side effects", () => {
     );
     const app = createApp({ fetch, directory: () => directory, now: () => now });
 
-    const response = await app.request("/subjects/42", {}, bindings);
+    const response = await app.request("/subjects/42", visitor, bindings);
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body.scoreCount).toBe(12000);
@@ -258,7 +253,38 @@ describe("SEO discovery HTTP side effects", () => {
     ]);
   });
 
-  test("NSFW subject is marked noindex in directory", async () => {
+  test("public subject pages resolve broadcasts without writing D1 snapshots", async () => {
+    const upsert = vi.fn();
+    const get = vi.fn();
+    const fetch = vi.fn(async (input: string | URL | Request) => {
+      const url = new URL(input instanceof Request ? input.url : input);
+      if (url.pathname.endsWith("/episodes")) {
+        return Response.json({
+          total: 1,
+          limit: 200,
+          offset: 0,
+          data: [{ id: 1, type: 0, sort: 1, name_cn: "第一话", airdate: "2026-03-08" }],
+        });
+      }
+      return Response.json({ id: 42, name_cn: "放送动画", type: 2, nsfw: false, eps: 12 });
+    });
+    const app = createApp({
+      fetch,
+      now: () => new Date("2026-03-01T00:00:00.000Z"),
+      broadcasts: () => ({ get, getMany: vi.fn(), upsert }),
+    });
+
+    const response = await app.request("/subjects/42", visitor, bindings);
+    expect(response.status).toBe(200);
+    expect((await response.json()).broadcast).toEqual({
+      chapters: [{ sequence: 1, date: "2026-03-08" }],
+      completeAfter: null,
+    });
+    expect(get).not.toHaveBeenCalled();
+    expect(upsert).not.toHaveBeenCalled();
+  });
+
+  test("NSFW subject is not added to the directory", async () => {
     const directory = createMemoryDirectoryRepository();
     const fetch = vi.fn(async () =>
       Response.json({
@@ -270,22 +296,53 @@ describe("SEO discovery HTTP side effects", () => {
     );
     const app = createApp({ fetch, directory: () => directory, now: () => new Date("2026-03-01") });
 
-    const response = await app.request("/subjects/69", {}, bindings);
+    const response = await app.request("/subjects/69", visitor, bindings);
     expect(response.status).toBe(200);
 
-    const entries = await directory.listEntries({
-      resourceType: "subject",
-      indexStatus: "noindex",
-      limit: 10,
-      offset: 0,
+    for (const indexStatus of ["index", "noindex"] as const) {
+      expect(
+        await directory.listEntries({ resourceType: "subject", indexStatus, limit: 10, offset: 0 }),
+      ).toEqual([]);
+    }
+  });
+
+  test("crawler visits only correct existing entries", async () => {
+    const directory = createMemoryDirectoryRepository();
+    await directory.recordDiscoveries(
+      [
+        {
+          resourceType: "subject",
+          externalId: "7",
+          discoverySource: "rankings",
+          indexStatus: "index",
+          indexReason: "rankings_ranked",
+        },
+      ],
+      new Date("2026-02-01"),
+    );
+    const fetch = vi.fn(async (input: string | URL | Request) => {
+      const id = Number(
+        new URL(input instanceof Request ? input.url : input).pathname.split("/").at(-1),
+      );
+      return Response.json({ id, name_cn: `条目${id}`, type: 2, nsfw: id === 7 });
     });
-    expect(entries).toEqual([
-      expect.objectContaining({
-        externalId: "69",
-        indexStatus: "noindex",
-        indexReason: "nsfw",
-      }),
-    ]);
+    const app = createApp({ fetch, directory: () => directory, now: () => new Date("2026-03-01") });
+
+    const googlebot = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
+    await app.request("/subjects/42", { headers: { "User-Agent": googlebot } }, bindings);
+    await app.request(
+      "/subjects/43",
+      { headers: { ...visitor.headers, "X-Bangumi-X-Visitor-Agent": googlebot } },
+      bindings,
+    );
+    await app.request("/subjects/7", { headers: { "User-Agent": googlebot } }, bindings);
+
+    expect(
+      await directory.listEntries({ resourceType: "subject", indexStatus: "index", limit: 10 }),
+    ).toEqual([]);
+    expect(
+      await directory.listEntries({ resourceType: "subject", indexStatus: "noindex", limit: 10 }),
+    ).toEqual([expect.objectContaining({ externalId: "7", indexReason: "nsfw" })]);
   });
 
   test("a confirmed entity 404 withdraws its existing directory entry", async () => {
@@ -325,33 +382,6 @@ describe("SEO discovery HTTP side effects", () => {
         lastVerifiedAt: removedAt,
       }),
     ]);
-  });
-
-  test("subject chapters relation does not record chapters", async () => {
-    const directory = createMemoryDirectoryRepository();
-    const fetch = vi.fn(async () =>
-      Response.json({
-        total: 1,
-        limit: 50,
-        offset: 0,
-        data: [{ id: 1001, type: 0, sort: 1, name_cn: "第一话" }],
-      }),
-    );
-    const app = createApp({ fetch, directory: () => directory, now: () => new Date("2026-03-01") });
-
-    const response = await app.request("/subjects/42/chapters", {}, bindings);
-    expect(response.status).toBe(200);
-    const body = await response.json();
-    expect(body.fetchedAt).toBeDefined();
-
-    expect(
-      await directory.listEntries({
-        resourceType: "chapter",
-        indexStatus: "pending",
-        limit: 10,
-        offset: 0,
-      }),
-    ).toEqual([]);
   });
 
   test("character and person detail quality plus relations update the directory", async () => {
@@ -412,7 +442,7 @@ describe("SEO discovery HTTP side effects", () => {
       "/persons/302/subjects",
       "/persons/302/characters",
     ]) {
-      const response = await app.request(path, {}, bindings);
+      const response = await app.request(path, visitor, bindings);
       expect(response.status).toBe(200);
       expect((await response.json()).fetchedAt).toBe(now.toISOString());
     }
@@ -448,7 +478,7 @@ describe("SEO discovery HTTP side effects", () => {
     }
   });
 
-  test("entity detail records unnamed and thin publication reasons", async () => {
+  test("unnamed and thin entities are not added to the directory", async () => {
     const directory = createMemoryDirectoryRepository();
     const fetch = vi.fn(async (input: string | URL | Request) => {
       const path = new URL(input instanceof Request ? input.url : input).pathname;
@@ -464,8 +494,8 @@ describe("SEO discovery HTTP side effects", () => {
     });
     const app = createApp({ fetch, directory: () => directory, now: () => new Date("2026-03-01") });
 
-    expect((await app.request("/characters/203", {}, bindings)).status).toBe(200);
-    expect((await app.request("/persons/303", {}, bindings)).status).toBe(200);
+    expect((await app.request("/characters/203", visitor, bindings)).status).toBe(200);
+    expect((await app.request("/persons/303", visitor, bindings)).status).toBe(200);
 
     expect(
       await directory.listEntries({
@@ -474,7 +504,7 @@ describe("SEO discovery HTTP side effects", () => {
         limit: 10,
         offset: 0,
       }),
-    ).toEqual([expect.objectContaining({ externalId: "203", indexReason: "unnamed" })]);
+    ).toEqual([]);
     expect(
       await directory.listEntries({
         resourceType: "person",
@@ -482,10 +512,10 @@ describe("SEO discovery HTTP side effects", () => {
         limit: 10,
         offset: 0,
       }),
-    ).toEqual([expect.objectContaining({ externalId: "303", indexReason: "thin_person" })]);
+    ).toEqual([]);
   });
 
-  test("chapter details indexes qualified chapter and flags thin chapter", async () => {
+  test("chapter details record only the parent subject", async () => {
     const directory = createMemoryDirectoryRepository();
     const fetch = vi.fn(async (input: string | URL | Request) => {
       const url = new URL(input instanceof Request ? input.url : input);
@@ -498,36 +528,21 @@ describe("SEO discovery HTTP side effects", () => {
           desc: "这一话非常精彩",
         });
       }
-      if (url.pathname.includes("/episodes/102")) {
-        return Response.json({
-          id: 102,
-          subject_id: 42,
-          type: 0,
-          name_cn: "薄章节",
-        });
-      }
       return Response.json({ id: 42, name_cn: "父条目", type: 2, nsfw: false });
     });
     const app = createApp({ fetch, directory: () => directory, now: () => new Date("2026-03-01") });
 
-    await app.request("/chapters/101", {}, bindings);
-    await app.request("/chapters/102", {}, bindings);
+    expect((await app.request("/chapters/101", visitor, bindings)).status).toBe(200);
 
-    const indexed = await directory.listEntries({
-      resourceType: "chapter",
-      indexStatus: "index",
-      limit: 10,
-      offset: 0,
-    });
-    expect(indexed.map((e) => e.externalId)).toEqual(["101"]);
-
-    const noindexed = await directory.listEntries({
-      resourceType: "chapter",
-      indexStatus: "noindex",
-      limit: 10,
-      offset: 0,
-    });
-    expect(noindexed.map((e) => e.externalId)).toEqual(["102"]);
+    expect(
+      await directory.listEntries({ resourceType: "subject", indexStatus: "index", limit: 10 }),
+    ).toEqual([
+      expect.objectContaining({
+        externalId: "42",
+        discoverySource: "relation",
+        indexReason: "subject_verified",
+      }),
+    ]);
   });
 
   describe("GET /directory HTTP endpoint", () => {

@@ -119,6 +119,7 @@ describe("demand-driven public directory", () => {
         },
       ],
       fresh,
+      { reverify: true },
     );
 
     const firstPage = await repository.listPage({ resourceType: "subject", limit: 2 });
@@ -158,27 +159,29 @@ describe("D1 public directory writes", () => {
     await applyD1Migrations(env.DB, env.TEST_MIGRATIONS);
   });
 
-  test("skips unchanged rows and re-verifies at most once a week", async () => {
+  test("writes only new indexable rows, decision changes and weekly maintenance re-verification", async () => {
     const repository = createD1DirectoryRepository(env.DB);
     const first = new Date("2026-02-01T00:00:00.000Z");
     const pending = Array.from({ length: 150 }, (_, index) => ({
-      resourceType: "chapter" as const,
+      resourceType: "collection_list" as const,
       externalId: `d1-${index}`,
-      discoverySource: "relation" as const,
+      discoverySource: "daily_broadcast" as const,
       indexStatus: "pending" as const,
-      indexReason: "chapter_unverified",
+      indexReason: "schedule_unverified",
     }));
     const verified = {
-      resourceType: "chapter" as const,
+      resourceType: "collection_list" as const,
       externalId: "d1-0",
       discoverySource: "direct_access" as const,
       indexStatus: "index" as const,
-      indexReason: "chapter_verified",
+      indexReason: "subject_verified",
     };
-    const row = () =>
+    const row = (externalId = "d1-0") =>
       env.DB.prepare(
-        "select last_verified_at as verifiedAt, discovery_source as source from public_entity_directory where external_id = 'd1-0'",
-      ).first<{ verifiedAt: number | null; source: string }>();
+        "select last_verified_at as verifiedAt, discovery_source as source, index_status as status from public_entity_directory where external_id = ?",
+      )
+        .bind(externalId)
+        .first<{ verifiedAt: number | null; source: string; status: string }>();
     const verifiedAt = async () => (await row())?.verifiedAt;
 
     await repository.recordDiscoveries(pending, first);
@@ -187,22 +190,46 @@ describe("D1 public directory writes", () => {
       "select count(*) as value from public_entity_directory where external_id like 'd1-%'",
     ).first<{ value: number }>();
     expect(count?.value).toBe(150);
+    expect(await row()).toEqual({
+      verifiedAt: first.getTime(),
+      source: "daily_broadcast",
+      status: "index",
+    });
 
-    expect((await row())?.source).toBe("relation");
-
-    await repository.recordDiscoveries([verified], new Date("2026-02-07T12:00:00.000Z"));
+    // Ordinary visits never refresh an unchanged row, however old.
+    await repository.recordDiscoveries([verified], new Date("2026-03-01T00:00:00.000Z"));
     expect(await verifiedAt()).toBe(first.getTime());
 
+    await repository.recordDiscoveries([verified], new Date("2026-02-07T12:00:00.000Z"), {
+      reverify: true,
+    });
+    expect(await verifiedAt()).toBe(first.getTime());
     const nextWeek = new Date("2026-02-08T00:00:00.000Z");
-    await repository.recordDiscoveries([verified], nextWeek);
+    await repository.recordDiscoveries([verified], nextWeek, { reverify: true });
     expect(await verifiedAt()).toBe(nextWeek.getTime());
 
     const later = new Date("2026-02-08T01:00:00.000Z");
     await repository.recordDiscoveries(
       [{ ...verified, indexStatus: "noindex", indexReason: "not_found" }],
       later,
+      { existingOnly: true },
     );
-    expect(await verifiedAt()).toBe(later.getTime());
+    expect(await row()).toMatchObject({ verifiedAt: later.getTime(), status: "noindex" });
+
+    await repository.recordDiscoveries(
+      [
+        { ...verified, externalId: "d1-new-noindex", indexStatus: "noindex", indexReason: "nsfw" },
+        { ...verified, externalId: "d1-crawled" },
+      ],
+      later,
+      { existingOnly: false },
+    );
+    await repository.recordDiscoveries([{ ...verified, externalId: "d1-crawled-only" }], later, {
+      existingOnly: true,
+    });
+    expect(await row("d1-new-noindex")).toBeNull();
+    expect(await row("d1-crawled")).toMatchObject({ status: "index" });
+    expect(await row("d1-crawled-only")).toBeNull();
   });
   test("selects stale entries in the same order as the memory repository", async () => {
     const d1 = createD1DirectoryRepository(env.DB);
@@ -236,13 +263,7 @@ describe("D1 public directory writes", () => {
       entries
         .filter((entry) => entry.indexReason === "stale_order")
         .map((entry) => `${entry.resourceType}:${entry.externalId}`);
-    const expected = [
-      "character:st-5",
-      "subject:st-6",
-      "person:st-2",
-      "subject:st-1",
-      "subject:st-3",
-    ];
+    const expected = ["character:st-5", "subject:st-6", "person:st-2", "subject:st-1"];
     expect(keys(await memory.listStaleEntries(query))).toEqual(expected);
     expect(keys(await d1.listStaleEntries(query))).toEqual(expected);
     expect(

@@ -1,5 +1,13 @@
 import { sql } from "drizzle-orm";
-import { check, index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import {
+  check,
+  index,
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 import { v7 as uuidv7 } from "uuid";
 
 export const user = sqliteTable("user", {
@@ -140,14 +148,13 @@ export const wechatAccessToken = sqliteTable("wechat_access_token", {
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 });
 
+// Keyed by external identity and stored WITHOUT ROWID (see migration), so each insert touches two
+// B-trees: the primary key and the staleness index. See ADR 0014.
 export const publicEntityDirectory = sqliteTable(
   "public_entity_directory",
   {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => uuidv7()),
     resourceType: text("resource_type", {
-      enum: ["subject", "chapter", "character", "person", "collection_list", "ranking"],
+      enum: ["subject", "character", "person", "collection_list", "ranking"],
     }).notNull(),
     externalId: text("external_id").notNull(),
     discoverySource: text("discovery_source", {
@@ -166,19 +173,11 @@ export const publicEntityDirectory = sqliteTable(
     indexReason: text("index_reason").notNull(),
   },
   (table) => [
-    uniqueIndex("public_entity_directory_resource_external_unique").on(
-      table.resourceType,
-      table.externalId,
-    ),
+    primaryKey({ columns: [table.resourceType, table.externalId] }),
     index("public_entity_directory_resource_status_verified_idx").on(
       table.resourceType,
       table.indexStatus,
       table.lastVerifiedAt,
-    ),
-    index("public_entity_directory_resource_status_external_idx").on(
-      table.resourceType,
-      table.indexStatus,
-      table.externalId,
     ),
   ],
 );

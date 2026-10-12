@@ -1,6 +1,6 @@
 import type { Context, Hono } from "hono";
 import { cache } from "hono/cache";
-import type { ApiErrorCode } from "share";
+import { VISITOR_AGENT_HEADER, type ApiErrorCode } from "share";
 import type { D1Database } from "@cloudflare/workers-types";
 
 import { ApiError } from "../api-error";
@@ -63,6 +63,21 @@ export function subjectIndexDecision(subject: {
   return { indexStatus: "index", indexReason: "subject_verified" };
 }
 
+// Matches search engines, AI crawlers, link previewers and scripted clients. A real visitor that
+// happens to match only stops adding new directory entries; nothing else changes for them.
+const CRAWLER_AGENT_PATTERN =
+  /bot|crawl|spider|slurp|chatgpt-user|cohere-ai|facebookexternalhit|headless|python|scrapy|curl|wget|httpclient|go-http/i;
+
+/** Web SSR forwards the visitor's User-Agent; direct API calls are judged by their own. */
+export function isCrawlerRequest(header: (name: string) => string | undefined) {
+  const agent = header(VISITOR_AGENT_HEADER) ?? header("User-Agent");
+  return !agent || CRAWLER_AGENT_PATTERN.test(agent);
+}
+
+function isVisitDiscovery(item: DirectoryDiscovery) {
+  return item.discoverySource === "direct_access" || item.discoverySource === "relation";
+}
+
 export type AnonymousApp = Hono<{ Bindings: AnonymousBindings }>;
 export type AnonymousContext = Context<{ Bindings: AnonymousBindings }>;
 export type AnonymousKit = ReturnType<typeof createAnonymousKit>;
@@ -75,11 +90,13 @@ export function createAnonymousKit(runtime: AnonymousRuntime) {
   }
 
   function waitUntil(context: AnonymousContext) {
+    let executionCtx: AnonymousContext["executionCtx"];
     try {
-      return (promise: Promise<unknown>) => context.executionCtx.waitUntil(promise);
+      executionCtx = context.executionCtx;
     } catch {
       return undefined;
     }
+    return (promise: Promise<unknown>) => executionCtx.waitUntil(promise);
   }
 
   function upstreamOptions(
@@ -167,7 +184,7 @@ export function createAnonymousKit(runtime: AnonymousRuntime) {
 
   async function recordNotFoundOn404<T>(
     promise: Promise<T>,
-    bindings: AnonymousBindings,
+    context: AnonymousContext,
     resourceType: DirectoryDiscovery["resourceType"],
     externalId: string,
   ): Promise<T> {
@@ -176,7 +193,7 @@ export function createAnonymousKit(runtime: AnonymousRuntime) {
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) {
         await recordDiscoveries(
-          bindings,
+          context,
           [
             {
               resourceType,
@@ -193,13 +210,31 @@ export function createAnonymousKit(runtime: AnonymousRuntime) {
     }
   }
 
+  /**
+   * Seeds (daily broadcast, rankings, annual popular) are recorded for every request, while
+   * crawler visits only correct existing entries. Writes run after the response when possible
+   * and never fail it, so an exhausted D1 write quota cannot break public pages.
+   */
   async function recordDiscoveries(
-    bindings: AnonymousBindings,
+    context: AnonymousContext,
     items: readonly DirectoryDiscovery[],
     verifiedAt: Date,
   ) {
-    if (items.length === 0) return;
-    await runtime.directory?.(bindings)?.recordDiscoveries(items, verifiedAt);
+    const directory = runtime.directory?.(context.env);
+    if (!directory || items.length === 0) return;
+    const header = (name: string) => context.req.header(name);
+    const reverify = isMaintenanceRequest(header);
+    const crawler = !reverify && isCrawlerRequest(header);
+    const visits = crawler ? items.filter(isVisitDiscovery) : [];
+    const seeds = crawler ? items.filter((item) => !isVisitDiscovery(item)) : items;
+    const task = Promise.all([
+      seeds.length > 0 && directory.recordDiscoveries(seeds, verifiedAt, { reverify }),
+      visits.length > 0 &&
+        directory.recordDiscoveries(visits, verifiedAt, { reverify, existingOnly: true }),
+    ]).catch((error: unknown) => console.error("Directory write failed", error));
+    const defer = waitUntil(context);
+    if (defer) defer(task);
+    else await task;
   }
 
   return {

@@ -154,7 +154,7 @@ export function registerDiscoveryRoutes(app: AnonymousApp, kit: AnonymousKit) {
           }));
 
         await recordDiscoveries(
-          context.env,
+          context,
           [
             {
               resourceType: "ranking" as const,
@@ -169,7 +169,7 @@ export function registerDiscoveryRoutes(app: AnonymousApp, kit: AnonymousKit) {
         );
       } else {
         await recordDiscoveries(
-          context.env,
+          context,
           [
             {
               resourceType: "ranking" as const,
@@ -363,7 +363,7 @@ export function registerDiscoveryRoutes(app: AnonymousApp, kit: AnonymousKit) {
 
       const fetchedAt = runtime.now();
       await recordDiscoveries(
-        context.env,
+        context,
         subjects
           .filter(
             (subject) => subject.title !== "未命名条目" && subject.rank !== null && !subject.nsfw,

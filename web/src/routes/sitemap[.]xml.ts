@@ -11,7 +11,6 @@ export const Route = createFileRoute("/sitemap.xml")({
         const xml = buildSitemapIndex([
           { loc: `${CANONICAL_WEB_ORIGIN}/sitemap/static.xml` },
           { loc: `${CANONICAL_WEB_ORIGIN}/sitemap/subjects.xml` },
-          { loc: `${CANONICAL_WEB_ORIGIN}/sitemap/chapters.xml` },
           { loc: `${CANONICAL_WEB_ORIGIN}/sitemap/characters.xml` },
           { loc: `${CANONICAL_WEB_ORIGIN}/sitemap/persons.xml` },
           { loc: `${CANONICAL_WEB_ORIGIN}/sitemap/collections.xml` },

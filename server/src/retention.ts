@@ -1,21 +1,26 @@
-import { and, eq, inArray, lt } from "drizzle-orm";
+import { eq, inArray, lt, notExists } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 
-import { miniAccountLinkRequest, publicEntityDirectory, session, verification } from "./db/schema";
+import {
+  broadcastSnapshot,
+  miniAccountLinkRequest,
+  progress,
+  session,
+  verification,
+} from "./db/schema";
 
 import type { D1Database } from "@cloudflare/workers-types";
 
 const RETENTION_GRACE_MS = 24 * 60 * 60 * 1000;
 const PURGE_BATCH_SIZE = 500;
-// D1 bills one written row per deleted directory row, so a larger batch drains the backlog faster.
-const DIRECTORY_PURGE_BATCH_SIZE = 1000;
-// Relations no longer record pending entities; earlier rows are removed gradually.
-const RETIRED_PENDING_TYPES = ["subject", "person", "character", "chapter"] as const;
+// Each deleted snapshot costs two written rows; a small hourly batch keeps the daily cost low.
+const BROADCAST_PURGE_BATCH_SIZE = 100;
 
 /**
  * Removes credentials and account-link requests that expired more than a day ago. Each table is
  * purged in bounded batches so one maintenance run never turns into a large D1 write.
- * Merge audits are kept. Pending directory rows discovered through relations are purged the same way.
+ * Merge audits are kept. Broadcast snapshots of subjects nobody tracks in progress are purged the
+ * same way, since only progress reads them from D1 (ADR 0014).
  */
 export async function purgeExpiredRecords(database: D1Database, now: Date) {
   const db = drizzle(database);
@@ -57,20 +62,21 @@ export async function purgeExpiredRecords(database: D1Database, now: Date) {
             .limit(PURGE_BATCH_SIZE),
         ),
       ),
-    db.delete(publicEntityDirectory).where(
+    db.delete(broadcastSnapshot).where(
       inArray(
-        publicEntityDirectory.id,
+        broadcastSnapshot.subjectId,
         db
-          .select({ id: publicEntityDirectory.id })
-          .from(publicEntityDirectory)
+          .select({ subjectId: broadcastSnapshot.subjectId })
+          .from(broadcastSnapshot)
           .where(
-            and(
-              inArray(publicEntityDirectory.resourceType, [...RETIRED_PENDING_TYPES]),
-              eq(publicEntityDirectory.indexStatus, "pending"),
-              eq(publicEntityDirectory.discoverySource, "relation"),
+            notExists(
+              db
+                .select({ subjectId: progress.subjectId })
+                .from(progress)
+                .where(eq(progress.subjectId, broadcastSnapshot.subjectId)),
             ),
           )
-          .limit(DIRECTORY_PURGE_BATCH_SIZE),
+          .limit(BROADCAST_PURGE_BATCH_SIZE),
       ),
     ),
   ]);

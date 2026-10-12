@@ -750,25 +750,29 @@ export function createStatefulRoutes(runtime: StatefulRuntime) {
       }
       const now = runtime.now();
       const qualified = Boolean(result.list.name.trim()) && result.total >= 3;
-      await runtime.directory?.(context.env)?.recordDiscoveries(
-        [
-          {
-            resourceType: "collection_list",
-            externalId: shareId,
-            discoverySource: "collection_list",
-            indexStatus: qualified ? "index" : "noindex",
-            indexReason: qualified ? "public_collection_list" : "insufficient_items",
-          },
-          ...result.data.map((item) => ({
-            resourceType: "subject" as const,
-            externalId: item.subjectId.toString(),
-            discoverySource: "collection_list" as const,
-            indexStatus: (item.nsfw ? "noindex" : "pending") as "noindex" | "pending",
-            indexReason: item.nsfw ? "nsfw" : "collection_list_item",
-          })),
-        ],
-        now,
-      );
+      await runtime
+        .directory?.(context.env)
+        ?.recordDiscoveries(
+          [
+            {
+              resourceType: "collection_list",
+              externalId: shareId,
+              discoverySource: "collection_list",
+              indexStatus: qualified ? "index" : "noindex",
+              indexReason: qualified ? "public_collection_list" : "insufficient_items",
+            },
+            ...result.data.map((item) => ({
+              resourceType: "subject" as const,
+              externalId: item.subjectId.toString(),
+              discoverySource: "collection_list" as const,
+              indexStatus: (item.nsfw ? "noindex" : "pending") as "noindex" | "pending",
+              indexReason: item.nsfw ? "nsfw" : "collection_list_item",
+            })),
+          ],
+          now,
+        )
+        // A failed directory write (e.g. exhausted D1 quota) must not break the public page.
+        .catch((error: unknown) => console.error("Directory write failed", error));
       const origin = new URL(context.req.url).origin;
       const body: PublicCollectionListPage = {
         name: result.list.name,

@@ -54,6 +54,8 @@ export interface ApiErrorResponse {
 }
 
 export const CANONICAL_WEB_ORIGIN = "https://bgmx.jaze.top";
+/** Carries the visitor's User-Agent when Web SSR requests Server on the visitor's behalf. */
+export const VISITOR_AGENT_HEADER = "X-Bangumi-X-Visitor-Agent";
 
 export type PublicationState = "index" | "noindex-follow" | "noindex-nofollow" | "not-found";
 
@@ -82,7 +84,6 @@ export function getRobotsDirective(decision: PublicationDecision): string {
 
 export type DirectoryResourceType =
   | "subject"
-  | "chapter"
   | "character"
   | "person"
   | "collection_list"

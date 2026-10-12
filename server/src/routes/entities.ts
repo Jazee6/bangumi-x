@@ -1,5 +1,3 @@
-import type { DirectoryIndexStatus } from "share";
-
 import { ApiError } from "../api-error";
 import {
   getBangumiCharacterPersonsUrl,
@@ -14,12 +12,7 @@ import {
   getBangumiSubjectPersonsUrl,
   getBangumiSubjectUrl,
 } from "../bangumi-api";
-import {
-  createBroadcastSnapshotLoader,
-  isBroadcastSnapshotStale,
-  toSubjectBroadcast,
-  type BroadcastRepository,
-} from "../broadcast";
+import { createBroadcastSnapshotLoader, toSubjectBroadcast } from "../broadcast";
 import { normalizeChapterDetail, normalizeChapterPage } from "../chapter";
 import {
   normalizeCharacterDetail,
@@ -27,7 +20,6 @@ import {
   normalizeCharacterRelatedSubjects,
   normalizeSubjectCharacters,
 } from "../character";
-import type { DirectoryDiscovery } from "../directory";
 import {
   normalizePersonDetail,
   normalizePersonRelatedCharacters,
@@ -36,7 +28,6 @@ import {
 } from "../person";
 import { normalizeSubject } from "../subject";
 import { normalizeSubjectSnapshot } from "../subject-snapshot";
-import type { UpstreamPriority } from "../upstream-client";
 import { parseNonNegativeInteger, parsePositiveInteger } from "../validation";
 import {
   JSON_CACHE_CONTROL,
@@ -52,7 +43,6 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
   const {
     runtime,
     upstream,
-    waitUntil,
     upstreamOptions,
     loadJson,
     jsonCache,
@@ -63,52 +53,24 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
 
   const loadBroadcastSnapshot = createBroadcastSnapshotLoader(upstream);
 
+  /**
+   * Public subject pages read broadcasts through the edge-cached upstream loader only; D1 keeps
+   * snapshots for subjects someone tracks in progress (ADR 0014).
+   */
   async function resolveSubjectBroadcast(
     context: AnonymousContext,
     subject: { id: number; type: string; totalChapters: number | null },
   ) {
     if (subject.type !== "动画" && subject.type !== "三次元") return null;
-
-    let repository: BroadcastRepository | undefined;
     try {
-      repository = runtime.broadcasts?.(context.env);
-    } catch {
-      return null;
-    }
-    if (!repository) return null;
-
-    let existing;
-    try {
-      existing = await repository.get(subject.id);
-    } catch {
-      return null;
-    }
-    const now = runtime.now();
-    const refresh = async (priority: UpstreamPriority) => {
       const snapshot = await loadBroadcastSnapshot({
         subjectId: subject.id,
         plannedChapters: subject.totalChapters,
         apiUrl: context.env.BGM_API_URL,
         now: runtime.now(),
-        upstream: upstreamOptions(context, priority),
+        upstream: upstreamOptions(context),
       });
-      await repository.upsert(snapshot);
-      return snapshot;
-    };
-
-    if (existing) {
-      if (isBroadcastSnapshotStale(existing, now)) {
-        waitUntil(context)?.(
-          refresh("background")
-            .then(() => undefined)
-            .catch(() => undefined),
-        );
-      }
-      return toSubjectBroadcast(existing, now);
-    }
-
-    try {
-      return toSubjectBroadcast(await refresh("foreground"), now);
+      return toSubjectBroadcast(snapshot, runtime.now());
     } catch {
       return null;
     }
@@ -208,7 +170,7 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
           }),
           { code: "SUBJECT_NOT_FOUND", message: "条目不存在。" },
         ),
-        context.env,
+        context,
         "subject",
         subjectId.toString(),
       );
@@ -218,7 +180,7 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
       const broadcast = await resolveSubjectBroadcast(context, loaded.subject);
       const fetchedAt = runtime.now();
       await recordDiscoveries(
-        context.env,
+        context,
         [
           {
             resourceType: "subject",
@@ -246,17 +208,12 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
         "INVALID_CHAPTER_ID",
         "章节 ID 无效。",
       );
-      const chapter = await recordNotFoundOn404(
-        loadJson(
-          context,
-          getBangumiChapterUrl(chapterId, context.env.BGM_API_URL),
-          "CHAPTER_UPSTREAM_ERROR",
-          normalizeChapterDetail,
-          { code: "CHAPTER_NOT_FOUND", message: "章节不存在。" },
-        ),
-        context.env,
-        "chapter",
-        chapterId.toString(),
+      const chapter = await loadJson(
+        context,
+        getBangumiChapterUrl(chapterId, context.env.BGM_API_URL),
+        "CHAPTER_UPSTREAM_ERROR",
+        normalizeChapterDetail,
+        { code: "CHAPTER_NOT_FOUND", message: "章节不存在。" },
       );
       const fetchedAt = runtime.now();
       const workerOrigin = new URL(context.req.url).origin;
@@ -268,37 +225,19 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
         { code: "SUBJECT_NOT_FOUND", message: "条目不存在。" },
       );
 
-      const isUnnamed = chapter.title === "未命名章节";
-      const isThin = !chapter.summary?.trim() && !chapter.date?.trim();
-      const isSubjectNsfw = subject.nsfw;
-
-      const chapterStatus: DirectoryIndexStatus =
-        isUnnamed || isThin || isSubjectNsfw ? "noindex" : "index";
-      const indexReason = isUnnamed
-        ? "unnamed"
-        : isSubjectNsfw
-          ? "nsfw_subject"
-          : isThin
-            ? "thin_chapter"
-            : "chapter_verified";
-
-      const discoveries: DirectoryDiscovery[] = [
-        {
-          resourceType: "chapter",
-          externalId: chapter.id.toString(),
-          discoverySource: "direct_access",
-          indexStatus: chapterStatus,
-          indexReason,
-        },
-      ];
-      discoveries.push({
-        resourceType: "subject",
-        externalId: subject.id.toString(),
-        discoverySource: "relation",
-        ...subjectIndexDecision(subject),
-      });
-
-      await recordDiscoveries(context.env, discoveries, fetchedAt);
+      // Chapters stay out of the directory (ADR 0014); only their subject is recorded.
+      await recordDiscoveries(
+        context,
+        [
+          {
+            resourceType: "subject",
+            externalId: subject.id.toString(),
+            discoverySource: "relation",
+            ...subjectIndexDecision(subject),
+          },
+        ],
+        fetchedAt,
+      );
 
       const { subjectId: _subjectId, ...chapterDetail } = chapter;
       return context.json({
@@ -377,7 +316,7 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
           (value) => normalizePersonDetail(value, workerOrigin),
           { code: "PERSON_NOT_FOUND", message: "人物不存在。" },
         ),
-        context.env,
+        context,
         "person",
         personId.toString(),
       );
@@ -398,7 +337,7 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
           ? "index"
           : "noindex";
       await recordDiscoveries(
-        context.env,
+        context,
         [
           {
             resourceType: "person",
@@ -481,7 +420,7 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
           (value) => normalizeCharacterDetail(value, workerOrigin),
           { code: "CHARACTER_NOT_FOUND", message: "角色不存在。" },
         ),
-        context.env,
+        context,
         "character",
         characterId.toString(),
       );
@@ -503,7 +442,7 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
           ? "index"
           : "noindex";
       await recordDiscoveries(
-        context.env,
+        context,
         [
           {
             resourceType: "character",

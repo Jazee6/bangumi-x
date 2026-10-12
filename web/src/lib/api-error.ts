@@ -1,4 +1,6 @@
-import type { ApiErrorResponse } from "share";
+import { createIsomorphicFn } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/react-start/server";
+import { VISITOR_AGENT_HEADER, type ApiErrorResponse } from "share";
 
 export class ApiRequestError extends Error {
   readonly status: number;
@@ -31,12 +33,28 @@ export async function getApiErrorMessage(response: Response, fallback: string): 
   }
 }
 
+/**
+ * During SSR, Server only sees this web runtime, so pass on who the visitor is; it decides from
+ * that whether the visit may add public directory entries. Browser requests carry their own UA.
+ */
+const visitorHeaders = createIsomorphicFn()
+  .server((): Record<string, string> => {
+    try {
+      return { [VISITOR_AGENT_HEADER]: getRequestHeader("user-agent") ?? "" };
+    } catch {
+      return {};
+    }
+  })
+  .client((): Record<string, string> => ({}));
+
 export async function requestJson<T>(
   url: URL,
   fallbackMessage: string,
   init?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(url, init);
+  const headers = new Headers(init?.headers);
+  for (const [name, value] of Object.entries(visitorHeaders())) headers.set(name, value);
+  const response = await fetch(url, { ...init, headers });
   if (!response.ok) {
     throw new ApiRequestError(response.status, await getApiErrorMessage(response, fallbackMessage));
   }

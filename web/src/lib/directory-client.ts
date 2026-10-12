@@ -68,7 +68,7 @@ export async function fetchDirectoryEntries(
 }
 
 /**
- * Shared sitemap route handler for entity sub-sitemaps (chapters, characters, persons, collections).
+ * Shared sitemap route handler for entity sub-sitemaps (characters, persons, collections).
  * Eliminates duplicate boilerplate across individual sub-sitemap server routes.
  */
 export function createEntitySitemapHandler(

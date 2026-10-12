@@ -66,32 +66,43 @@ describe("expired record retention", () => {
     ).toEqual(["link-recent"]);
   });
 
-  test("purges pending directory rows discovered through relations", async () => {
-    const rows = [
-      ["retired-person", "person", "relation", "pending"],
-      ["retired-character", "character", "relation", "pending"],
-      ["retired-chapter", "chapter", "relation", "pending"],
-      ["retired-subject", "subject", "relation", "pending"],
-      ["kept-schedule", "subject", "daily_broadcast", "pending"],
-      ["kept-subject", "subject", "relation", "index"],
-    ];
-    await db.batch(
-      rows.map(([id, resourceType, discoverySource, indexStatus]) =>
+  test("purges broadcast snapshots of subjects nobody tracks in progress", async () => {
+    const at = now.getTime();
+    await db.batch([
+      db
+        .prepare(
+          `insert into user
+           (id, name, email, email_verified, image, is_anonymous, created_at, updated_at)
+           values ('broadcast-user', '放送用户', 'broadcast@example.invalid', 1, null, 0, ?, ?)`,
+        )
+        .bind(at, at),
+      db
+        .prepare(
+          `insert into subject_snapshot (id, subject_id, title, type, nsfw, updated_at)
+           values ('broadcast-tracked', 9001, '追踪条目', '动画', 0, ?)`,
+        )
+        .bind(at),
+      db
+        .prepare(
+          `insert into progress (id, user_id, subject_id, stage, created_at, updated_at)
+           values ('broadcast-progress', 'broadcast-user', 9001, 'in_progress', ?, ?)`,
+        )
+        .bind(at, at),
+      ...[9001, 9002, 9003].map((subjectId) =>
         db
           .prepare(
-            `insert into public_entity_directory
-             (id, resource_type, external_id, discovery_source, first_discovered_at,
-              last_verified_at, index_status, index_reason)
-             values (?, ?, ?, ?, ?, null, ?, 'retention')`,
+            `insert into broadcast_snapshot (subject_id, chapters, updated_at) values (?, '[]', ?)`,
           )
-          .bind(id, resourceType, id, discoverySource, now.getTime(), indexStatus),
+          .bind(subjectId, at),
       ),
-    );
+    ]);
 
     await purgeExpiredRecords(db, now);
 
     expect(
-      await ids("select id from public_entity_directory where index_reason = 'retention'"),
-    ).toEqual(["kept-schedule", "kept-subject"]);
+      await ids(
+        "select cast(subject_id as text) as id from broadcast_snapshot where subject_id >= 9001",
+      ),
+    ).toEqual(["9001"]);
   });
 });

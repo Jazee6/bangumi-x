@@ -159,16 +159,16 @@ describe("request-driven directory maintenance", () => {
     // Each hour the entity step picks a different cold entity, so it always spends upstream budget.
     await directory.recordDiscoveries(
       ["9", "10", "11"].map((externalId) => ({
-        resourceType: "chapter" as const,
+        resourceType: "subject" as const,
         externalId,
-        discoverySource: "relation" as const,
+        discoverySource: "daily_broadcast" as const,
         indexStatus: "pending" as const,
-        indexReason: "chapter_unverified",
+        indexReason: "schedule_unverified",
       })),
       now,
     );
     const fetch = vi.fn(async (input: string | URL | Request) =>
-      String(input).includes("/v0/episodes/")
+      /\/v0\/subjects\/\d+$/.test(new URL(String(input)).pathname)
         ? new Response(null, { status: 404 })
         : Response.json({ total: 0, data: [] }),
     );
@@ -197,24 +197,24 @@ describe("request-driven directory maintenance", () => {
     await directory.recordDiscoveries(
       [
         {
-          resourceType: "chapter",
+          resourceType: "subject",
           externalId: "9",
           discoverySource: "direct_access",
           indexStatus: "index",
-          indexReason: "chapter_verified",
+          indexReason: "subject_verified",
         },
       ],
       new Date("2026-01-01T00:00:00.000Z"),
     );
 
     const request = vi.fn(async (path: string) =>
-      path === "/chapters/9" ? new Response(null, { status: 404 }) : Response.json({ ok: true }),
+      path === "/subjects/9" ? new Response(null, { status: 404 }) : Response.json({ ok: true }),
     );
     const result = await runRequestMaintenance({ directory, now, request });
 
     expect(result.refreshedEntities).toBe(1);
     const unavailable = await directory.listEntries({
-      resourceType: "chapter",
+      resourceType: "subject",
       indexStatus: "noindex",
       limit: 10,
       offset: 0,

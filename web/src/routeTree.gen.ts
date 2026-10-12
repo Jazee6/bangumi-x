@@ -21,7 +21,6 @@ import { Route as AppProgressRouteImport } from './routes/_app/progress'
 import { Route as TrustAboutRouteImport } from './routes/_trust/about'
 import { Route as TrustPrivacyRouteImport } from './routes/_trust/privacy'
 import { Route as TrustTermsRouteImport } from './routes/_trust/terms'
-import { Route as SitemapChaptersDotxmlRouteImport } from './routes/sitemap/chapters[.]xml'
 import { Route as SitemapCharactersDotxmlRouteImport } from './routes/sitemap/characters[.]xml'
 import { Route as SitemapCollectionsDotxmlRouteImport } from './routes/sitemap/collections[.]xml'
 import { Route as SitemapPersonsDotxmlRouteImport } from './routes/sitemap/persons[.]xml'
@@ -98,11 +97,6 @@ const TrustTermsRoute = TrustTermsRouteImport.update({
   id: '/terms',
   path: '/terms',
   getParentRoute: () => TrustRoute,
-} as any)
-const SitemapChaptersDotxmlRoute = SitemapChaptersDotxmlRouteImport.update({
-  id: '/sitemap/chapters.xml',
-  path: '/sitemap/chapters.xml',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapCharactersDotxmlRoute = SitemapCharactersDotxmlRouteImport.update({
   id: '/sitemap/characters.xml',
@@ -217,7 +211,6 @@ export interface FileRoutesByFullPath {
   '/about': typeof TrustAboutRoute
   '/privacy': typeof TrustPrivacyRoute
   '/terms': typeof TrustTermsRoute
-  '/sitemap/chapters.xml': typeof SitemapChaptersDotxmlRoute
   '/sitemap/characters.xml': typeof SitemapCharactersDotxmlRoute
   '/sitemap/collections.xml': typeof SitemapCollectionsDotxmlRoute
   '/sitemap/persons.xml': typeof SitemapPersonsDotxmlRoute
@@ -248,7 +241,6 @@ export interface FileRoutesByTo {
   '/about': typeof TrustAboutRoute
   '/privacy': typeof TrustPrivacyRoute
   '/terms': typeof TrustTermsRoute
-  '/sitemap/chapters.xml': typeof SitemapChaptersDotxmlRoute
   '/sitemap/characters.xml': typeof SitemapCharactersDotxmlRoute
   '/sitemap/collections.xml': typeof SitemapCollectionsDotxmlRoute
   '/sitemap/persons.xml': typeof SitemapPersonsDotxmlRoute
@@ -281,7 +273,6 @@ export interface FileRoutesById {
   '/_trust/about': typeof TrustAboutRoute
   '/_trust/privacy': typeof TrustPrivacyRoute
   '/_trust/terms': typeof TrustTermsRoute
-  '/sitemap/chapters.xml': typeof SitemapChaptersDotxmlRoute
   '/sitemap/characters.xml': typeof SitemapCharactersDotxmlRoute
   '/sitemap/collections.xml': typeof SitemapCollectionsDotxmlRoute
   '/sitemap/persons.xml': typeof SitemapPersonsDotxmlRoute
@@ -315,7 +306,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/privacy'
     | '/terms'
-    | '/sitemap/chapters.xml'
     | '/sitemap/characters.xml'
     | '/sitemap/collections.xml'
     | '/sitemap/persons.xml'
@@ -346,7 +336,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/privacy'
     | '/terms'
-    | '/sitemap/chapters.xml'
     | '/sitemap/characters.xml'
     | '/sitemap/collections.xml'
     | '/sitemap/persons.xml'
@@ -378,7 +367,6 @@ export interface FileRouteTypes {
     | '/_trust/about'
     | '/_trust/privacy'
     | '/_trust/terms'
-    | '/sitemap/chapters.xml'
     | '/sitemap/characters.xml'
     | '/sitemap/collections.xml'
     | '/sitemap/persons.xml'
@@ -406,7 +394,6 @@ export interface RootRouteChildren {
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  SitemapChaptersDotxmlRoute: typeof SitemapChaptersDotxmlRoute
   SitemapCharactersDotxmlRoute: typeof SitemapCharactersDotxmlRoute
   SitemapCollectionsDotxmlRoute: typeof SitemapCollectionsDotxmlRoute
   SitemapPersonsDotxmlRoute: typeof SitemapPersonsDotxmlRoute
@@ -499,13 +486,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/terms'
       preLoaderRoute: typeof TrustTermsRouteImport
       parentRoute: typeof TrustRoute
-    }
-    '/sitemap/chapters.xml': {
-      id: '/sitemap/chapters.xml'
-      path: '/sitemap/chapters.xml'
-      fullPath: '/sitemap/chapters.xml'
-      preLoaderRoute: typeof SitemapChaptersDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/sitemap/characters.xml': {
       id: '/sitemap/characters.xml'
@@ -726,7 +706,6 @@ const rootRouteChildren: RootRouteChildren = {
   LlmsDottxtRoute: LlmsDottxtRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  SitemapChaptersDotxmlRoute: SitemapChaptersDotxmlRoute,
   SitemapCharactersDotxmlRoute: SitemapCharactersDotxmlRoute,
   SitemapCollectionsDotxmlRoute: SitemapCollectionsDotxmlRoute,
   SitemapPersonsDotxmlRoute: SitemapPersonsDotxmlRoute,

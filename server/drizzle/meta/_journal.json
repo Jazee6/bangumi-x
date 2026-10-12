@@ -15,6 +15,13 @@
       "when": 1790654402082,
       "tag": "0001_drop_avatar_review",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791812641079,
+      "tag": "0002_rebuild_public_entity_directory",
+      "breakpoints": true
     }
   ]
 }
