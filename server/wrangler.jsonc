@@ -39,6 +39,7 @@
         "SERVER_URL": "https://s.bgmx.jaze.top",
         "WECHAT_MINI_APP_ID": "wx02ce91659b1acef4",
         "EASY_AUTH_CLIENT_ID": "wbhIWqXuZuwLxsdCwHcwZffNKxwfcBYl",
+        "BGM_API_URL": "https://api.bgm.tv",
       },
       "images": {
         "binding": "IMAGES",
