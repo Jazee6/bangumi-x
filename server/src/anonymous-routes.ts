@@ -28,6 +28,13 @@ export function createAnonymousRoutes(
   app.use("/characters/*", webCors);
   app.use("/discover/*", webCors);
   app.use("/rankings", webCors);
+  app.use(
+    "/visits",
+    cors({
+      origin: (origin, context) => (origin === context.env.WEB_ORIGIN ? origin : undefined),
+      allowMethods: ["POST"],
+    }),
+  );
 
   registerScheduleRoutes(app, kit);
   registerDiscoveryRoutes(app, kit);

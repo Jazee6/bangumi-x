@@ -1,11 +1,59 @@
 import { cache } from "hono/cache";
-import type { DirectoryIndexStatus, DirectoryQueryResponse, DirectoryResourceType } from "share";
+import {
+  VISIT_RESOURCE_TYPES,
+  type DirectoryIndexStatus,
+  type DirectoryQueryResponse,
+  type DirectoryResourceType,
+  type VisitResourceType,
+} from "share";
 
 import { ApiError } from "../api-error";
-import type { AnonymousApp, AnonymousKit } from "./kit";
+import { parsePositiveInteger } from "../validation";
+import { isCrawlerAgent, VISIT_HEADER, type AnonymousApp, type AnonymousKit } from "./kit";
+
+const VISIT_COLLECTIONS: Record<VisitResourceType, string> = {
+  subject: "subjects",
+  chapter: "chapters",
+  character: "characters",
+  person: "persons",
+};
 
 export function registerDirectoryRoutes(app: AnonymousApp, kit: AnonymousKit) {
   const { runtime } = kit;
+
+  /**
+   * A browser reports a public entity page once it has run the page. The entity route then runs
+   * in-process past the response cache, so its index decision is recorded as a direct access.
+   */
+  app.post("/visits", async (context) => {
+    const type = context.req.query("type");
+    const id = parsePositiveInteger(context.req.query("id") ?? "");
+    if (!id || !VISIT_RESOURCE_TYPES.includes(type as VisitResourceType)) {
+      throw new ApiError(400, { code: "INVALID_VISIT", message: "访问记录参数无效。" });
+    }
+    if (!isCrawlerAgent(context.req.header("User-Agent"))) {
+      let executionCtx: typeof context.executionCtx | undefined;
+      try {
+        executionCtx = context.executionCtx;
+      } catch {
+        executionCtx = undefined;
+      }
+      const task = Promise.resolve(
+        app.request(
+          `/${VISIT_COLLECTIONS[type as VisitResourceType]}/${id}`,
+          { headers: { [VISIT_HEADER]: "1" } },
+          context.env,
+          executionCtx,
+        ),
+      ).then(
+        () => undefined,
+        () => undefined,
+      );
+      if (executionCtx) executionCtx.waitUntil(task);
+      else await task;
+    }
+    return context.body(null, 204);
+  });
 
   app.get(
     "/directory",

@@ -306,7 +306,7 @@ describe("SEO discovery HTTP side effects", () => {
     }
   });
 
-  test("crawler visits only correct existing entries", async () => {
+  test("crawler and SSR requests only correct existing entries", async () => {
     const directory = createMemoryDirectoryRepository();
     await directory.recordDiscoveries(
       [
@@ -332,7 +332,7 @@ describe("SEO discovery HTTP side effects", () => {
     await app.request("/subjects/42", { headers: { "User-Agent": googlebot } }, bindings);
     await app.request(
       "/subjects/43",
-      { headers: { ...visitor.headers, "X-Bangumi-X-Visitor-Agent": googlebot } },
+      { headers: { ...visitor.headers, "X-Bangumi-X-SSR": "1" } },
       bindings,
     );
     await app.request("/subjects/7", { headers: { "User-Agent": googlebot } }, bindings);
@@ -343,6 +343,57 @@ describe("SEO discovery HTTP side effects", () => {
     expect(
       await directory.listEntries({ resourceType: "subject", indexStatus: "noindex", limit: 10 }),
     ).toEqual([expect.objectContaining({ externalId: "7", indexReason: "nsfw" })]);
+  });
+
+  test("a browser visit report records the entity past a cached response", async () => {
+    const directory = createMemoryDirectoryRepository();
+    const cache = new Map<string, Response>();
+    const cacheKey = (request: RequestInfo | URL) =>
+      request instanceof Request ? request.url : String(request);
+    globalThis.caches = {
+      open: async () => ({
+        match: async (request: RequestInfo | URL) => cache.get(cacheKey(request))?.clone(),
+        put: async (request: RequestInfo | URL, response: Response) => {
+          cache.set(cacheKey(request), response.clone());
+        },
+        delete: async (request: RequestInfo | URL) => cache.delete(cacheKey(request)),
+      }),
+    } as unknown as CacheStorage;
+    const fetch = vi.fn(async (input: string | URL | Request) => {
+      const path = new URL(input instanceof Request ? input.url : input).pathname;
+      if (path.endsWith("/persons/302")) {
+        return Response.json({ id: 302, name: "日升", type: 2, summary: "动画制作公司" });
+      }
+      return Response.json({ id: 42, name_cn: "星际牛仔", type: 2, nsfw: false });
+    });
+    const app = createApp({ fetch, directory: () => directory, now: () => new Date("2026-03-01") });
+    const ssr = { headers: { ...visitor.headers, "X-Bangumi-X-SSR": "1" } };
+
+    expect((await app.request("/subjects/42", ssr, bindings)).status).toBe(200);
+    expect((await app.request("/persons/302", ssr, bindings)).status).toBe(200);
+    expect(
+      await directory.listEntries({ resourceType: "subject", indexStatus: "index", limit: 10 }),
+    ).toEqual([]);
+
+    const crawler = { method: "POST", headers: { "User-Agent": "curl/8.0" } };
+    expect((await app.request("/visits?type=subject&id=42", crawler, bindings)).status).toBe(204);
+    expect(
+      await directory.listEntries({ resourceType: "subject", indexStatus: "index", limit: 10 }),
+    ).toEqual([]);
+
+    const report = { method: "POST", headers: visitor.headers };
+    expect((await app.request("/visits?type=subject&id=42", report, bindings)).status).toBe(204);
+    expect((await app.request("/visits?type=person&id=302", report, bindings)).status).toBe(204);
+    expect(
+      await directory.listEntries({ resourceType: "subject", indexStatus: "index", limit: 10 }),
+    ).toEqual([expect.objectContaining({ externalId: "42", discoverySource: "direct_access" })]);
+    expect(
+      await directory.listEntries({ resourceType: "person", indexStatus: "index", limit: 10 }),
+    ).toEqual([expect.objectContaining({ externalId: "302", indexReason: "person_verified" })]);
+
+    for (const query of ["type=ranking&id=1", "type=subject&id=0", "type=subject"]) {
+      expect((await app.request(`/visits?${query}`, report, bindings)).status).toBe(400);
+    }
   });
 
   test("a confirmed entity 404 withdraws its existing directory entry", async () => {

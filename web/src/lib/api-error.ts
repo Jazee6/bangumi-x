@@ -1,6 +1,5 @@
 import { createIsomorphicFn } from "@tanstack/react-start";
-import { getRequestHeader } from "@tanstack/react-start/server";
-import { VISITOR_AGENT_HEADER, type ApiErrorResponse } from "share";
+import { SSR_REQUEST_HEADER, type ApiErrorResponse } from "share";
 
 export class ApiRequestError extends Error {
   readonly status: number;
@@ -34,17 +33,11 @@ export async function getApiErrorMessage(response: Response, fallback: string): 
 }
 
 /**
- * During SSR, Server only sees this web runtime, so pass on who the visitor is; it decides from
- * that whether the visit may add public directory entries. Browser requests carry their own UA.
+ * SSR requests are marked so Server never counts them as visits: a scraper fetching HTML looks
+ * the same as a person until the page runs in a browser, which then reports the visit itself.
  */
-const visitorHeaders = createIsomorphicFn()
-  .server((): Record<string, string> => {
-    try {
-      return { [VISITOR_AGENT_HEADER]: getRequestHeader("user-agent") ?? "" };
-    } catch {
-      return {};
-    }
-  })
+const ssrHeaders = createIsomorphicFn()
+  .server((): Record<string, string> => ({ [SSR_REQUEST_HEADER]: "1" }))
   .client((): Record<string, string> => ({}));
 
 export async function requestJson<T>(
@@ -53,7 +46,7 @@ export async function requestJson<T>(
   init?: RequestInit,
 ): Promise<T> {
   const headers = new Headers(init?.headers);
-  for (const [name, value] of Object.entries(visitorHeaders())) headers.set(name, value);
+  for (const [name, value] of Object.entries(ssrHeaders())) headers.set(name, value);
   const response = await fetch(url, { ...init, headers });
   if (!response.ok) {
     throw new ApiRequestError(response.status, await getApiErrorMessage(response, fallbackMessage));

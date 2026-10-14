@@ -5,6 +5,7 @@ import { isIndexableChapter, PUBLICATION, type SourceMetadata } from "share";
 import { chapterQueryOptions } from "@/features/chapters/chapter-query";
 import { ChapterError, ChapterLoading } from "@/features/chapters/chapter-states";
 import { ChapterView } from "@/features/chapters/chapter-view";
+import { useVisitReport } from "@/hooks/use-visit-report";
 import { ApiRequestError } from "@/lib/api-error";
 import {
   buildBreadcrumbJsonLd,
@@ -90,6 +91,7 @@ export const Route = createFileRoute("/_app/chapters/$chapterId")({
 function ChapterPage() {
   const { chapter } = Route.useLoaderData();
   const { data } = useSuspenseQuery(chapterQueryOptions(chapter.id.toString()));
+  useVisitReport("chapter", chapter.id.toString());
   return <ChapterView chapter={data} />;
 }
 

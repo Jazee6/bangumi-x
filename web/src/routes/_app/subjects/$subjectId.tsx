@@ -10,6 +10,7 @@ import {
 import type { SourceMetadata } from "share";
 
 import { routeTabClassName, RouteTabs } from "@/components/route-tabs";
+import { useVisitReport } from "@/hooks/use-visit-report";
 import { subjectCharactersQueryOptions } from "@/features/characters/character-query";
 import { chapterListQueryOptions } from "@/features/chapters/chapter-query";
 import { subjectPersonsQueryOptions } from "@/features/persons/person-query";
@@ -56,6 +57,7 @@ export const Route = createFileRoute("/_app/subjects/$subjectId")({
 function SubjectLayout() {
   const { subjectId } = Route.useParams();
   const { data: subject } = useSuspenseQuery(subjectQueryOptions(subjectId));
+  useVisitReport("subject", subjectId);
   const chapterQuery = useInfiniteQuery({
     ...chapterListQueryOptions(subjectId),
     enabled: false,

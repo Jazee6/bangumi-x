@@ -22,6 +22,7 @@ import {
 } from "@/features/entities/entity-kind";
 import { EntityLoading, EntityRouteError } from "@/features/entities/entity-states";
 import { EntityView } from "@/features/entities/entity-view";
+import { useVisitReport } from "@/hooks/use-visit-report";
 import { ApiRequestError } from "@/lib/api-error";
 import {
   buildBreadcrumbJsonLd,
@@ -167,6 +168,7 @@ export function EntityPage({
   onTabChange: (tab: EntityTab) => void;
 }) {
   const { data } = useSuspenseQuery(entityQueryOptions(kind, id));
+  useVisitReport(kind, id);
   const subjects = useQuery({
     ...entitySubjectsQueryOptions(kind, id),
     enabled: tab === "subjects",

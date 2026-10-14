@@ -36,6 +36,7 @@ export type ApiErrorCode =
   | "INVALID_PROGRESS_QUERY"
   | "COLLECTION_SNAPSHOT_UNAVAILABLE"
   | "INVALID_DIRECTORY_QUERY"
+  | "INVALID_VISIT"
   | "MINI_AUTH_UNAVAILABLE"
   | "INVALID_WECHAT_LOGIN"
   | "INVALID_MINI_PROFILE"
@@ -54,8 +55,11 @@ export interface ApiErrorResponse {
 }
 
 export const CANONICAL_WEB_ORIGIN = "https://bgmx.jaze.top";
-/** Carries the visitor's User-Agent when Web SSR requests Server on the visitor's behalf. */
-export const VISITOR_AGENT_HEADER = "X-Bangumi-X-Visitor-Agent";
+/** Marks requests Web makes during SSR; no browser has run the page yet. */
+export const SSR_REQUEST_HEADER = "X-Bangumi-X-SSR";
+/** Entity types a browser reports through `POST /visits` once a page has hydrated. */
+export const VISIT_RESOURCE_TYPES = ["subject", "chapter", "character", "person"] as const;
+export type VisitResourceType = (typeof VISIT_RESOURCE_TYPES)[number];
 
 export type PublicationState = "index" | "noindex-follow" | "noindex-nofollow" | "not-found";
 

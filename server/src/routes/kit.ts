@@ -1,6 +1,6 @@
 import type { Context, Hono } from "hono";
 import { cache } from "hono/cache";
-import { VISITOR_AGENT_HEADER, type ApiErrorCode } from "share";
+import { SSR_REQUEST_HEADER, type ApiErrorCode } from "share";
 import type { D1Database } from "@cloudflare/workers-types";
 
 import { ApiError } from "../api-error";
@@ -68,10 +68,25 @@ export function subjectIndexDecision(subject: {
 const CRAWLER_AGENT_PATTERN =
   /bot|crawl|spider|slurp|chatgpt-user|cohere-ai|facebookexternalhit|headless|python|scrapy|curl|wget|httpclient|go-http/i;
 
-/** Web SSR forwards the visitor's User-Agent; direct API calls are judged by their own. */
-export function isCrawlerRequest(header: (name: string) => string | undefined) {
-  const agent = header(VISITOR_AGENT_HEADER) ?? header("User-Agent");
+export function isCrawlerAgent(agent: string | undefined) {
   return !agent || CRAWLER_AGENT_PATTERN.test(agent);
+}
+
+/** Header of the in-process request a `POST /visits` report dispatches to an entity route. */
+export const VISIT_HEADER = "X-Bangumi-X-Visit";
+
+/** Like maintenance subrequests, visit subrequests are in-process and never carry CF-Ray. */
+export function isVisitRequest(header: (name: string) => string | undefined) {
+  return header(VISIT_HEADER) === "1" && !header("CF-Ray");
+}
+
+/**
+ * SSR requests cannot add entries: scrapers posing as browsers are indistinguishable there, so a
+ * page view counts only once the browser reports it. Direct API calls (client navigation, Mini)
+ * are judged by their User-Agent.
+ */
+function isAutomatedRequest(header: (name: string) => string | undefined) {
+  return header(SSR_REQUEST_HEADER) !== undefined || isCrawlerAgent(header("User-Agent"));
 }
 
 function isVisitDiscovery(item: DirectoryDiscovery) {
@@ -103,10 +118,13 @@ export function createAnonymousKit(runtime: AnonymousRuntime) {
     context: AnonymousContext,
     priority: UpstreamPriority = "foreground",
   ): Omit<UpstreamLoadOptions, "policy"> {
-    const maintenance = isMaintenanceRequest((name) => context.req.header(name));
+    const header = (name: string) => context.req.header(name);
+    const maintenance = isMaintenanceRequest(header);
+    const visit = isVisitRequest(header);
     return {
-      gated: maintenance || Boolean(context.req.header("CF-Ray")),
-      priority: maintenance ? "maintenance" : priority,
+      gated: maintenance || visit || Boolean(context.req.header("CF-Ray")),
+      // Visit reports never wait for upstream slots; without budget the visit is simply not recorded.
+      priority: maintenance ? "maintenance" : visit ? "background" : priority,
       waitUntil: waitUntil(context),
     };
   }
@@ -167,7 +185,9 @@ export function createAnonymousKit(runtime: AnonymousRuntime) {
       context: Parameters<typeof middleware>[0],
       next: Parameters<typeof middleware>[1],
     ) => {
-      if (isMaintenanceRequest((name) => context.req.header(name))) {
+      const header = (name: string) => context.req.header(name);
+      // Internal subrequests must run the handler, which records discoveries only on a miss.
+      if (isMaintenanceRequest(header) || isVisitRequest(header)) {
         return next();
       }
       return middleware(context, next);
@@ -212,7 +232,7 @@ export function createAnonymousKit(runtime: AnonymousRuntime) {
 
   /**
    * Seeds (daily broadcast, rankings, annual popular) are recorded for every request, while
-   * crawler visits only correct existing entries. Writes run after the response when possible
+   * automated visits only correct existing entries. Writes run after the response when possible
    * and never fail it, so an exhausted D1 write quota cannot break public pages.
    */
   async function recordDiscoveries(
@@ -224,9 +244,9 @@ export function createAnonymousKit(runtime: AnonymousRuntime) {
     if (!directory || items.length === 0) return;
     const header = (name: string) => context.req.header(name);
     const reverify = isMaintenanceRequest(header);
-    const crawler = !reverify && isCrawlerRequest(header);
-    const visits = crawler ? items.filter(isVisitDiscovery) : [];
-    const seeds = crawler ? items.filter((item) => !isVisitDiscovery(item)) : items;
+    const automated = !reverify && !isVisitRequest(header) && isAutomatedRequest(header);
+    const visits = automated ? items.filter(isVisitDiscovery) : [];
+    const seeds = automated ? items.filter((item) => !isVisitDiscovery(item)) : items;
     const task = Promise.all([
       seeds.length > 0 && directory.recordDiscoveries(seeds, verifiedAt, { reverify }),
       visits.length > 0 &&
