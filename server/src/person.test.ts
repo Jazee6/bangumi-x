@@ -77,6 +77,7 @@ describe("person normalization", () => {
     ).toEqual({
       id: 7,
       name: "未命名人物",
+      chineseName: null,
       type: "组合",
       careers: ["声优", "演员", "unknown job"],
       gender: "女",

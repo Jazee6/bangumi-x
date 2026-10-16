@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { getBroadcastDisplay } from "./index";
+import { getBroadcastDisplay, getBroadcastSummary } from "./index";
 
 describe("getBroadcastDisplay", () => {
   test("formats today, tomorrow, and later natural-day countdowns", () => {
@@ -73,6 +73,40 @@ describe("getBroadcastDisplay", () => {
       getBroadcastDisplay(
         { chapters: [{ sequence: 1, date: "2026-09-18" }], completeAfter: null },
         "2026-09-19",
+      ),
+    ).toBeNull();
+  });
+});
+
+describe("getBroadcastSummary", () => {
+  const broadcast = {
+    chapters: [
+      { sequence: 4, date: "2026-10-11" },
+      { sequence: 5, date: "2026-10-18" },
+      { sequence: 6, date: "2026-10-18" },
+    ],
+    completeAfter: "2026-10-18",
+  };
+
+  test("writes the next chapter with an absolute China Standard Time date", () => {
+    // 2026-10-17T17:00Z is already October 18 in China Standard Time.
+    expect(getBroadcastSummary(broadcast, new Date("2026-10-17T17:00:00.000Z"))).toBe(
+      "第 5–6 话 10月18日放送",
+    );
+    expect(getBroadcastSummary(broadcast, new Date("2026-10-12T00:00:00.000Z"))).toBe(
+      "第 5–6 话 10月18日放送",
+    );
+  });
+
+  test("summarizes a confirmed completion and omits missing data", () => {
+    expect(getBroadcastSummary(broadcast, new Date("2026-10-20T00:00:00.000Z"))).toBe(
+      "已完结，共 3 话",
+    );
+    expect(getBroadcastSummary(null)).toBeNull();
+    expect(
+      getBroadcastSummary(
+        { chapters: [{ sequence: 1, date: "2026-01-01" }], completeAfter: null },
+        new Date("2026-10-20T00:00:00.000Z"),
       ),
     ).toBeNull();
   });

@@ -332,6 +332,29 @@ export function getBroadcastDisplay(
   return null;
 }
 
+/**
+ * 搜索摘要与分享卡片用的放送摘要。页面缓存与搜索快照可能陈旧，因此按中国标准时间写绝对日期，
+ * 不写“今天/明天”；资料不足时返回 null。
+ */
+export function getBroadcastSummary(
+  broadcast: SubjectBroadcast | null,
+  now: Date = new Date(),
+): string | null {
+  const display = getBroadcastDisplay(broadcast, getChinaStandardDate(now));
+  if (!display || !broadcast) return null;
+  if (display.kind === "completed") {
+    const total = new Set(broadcast.chapters.map((chapter) => chapter.sequence)).size;
+    return `已完结，共 ${total} 话`;
+  }
+  const sequence = formatSequences(
+    broadcast.chapters
+      .filter((chapter) => chapter.date === display.date)
+      .map((chapter) => chapter.sequence),
+  );
+  const [, month, day] = display.date.split("-").map(Number);
+  return `第 ${sequence} 话 ${month}月${day}日放送`;
+}
+
 export interface ChapterSubject {
   id: number;
   title: string;
@@ -427,6 +450,11 @@ const CHINA_STANDARD_TIME_OFFSET_MS = 8 * 3_600_000;
 
 function toChinaStandardTime(now: Date): Date {
   return new Date(now.getTime() + CHINA_STANDARD_TIME_OFFSET_MS);
+}
+
+/** 中国标准时间的当天日期（YYYY-MM-DD）。 */
+export function getChinaStandardDate(now: Date = new Date()): string {
+  return toChinaStandardTime(now).toISOString().slice(0, 10);
 }
 
 export function getCurrentYear(now: Date = new Date()): number {
@@ -684,6 +712,8 @@ export interface PersonLink {
 export interface PersonDetail {
   id: number;
   name: string;
+  /** Bangumi 资料中的简体中文名；name 为原名。 */
+  chineseName: string | null;
   type: PersonType;
   careers: string[];
   gender: string | null;
@@ -705,6 +735,8 @@ export interface CharacterSummary {
 export interface CharacterDetail {
   id: number;
   name: string;
+  /** Bangumi 资料中的简体中文名；name 为原名。 */
+  chineseName: string | null;
   type: CharacterType;
   gender: string | null;
   birthday: string | null;

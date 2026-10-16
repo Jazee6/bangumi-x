@@ -27,11 +27,13 @@ import { ApiRequestError } from "@/lib/api-error";
 import {
   buildBreadcrumbJsonLd,
   buildCharacterJsonLd,
+  buildEntityDescription,
   buildPageHead,
   buildPersonJsonLd,
   CACHE_CONTROL,
   coverShareImage,
   getEntityBreadcrumbs,
+  getEntityDisplayName,
   NOT_FOUND_HEADERS,
 } from "@/lib/seo";
 
@@ -136,10 +138,8 @@ export function createEntityRouteOptions<K extends EntityKind>(kind: K) {
       const id = params[config.param];
       const path = `/${config.collection}/${id}`;
       return buildPageHead({
-        title: `${detail.name}（${config.label}）`,
-        description:
-          detail.summary?.trim() ||
-          `${detail.name}是 Bangumi 收录的${detail.type}，关联 ${subjects.total} 个实体。`,
+        title: `${getEntityDisplayName(detail)}（${config.label}）`,
+        description: buildEntityDescription(kind, detail, subjects),
         canonicalPath: path,
         image: coverShareImage(detail.imageUrl),
         publication: isIndexableEntity(kind, loaderData)

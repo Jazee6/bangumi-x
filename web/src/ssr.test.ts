@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeAll, describe, expect, mock, setSystemTime, test } from "bun:test";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -41,6 +41,7 @@ beforeAll(async () => {
 afterEach(() => {
   globalThis.fetch = originalFetch;
   mock.restore();
+  setSystemTime();
 });
 
 describe("Web production SSR HTTP handler", () => {
@@ -315,7 +316,9 @@ describe("Web production SSR HTTP handler", () => {
   });
 
   test("renders current-year rankings without crawlable links to future quarters", async () => {
-    const currentYear = new Date().getFullYear();
+    // In winter the rest of the year's quarters are still in the future, whatever day tests run.
+    setSystemTime(new Date("2026-02-15T04:00:00.000Z"));
+    const currentYear = 2026;
     globalThis.fetch = mock(async () =>
       Response.json({
         page: 1,
@@ -463,7 +466,8 @@ describe("Web production SSR HTTP handler", () => {
     expect(response.status).toBe(200);
     const html = await response.text();
 
-    expect(html).toContain("星际牛仔（动画） - Bangumi X");
+    expect(html).toContain("星际牛仔 Cowboy Bebop（动画） - Bangumi X");
+    expect(html).toContain('content="评分 9.2。2071年的太空牛仔们的生活。"');
     expect(html).toContain('rel="canonical" href="https://bgmx.jaze.top/subjects/42"');
     expect(html).not.toContain('aria-label="面包屑"');
     expect(html).toContain('"@type":"BreadcrumbList"');

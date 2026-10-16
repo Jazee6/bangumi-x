@@ -67,6 +67,7 @@ describe("character normalization", () => {
     ).toEqual({
       id: 8,
       name: "未命名角色",
+      chineseName: null,
       type: "组织",
       gender: "男",
       birthday: "12月5日",
@@ -75,6 +76,20 @@ describe("character normalization", () => {
       imageUrl:
         "https://server.example.test/images?url=https%3A%2F%2Flain.bgm.tv%2Fpic%2Fcrt%2Fl%2Fa%2Fb%2F8_crt.jpg&size=large",
     });
+  });
+
+  test("reads the simplified Chinese name from the infobox", () => {
+    const detail = (infobox: unknown) =>
+      normalizeCharacterDetail({ id: 8, name: "フリーレン", type: 1, infobox }, workerOrigin);
+
+    expect(
+      detail([
+        { key: "简体中文名", value: " 芙莉莲 " },
+        { key: "别名", value: [{ k: "罗马字", v: "Frieren" }] },
+      ]).chineseName,
+    ).toBe("芙莉莲");
+    expect(detail([{ key: "简体中文名", value: "フリーレン" }]).chineseName).toBeNull();
+    expect(detail(null).chineseName).toBeNull();
   });
 
   test("sorts and deduplicates both character association directions", () => {

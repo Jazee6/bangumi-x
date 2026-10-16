@@ -3,6 +3,7 @@ import {
   COLLECTION_PAGE_SIZE,
   PUBLICATION,
   SEASON_LABELS,
+  getBroadcastSummary,
   getRobotsDirective,
   type CharacterDetail,
   type CharacterType,
@@ -97,6 +98,52 @@ export function buildPageHead({
     }
   }
   return { meta, links: [{ rel: "canonical", href: canonical }] };
+}
+
+/** 名称与原名不同时并列两者，让搜索中文名或原名都能命中。 */
+export function withOriginalName(name: string, originalName: string | null | undefined) {
+  const original = originalName?.trim();
+  return original && original !== name ? `${name} ${original}` : name;
+}
+
+/** 角色与人物的 name 是原名，有简体中文名时以中文名在前。 */
+export function getEntityDisplayName(entity: { name: string; chineseName: string | null }) {
+  return entity.chineseName ? withOriginalName(entity.chineseName, entity.name) : entity.name;
+}
+
+/** 放送信息与评分前置：它们是本站区别于条目简介原文的内容。 */
+export function buildSubjectDescription(subject: SubjectDetail, now: Date = new Date()) {
+  const facts = [
+    getBroadcastSummary(subject.broadcast, now),
+    subject.score ? `评分 ${subject.score}` : null,
+  ].filter(Boolean);
+  const lead = facts.length > 0 ? `${facts.join("，")}。` : "";
+  return (
+    lead +
+    (subject.summary?.trim() ||
+      `${subject.title}（${subject.type}）${subject.date ? `，首播/发售日期 ${subject.date}` : ""}。`)
+  );
+}
+
+/** 角色写出处，人物写参与作品；只用详情页已加载的条目关联。 */
+export function buildEntityDescription(
+  kind: "character" | "person",
+  entity: { name: string; type: string; summary: string | null },
+  subjects: RelatedSubjectsResponse,
+) {
+  const first = subjects.groups[0]?.items[0];
+  const lead = !first
+    ? ""
+    : kind === "character"
+      ? `出自《${first.title}》。`
+      : subjects.total > 1
+        ? `参与《${first.title}》等 ${subjects.total} 部作品。`
+        : `参与《${first.title}》。`;
+  return (
+    lead +
+    (entity.summary?.trim() ||
+      `${entity.name}是 Bangumi 收录的${entity.type}，关联 ${subjects.total} 个实体。`)
+  );
 }
 
 export function buildWebSiteJsonLd() {
@@ -223,6 +270,9 @@ export function buildSubjectJsonLd(subject: SubjectDetail) {
     sameAs: `https://bgm.tv/subject/${subject.id}`,
     isBasedOn: `https://bgm.tv/subject/${subject.id}`,
   };
+  if (subject.originalTitle && subject.originalTitle !== subject.title) {
+    jsonLd.alternateName = subject.originalTitle;
+  }
   if (subject.imageUrl) {
     jsonLd.image = subject.imageUrl;
   }
@@ -321,6 +371,7 @@ export function buildCharacterJsonLd(
     sameAs: `https://bgm.tv/character/${character.id}`,
     isBasedOn: `https://bgm.tv/character/${character.id}`,
   };
+  if (character.chineseName) jsonLd.alternateName = character.chineseName;
   if (character.type === "角色") jsonLd.disambiguatingDescription = "虚构角色";
   if (character.imageUrl) jsonLd.image = character.imageUrl;
   if (character.summary) jsonLd.description = character.summary;
@@ -348,6 +399,7 @@ export function buildPersonJsonLd(person: PersonDetail, subjects: RelatedSubject
     sameAs: `https://bgm.tv/person/${person.id}`,
     isBasedOn: `https://bgm.tv/person/${person.id}`,
   };
+  if (person.chineseName) jsonLd.alternateName = person.chineseName;
   if (person.imageUrl) jsonLd.image = person.imageUrl;
   if (person.summary) jsonLd.description = person.summary;
   if (person.type === "个人" && person.gender) jsonLd.gender = person.gender;

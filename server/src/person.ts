@@ -17,6 +17,7 @@ import {
   getBloodType,
   getCareers,
   getCharacterType,
+  getChineseName,
   getGender,
   getPersonType,
   getRelation,
@@ -82,9 +83,11 @@ export function normalizePersonDetail(value: unknown, workerOrigin: string): Per
     throw new TypeError("Person response must have a supported type");
   }
 
+  const name = getOptionalString(value.name) ?? "未命名人物";
   return {
     id: value.id,
-    name: getOptionalString(value.name) ?? "未命名人物",
+    name,
+    chineseName: getChineseName(value.infobox, name),
     type,
     careers: getCareers(value.career),
     gender: getGender(value.gender),

@@ -136,3 +136,13 @@ export function getSubjectTitle(value: unknown): string {
   }
   return getOptionalString(value.name_cn) ?? getOptionalString(value.name) ?? "未命名条目";
 }
+
+/** Simplified Chinese name from a character or person infobox; `name` itself is the original. */
+export function getChineseName(infobox: unknown, name: string): string | null {
+  if (!Array.isArray(infobox)) {
+    return null;
+  }
+  const entry = infobox.find((item) => isRecord(item) && item.key === "简体中文名");
+  const chineseName = isRecord(entry) ? getOptionalString(entry.value) : null;
+  return chineseName && chineseName !== name ? chineseName : null;
+}
