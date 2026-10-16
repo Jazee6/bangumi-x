@@ -22,6 +22,7 @@ import {
 } from "./detail-pages";
 import { publicPageCache } from "./memory-cache";
 import { detailShare } from "./public-sharing";
+import { prepareShareCard, withShareCard } from "./share-card";
 import { getErrorMessage, requestJson } from "./request";
 
 // 角色与人物的详情页只在名词和互相关联的方向上不同，与 web 的 ENTITY_KINDS 对应。
@@ -93,6 +94,7 @@ export function registerEntityDetailPage(kind: EntityDetailKind): void {
       subjectsError: "",
       subjectsLoaded: false,
       subjectsLoading: false,
+      shareLines: [] as string[],
       summary: "",
       tab: "subjects",
       tabIndex: 0,
@@ -155,7 +157,12 @@ export function registerEntityDetailPage(kind: EntityDetailKind): void {
     },
 
     onShareAppMessage() {
-      return detailShare(kind, this.data.entityId, this.data.title, this.data.imageUrl).friend;
+      const { entityId, imageUrl, shareLines, title } = this.data;
+      return withShareCard(detailShare(kind, entityId, title, imageUrl).friend, {
+        title,
+        imageUrl,
+        lines: shareLines,
+      });
     },
 
     onShareTimeline() {
@@ -177,12 +184,20 @@ export function registerEntityDetailPage(kind: EntityDetailKind): void {
             imageUrl: detail.imageUrl ?? "",
             loaded: true,
             loading: false,
+            shareLines: [detail.chineseName, detail.type].filter((line): line is string =>
+              Boolean(line),
+            ),
             summary: detail.summary ?? "",
             title: detail.name,
           },
           () => observeStickyTabs(this),
         );
         wx.setNavigationBarTitle({ title: detail.name });
+        prepareShareCard({
+          title: this.data.title,
+          imageUrl: this.data.imageUrl,
+          lines: this.data.shareLines,
+        });
         void this.loadTab(this.data.tabIndex);
       } catch (error) {
         if (entityId !== this.data.entityId) return;

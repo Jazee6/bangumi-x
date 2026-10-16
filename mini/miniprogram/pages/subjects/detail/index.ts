@@ -1,4 +1,5 @@
 import {
+  getBroadcastSummary,
   supportsChapterProgress,
   supportsProgress,
   type ChapterPage,
@@ -27,6 +28,7 @@ import {
 import { getMiniSession } from "../../../lib/mini-auth";
 import { publicPageCache } from "../../../lib/memory-cache";
 import { detailShare } from "../../../lib/public-sharing";
+import { prepareShareCard, withShareCard } from "../../../lib/share-card";
 import {
   clearProgress,
   createCollectionList,
@@ -125,6 +127,7 @@ Page({
     chapterProgressSupported: false,
     progressSupported: false,
     submitting: false,
+    shareLines: [] as string[],
     summary: "",
     tab: "chapters" as SubjectTab,
     tabIndex: 0,
@@ -219,7 +222,12 @@ Page({
   },
 
   onShareAppMessage() {
-    return detailShare("subject", this.data.subjectId, this.data.title, this.data.imageUrl).friend;
+    const { imageUrl, shareLines, subjectId, title } = this.data;
+    return withShareCard(detailShare("subject", subjectId, title, imageUrl).friend, {
+      title,
+      imageUrl,
+      lines: shareLines,
+    });
   },
 
   onShareTimeline() {
@@ -564,6 +572,10 @@ Page({
           loaded: true,
           loading: false,
           originalTitle: subject.originalTitle ?? "",
+          shareLines: [
+            `${subject.type}${subject.score === null ? "" : ` · 评分 ${subject.score.toFixed(1)}`}`,
+            getBroadcastSummary(subject.broadcast),
+          ].filter((line): line is string => Boolean(line)),
           chapterProgressSupported: supportsChapterProgress(subject.type),
           progressSupported: supportsProgress(subject.type),
           summary: subject.summary ?? "",
@@ -574,6 +586,11 @@ Page({
         () => observeStickyTabs(this),
       );
       wx.setNavigationBarTitle({ title: subject.title });
+      prepareShareCard({
+        title: this.data.title,
+        imageUrl: this.data.imageUrl,
+        lines: this.data.shareLines,
+      });
       if (!this.data.readOnly && getMiniSession()) void this.loadPersonalState();
       void this.loadTab(this.data.tab);
     } catch (error) {

@@ -8,6 +8,7 @@ import {
 } from "../../../lib/detail-pages";
 import { publicPageCache } from "../../../lib/memory-cache";
 import { detailShare } from "../../../lib/public-sharing";
+import { prepareShareCard, withShareCard } from "../../../lib/share-card";
 import { getErrorMessage, requestJson } from "../../../lib/request";
 
 function getBadges(chapter: ChapterDetail): DetailBadge[] {
@@ -64,7 +65,12 @@ Page({
   },
 
   onShareAppMessage() {
-    return detailShare("chapter", this.data.chapterId, this.data.title, this.data.imageUrl).friend;
+    const { chapterId, imageUrl, subjectTitle, title } = this.data;
+    return withShareCard(detailShare("chapter", chapterId, title, imageUrl).friend, {
+      title,
+      imageUrl,
+      lines: [`《${subjectTitle}》`],
+    });
   },
 
   onShareTimeline() {
@@ -98,6 +104,11 @@ Page({
         title: chapter.title,
       });
       wx.setNavigationBarTitle({ title: chapter.title });
+      prepareShareCard({
+        title: chapter.title,
+        imageUrl: chapter.subject.imageUrl ?? "",
+        lines: [`《${chapter.subject.title}》`],
+      });
     } catch (error) {
       if (chapterId !== this.data.chapterId) return;
       this.setData({ errorMessage: getErrorMessage(error), loaded: false, loading: false });
