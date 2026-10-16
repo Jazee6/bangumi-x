@@ -14,7 +14,7 @@
     "SERVER_URL": "http://localhost:8787",
     "WECHAT_MINI_APP_ID": "wx02ce91659b1acef4",
     "EASY_AUTH_CLIENT_ID": "wbhIWqXuZuwLxsdCwHcwZffNKxwfcBYl",
-    "BGM_API_URL": "https://bgmapi.anibt.net"
+    "BGM_API_URL": "https://bgmapi.anibt.net",
   },
   "images": {
     "binding": "IMAGES",
@@ -54,7 +54,7 @@
         {
           "binding": "DB",
           "database_name": "bangumi-x",
-          "migrations_dir": "drizzle"
+          "migrations_dir": "drizzle",
         },
       ],
     },
