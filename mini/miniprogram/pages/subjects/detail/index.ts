@@ -38,6 +38,7 @@ import {
   saveCollection,
   saveProgress,
 } from "../../../lib/personal-records";
+import { loadContentPolicy } from "../../../lib/content-policy";
 import { getErrorMessage, requestJson } from "../../../lib/request";
 import { pagePatch } from "../../../lib/public-pages";
 import { checkCollectionListName } from "../../../lib/validation";
@@ -556,11 +557,14 @@ Page({
     if (!subjectId) return;
     this.setData({ errorMessage: "", loading: true });
     try {
-      const subject = await publicPageCache.load(`subject:${subjectId}`, DETAIL_STALE_TIME, () =>
-        requestJson<SubjectDetail>(`/subjects/${subjectId}`),
-      );
+      const [subject, policy] = await Promise.all([
+        publicPageCache.load(`subject:${subjectId}`, DETAIL_STALE_TIME, () =>
+          requestJson<SubjectDetail>(`/subjects/${subjectId}`),
+        ),
+        loadContentPolicy(),
+      ]);
       if (subjectId !== this.data.subjectId) return;
-      if (subject.nsfw) {
+      if (policy.isBlockedSubject(subject)) {
         this.setData({ blocked: true, loaded: true, loading: false, title: "内容不可访问" });
         return;
       }

@@ -23,6 +23,7 @@ import {
 import { publicPageCache } from "./memory-cache";
 import { detailShare } from "./public-sharing";
 import { prepareShareCard, withShareCard } from "./share-card";
+import { loadContentPolicy } from "./content-policy";
 import { getErrorMessage, requestJson } from "./request";
 
 // 角色与人物的详情页只在名词和互相关联的方向上不同，与 web 的 ENTITY_KINDS 对应。
@@ -219,14 +220,15 @@ export function registerEntityDetailPage(kind: EntityDetailKind): void {
       const entityId = this.data.entityId;
       this.setData({ subjectsError: "", subjectsLoading: true });
       try {
-        const result = await publicPageCache.load(
-          cacheKey(entityId, ":subjects"),
-          DETAIL_STALE_TIME,
-          () => requestJson<RelatedSubjectsResponse>(path(entityId, "/subjects")),
-        );
+        const [result, policy] = await Promise.all([
+          publicPageCache.load(cacheKey(entityId, ":subjects"), DETAIL_STALE_TIME, () =>
+            requestJson<RelatedSubjectsResponse>(path(entityId, "/subjects")),
+          ),
+          loadContentPolicy(),
+        ]);
         if (entityId !== this.data.entityId) return;
         this.setData({
-          subjects: mapSubjectRelations(result.groups),
+          subjects: mapSubjectRelations(policy.withoutBlockedGroups(result.groups)),
           subjectsLoaded: true,
           subjectsLoading: false,
         });

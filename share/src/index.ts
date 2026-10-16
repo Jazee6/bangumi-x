@@ -514,6 +514,11 @@ export interface MiniIdentitySession {
   user: MiniIdentityUser;
 }
 
+/** 上游未标记 NSFW、但小程序不展示的条目，由 Server 下发以便随时调整而不必发版。 */
+export interface MiniContentPolicy {
+  blockedSubjectIds: number[];
+}
+
 export interface MiniIdentityStatus {
   available: boolean;
   user: MiniIdentityUser | null;

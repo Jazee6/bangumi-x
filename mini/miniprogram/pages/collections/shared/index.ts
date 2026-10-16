@@ -1,5 +1,6 @@
 import { CANONICAL_WEB_ORIGIN, type PublicCollectionListItem } from "share";
 
+import { loadContentPolicy } from "../../../lib/content-policy";
 import {} from "../../../lib/detail-pages";
 import { loadPublicCollectionList } from "../../../lib/personal-records";
 import { collectionShare } from "../../../lib/public-sharing";
@@ -136,9 +137,17 @@ Page({
       loadingMore: append,
     });
     try {
-      const result = await loadPublicCollectionList(this.data.shareId, page);
+      const [result, policy] = await Promise.all([
+        loadPublicCollectionList(this.data.shareId, page),
+        loadContentPolicy(),
+      ]);
       if (version !== this.requestVersion) return;
-      const { patch } = pagePatch("items", this.data.items, result.data.map(toCard), append);
+      const { patch } = pagePatch(
+        "items",
+        this.data.items,
+        policy.withoutBlockedSubjects(result.data).map(toCard),
+        append,
+      );
       this.setData(
         {
           ...patch,

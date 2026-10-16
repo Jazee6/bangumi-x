@@ -23,6 +23,7 @@ import {
   SUBJECT_TYPE_OPTIONS,
   type DiscoverTab,
 } from "../../lib/public-pages";
+import { loadContentPolicy } from "../../lib/content-policy";
 import { getErrorMessage, requestJson } from "../../lib/request";
 import { checkSearchKeyword } from "../../lib/validation";
 import {
@@ -210,17 +211,18 @@ Page({
 
     try {
       const ttl = keyword ? SEARCH_STALE_TIME : POPULAR_STALE_TIME;
-      const result = await publicPageCache.load(
-        getDiscoveryCacheKey(tab, subjectType, keyword, page),
-        ttl,
-        () => requestJson<DiscoveryResultPage>(descriptor.path, descriptor.query),
-      );
+      const [result, policy] = await Promise.all([
+        publicPageCache.load(getDiscoveryCacheKey(tab, subjectType, keyword, page), ttl, () =>
+          requestJson<DiscoveryResultPage>(descriptor.path, descriptor.query),
+        ),
+        loadContentPolicy(),
+      ]);
       if (version !== requestVersion) return;
 
       const hasNext = result.hasNext && page < MAX_DISCOVERY_PAGE;
       const incoming =
         tab === "subjects"
-          ? (result.data as SubjectSummary[]).map(toPosterViewModel)
+          ? policy.withoutBlockedSubjects(result.data as SubjectSummary[]).map(toPosterViewModel)
           : tab === "characters"
             ? (result.data as DiscoveryCharacterSummary[]).map(toCharacterViewModel)
             : (result.data as DiscoveryPersonSummary[]).map(toPersonViewModel);

@@ -6,6 +6,7 @@ import { registerDirectoryRoutes } from "./routes/directory";
 import { registerDiscoveryRoutes } from "./routes/discovery";
 import { registerEntityRoutes } from "./routes/entities";
 import { registerImageRoutes } from "./routes/images";
+import { registerMiniContentPolicyRoutes } from "./routes/mini-content-policy";
 import { registerScheduleRoutes } from "./routes/schedule";
 
 export type { AnonymousBindings, AnonymousRuntime } from "./routes/kit";
@@ -41,5 +42,6 @@ export function createAnonymousRoutes(
   registerEntityRoutes(app, kit);
   registerDirectoryRoutes(app, kit);
   registerImageRoutes(app, kit);
+  registerMiniContentPolicyRoutes(app);
   return app;
 }

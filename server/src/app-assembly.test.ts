@@ -35,6 +35,7 @@ test("assembles every route responsibility without omissions or shadowing", asyn
     ["/persons/1", 502],
     ["/characters/1", 502],
     ["/images?url=invalid", 400],
+    ["/mini/content-policy", 200],
     ["/auth/status", 200],
     ["/me/collections", 401],
   ] as const;
@@ -43,4 +44,10 @@ test("assembles every route responsibility without omissions or shadowing", asyn
     const response = await app.request(path, {}, bindings);
     expect(response.status, path).toBe(status);
   }
+});
+
+test("serves the mini content policy with a short public cache", async () => {
+  const response = await app.request("/mini/content-policy", {}, bindings);
+  expect(response.headers.get("Cache-Control")).toBe("public, max-age=300");
+  expect(await response.json()).toEqual({ blockedSubjectIds: [630160] });
 });

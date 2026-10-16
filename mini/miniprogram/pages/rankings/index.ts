@@ -20,6 +20,7 @@ import {
   MAX_RANKINGS_PAGE,
   RANKINGS_STALE_TIME,
 } from "../../lib/public-pages";
+import { loadContentPolicy } from "../../lib/content-policy";
 import { getErrorMessage, requestJson } from "../../lib/request";
 import { toPosterViewModel, type PosterViewModel } from "../../lib/view-models";
 
@@ -134,17 +135,18 @@ Page({
     });
 
     try {
-      const result = await publicPageCache.load(
-        getRankingsCacheKey(year, season, page),
-        RANKINGS_STALE_TIME,
-        () => requestJson<RankingsPage>(descriptor.path, descriptor.query),
-      );
+      const [result, policy] = await Promise.all([
+        publicPageCache.load(getRankingsCacheKey(year, season, page), RANKINGS_STALE_TIME, () =>
+          requestJson<RankingsPage>(descriptor.path, descriptor.query),
+        ),
+        loadContentPolicy(),
+      ]);
       if (version !== requestVersion) return;
 
       const { length, patch } = pagePatch(
         "posters",
         this.data.posters,
-        result.data.map(toPosterViewModel),
+        policy.withoutBlockedSubjects(result.data).map(toPosterViewModel),
         append,
       );
       const hasNext = result.hasNext && page < MAX_RANKINGS_PAGE;

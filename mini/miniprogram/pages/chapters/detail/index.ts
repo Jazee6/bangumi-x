@@ -9,6 +9,7 @@ import {
 import { publicPageCache } from "../../../lib/memory-cache";
 import { detailShare } from "../../../lib/public-sharing";
 import { prepareShareCard, withShareCard } from "../../../lib/share-card";
+import { loadContentPolicy } from "../../../lib/content-policy";
 import { getErrorMessage, requestJson } from "../../../lib/request";
 
 function getBadges(chapter: ChapterDetail): DetailBadge[] {
@@ -83,11 +84,14 @@ Page({
     if (!chapterId) return;
     this.setData({ errorMessage: "", loading: true });
     try {
-      const chapter = await publicPageCache.load(`chapter:${chapterId}`, DETAIL_STALE_TIME, () =>
-        requestJson<ChapterDetail>(`/chapters/${chapterId}`),
-      );
+      const [chapter, policy] = await Promise.all([
+        publicPageCache.load(`chapter:${chapterId}`, DETAIL_STALE_TIME, () =>
+          requestJson<ChapterDetail>(`/chapters/${chapterId}`),
+        ),
+        loadContentPolicy(),
+      ]);
       if (chapterId !== this.data.chapterId) return;
-      if (chapter.subject.nsfw) {
+      if (policy.isBlockedSubject(chapter.subject)) {
         this.setData({ blocked: true, loaded: true, loading: false, title: "内容不可访问" });
         return;
       }

@@ -4,6 +4,7 @@ import {} from "../../lib/detail-pages";
 import { publicPageCache } from "../../lib/memory-cache";
 import { scheduleShare } from "../../lib/public-sharing";
 import { getLocalIsoWeekday, SCHEDULE_STALE_TIME, WEEKDAY_OPTIONS } from "../../lib/public-pages";
+import { loadContentPolicy } from "../../lib/content-policy";
 import { getErrorMessage, requestJson } from "../../lib/request";
 import { toPosterViewModel, type PosterViewModel } from "../../lib/view-models";
 
@@ -74,11 +75,14 @@ Page({
     });
 
     try {
-      const schedule = await publicPageCache.load(SCHEDULE_CACHE_KEY, SCHEDULE_STALE_TIME, () =>
-        requestJson<ScheduleResponse>("/schedule"),
-      );
+      const [schedule, policy] = await Promise.all([
+        publicPageCache.load(SCHEDULE_CACHE_KEY, SCHEDULE_STALE_TIME, () =>
+          requestJson<ScheduleResponse>("/schedule"),
+        ),
+        loadContentPolicy(),
+      ]);
       if (version !== requestVersion) return;
-      this.schedule = schedule;
+      this.schedule = { ...schedule, days: policy.withoutBlockedGroups(schedule.days) };
       this.setData({
         items: selectItems(schedule, this.data.selectedWeekday),
         loaded: true,
