@@ -26,6 +26,8 @@ import {
   normalizePersonRelatedSubjects,
   normalizeSubjectPersons,
 } from "../person";
+import { isMaintenanceRequest } from "../maintenance";
+import { selectKeyCharacterDiscoveries, selectKeyPersonDiscoveries } from "../relation-seeding";
 import { normalizeSubject } from "../subject";
 import { normalizeSubjectSnapshot } from "../subject-snapshot";
 import { parseNonNegativeInteger, parsePositiveInteger } from "../validation";
@@ -123,6 +125,10 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
         { code: "SUBJECT_NOT_FOUND", message: "条目不存在。" },
       );
       const fetchedAt = runtime.now();
+      // Only maintenance seeds key persons, so crawling these lists never writes D1 (ADR 0015).
+      if (isMaintenanceRequest((name) => context.req.header(name))) {
+        await recordDiscoveries(context, selectKeyPersonDiscoveries(persons), fetchedAt);
+      }
       return context.json({ ...persons, fetchedAt: fetchedAt.toISOString() });
     },
   );
@@ -145,6 +151,9 @@ export function registerEntityRoutes(app: AnonymousApp, kit: AnonymousKit) {
         { code: "SUBJECT_NOT_FOUND", message: "条目不存在。" },
       );
       const fetchedAt = runtime.now();
+      if (isMaintenanceRequest((name) => context.req.header(name))) {
+        await recordDiscoveries(context, selectKeyCharacterDiscoveries(characters), fetchedAt);
+      }
       return context.json({ ...characters, fetchedAt: fetchedAt.toISOString() });
     },
   );

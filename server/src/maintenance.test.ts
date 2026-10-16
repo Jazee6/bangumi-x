@@ -26,7 +26,7 @@ function installMemoryCache() {
 }
 
 describe("request-driven directory maintenance", () => {
-  test("uses an hourly lease and never exceeds the two-call budget", async () => {
+  test("uses an hourly lease and never exceeds the call budget", async () => {
     const directory = createMemoryDirectoryRepository();
     const now = new Date("2026-09-13T12:00:00.000Z");
     await directory.recordDiscoveries(
@@ -61,6 +61,7 @@ describe("request-driven directory maintenance", () => {
       requests: 0,
       refreshedEntities: 0,
       historicalQuarters: 0,
+      seededSubjects: 0,
     });
     expect(requested).toEqual([]);
   });
@@ -87,13 +88,24 @@ describe("request-driven directory maintenance", () => {
       random: () => 1,
     });
 
-    const response = await app.request(
+    const bindings = {
+      BGM_API_URL: "https://api.example.test",
+      WEB_ORIGIN: "https://web.example.test",
+    };
+    // Each quarter fetches three months, so the second one runs out of budget.
+    const first = await app.request(
       "/rankings?year=2025&season=winter&page=1&pageSize=24",
       { headers: { "X-Bangumi-Maintenance": "1" } },
-      { BGM_API_URL: "https://api.example.test", WEB_ORIGIN: "https://web.example.test" },
+      bindings,
+    );
+    const second = await app.request(
+      "/rankings?year=2024&season=autumn&page=1&pageSize=24",
+      { headers: { "X-Bangumi-Maintenance": "1" } },
+      bindings,
     );
 
-    expect(response.status).toBe(429);
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(429);
     expect(fetch).toHaveBeenCalledTimes(REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS);
   });
 
@@ -187,8 +199,9 @@ describe("request-driven directory maintenance", () => {
       cursors.push((await directory.getSyncState("rankings:backfill-cursor"))?.value ?? "");
     }
 
-    expect(cursors[0]).toBe("2024/spring");
-    expect(cursors[1]).toBe("2024/winter");
+    // A cold quarter needs three of the four hourly calls, so it completes within one run.
+    expect(cursors[0]).toBe("2024/winter");
+    expect(cursors[1]).toBe("2023/autumn");
   });
 
   test("marks a stale entity unavailable after a confirmed 404", async () => {
@@ -220,5 +233,166 @@ describe("request-driven directory maintenance", () => {
       offset: 0,
     });
     expect(unavailable.map((entry) => entry.externalId)).toContain("9");
+  });
+
+  test("seeds daily broadcast subjects first and picks up later ones", async () => {
+    const directory = createMemoryDirectoryRepository();
+    let now = new Date("2026-10-15T00:00:00.000Z");
+    const seed = (externalId: string, discoverySource: "daily_broadcast" | "rankings", at: Date) =>
+      directory.recordDiscoveries(
+        [
+          {
+            resourceType: "subject",
+            externalId,
+            discoverySource,
+            indexStatus: "index",
+            indexReason: "subject_verified",
+          },
+        ],
+        at,
+      );
+    await seed("1", "rankings", new Date(now.getTime() - 3000));
+    await seed("2", "daily_broadcast", new Date(now.getTime() - 2000));
+    await seed("3", "daily_broadcast", new Date(now.getTime() - 1000));
+
+    const seeded: string[] = [];
+    const request = vi.fn(async (path: string) => {
+      const match = /^\/subjects\/(\d+)\/characters$/.exec(path);
+      if (match) seeded.push(match[1]!);
+      return Response.json({ ok: true });
+    });
+    const runHour = async () => {
+      now = new Date(now.getTime() + 61 * 60 * 1000);
+      return runRequestMaintenance({ directory, now, request });
+    };
+
+    const first = await runHour();
+    expect(first.requests).toBeLessThanOrEqual(REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS);
+    // Daily broadcast goes ahead of the historical backfill.
+    expect(request.mock.calls.map(([path]) => path).slice(0, 3)).toEqual([
+      "/subjects/2/characters",
+      "/subjects/2/persons",
+      expect.stringMatching(/^\/rankings\?/),
+    ]);
+    await seed("4", "daily_broadcast", now);
+    await runHour();
+    await runHour();
+    await runHour();
+
+    expect(seeded).toEqual(["2", "3", "4", "1"]);
+  });
+
+  test("keeps the seed cursor when a subject fails to load", async () => {
+    const directory = createMemoryDirectoryRepository();
+    const now = new Date("2026-10-15T00:00:00.000Z");
+    await directory.recordDiscoveries(
+      [
+        {
+          resourceType: "subject",
+          externalId: "2",
+          discoverySource: "daily_broadcast",
+          indexStatus: "index",
+          indexReason: "subject_verified",
+        },
+      ],
+      now,
+    );
+    const request = vi.fn(async (path: string) =>
+      path.endsWith("/persons") ? new Response(null, { status: 502 }) : Response.json({ ok: true }),
+    );
+
+    const result = await runRequestMaintenance({ directory, now, request });
+
+    expect(result.seededSubjects).toBe(0);
+    expect(await directory.getSyncState("relations:seed-cursor:daily_broadcast")).toBeNull();
+  });
+
+  test("verifies pending seed subjects instead of skipping them", async () => {
+    const directory = createMemoryDirectoryRepository();
+    let now = new Date("2026-10-15T00:00:00.000Z");
+    const batch = new Date(now.getTime() - 1000);
+    await directory.recordDiscoveries(
+      ["1", "2", "3"].map((externalId) => ({
+        resourceType: "subject" as const,
+        externalId,
+        discoverySource: "daily_broadcast" as const,
+        indexStatus: "pending" as const,
+        indexReason: "schedule_unverified",
+      })),
+      batch,
+    );
+    // A visit verified "2" before maintenance reached the batch.
+    await directory.recordDiscoveries(
+      [
+        {
+          resourceType: "subject",
+          externalId: "2",
+          discoverySource: "daily_broadcast",
+          indexStatus: "index",
+          indexReason: "subject_verified",
+        },
+      ],
+      batch,
+    );
+
+    const seeded: string[] = [];
+    const request = vi.fn(async (path: string) => {
+      const match = /^\/subjects\/(\d+)\/characters$/.exec(path);
+      if (match) seeded.push(match[1]!);
+      if (path === "/subjects/3") return Response.json({ title: "R18", nsfw: true });
+      if (/^\/subjects\/\d+$/.test(path)) return Response.json({ title: "条目", nsfw: false });
+      return Response.json({ ok: true });
+    });
+    for (let run = 0; run < 3; run += 1) {
+      now = new Date(now.getTime() + 61 * 60 * 1000);
+      await runRequestMaintenance({ directory, now, request });
+    }
+
+    expect(seeded).toEqual(["1", "2"]);
+    expect(request).toHaveBeenCalledWith("/subjects/1");
+    expect(request).not.toHaveBeenCalledWith("/subjects/2");
+    expect(request).not.toHaveBeenCalledWith("/subjects/3/characters");
+  });
+
+  test("seeds other sources with the budget left after daily broadcast", async () => {
+    const directory = createMemoryDirectoryRepository();
+    const now = new Date("2026-10-15T00:00:00.000Z");
+    await directory.recordDiscoveries(
+      [
+        { externalId: "1", discoverySource: "daily_broadcast" as const },
+        { externalId: "2", discoverySource: "annual_popular" as const },
+      ].map((item) => ({
+        ...item,
+        resourceType: "subject" as const,
+        indexStatus: "index" as const,
+        indexReason: "subject_verified",
+      })),
+      now,
+    );
+    // The backfill quarter is already fresh, so it spends nothing.
+    await directory.setSyncState("rankings:backfill-cursor", "2026/winter", now);
+    await directory.recordDiscoveries(
+      [
+        {
+          resourceType: "ranking",
+          externalId: "2026/winter",
+          discoverySource: "rankings",
+          indexStatus: "index",
+          indexReason: "ranking_verified",
+        },
+      ],
+      now,
+    );
+    const request = vi.fn(async (_path: string) => Response.json({ ok: true }));
+
+    const result = await runRequestMaintenance({ directory, now, request });
+
+    expect(result.seededSubjects).toBe(2);
+    expect(request.mock.calls.map(([path]) => path)).toEqual([
+      "/subjects/1/characters",
+      "/subjects/1/persons",
+      "/subjects/2/characters",
+      "/subjects/2/persons",
+    ]);
   });
 });

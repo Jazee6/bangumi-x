@@ -270,4 +270,51 @@ describe("D1 public directory writes", () => {
       keys(await d1.listStaleEntries({ ...query, resourceTypes: ["subject"], limit: 2 })),
     ).toEqual(["subject:st-6", "subject:st-1"]);
   });
+
+  test("lists seed subjects after a cursor in the same order as the memory repository", async () => {
+    const d1 = createD1DirectoryRepository(env.DB);
+    const memory = createMemoryDirectoryRepository();
+    const first = new Date("2026-05-01T00:00:00.000Z");
+    const second = new Date("2026-05-02T00:00:00.000Z");
+    const discoveries = [
+      { at: second, externalId: "sd-1", discoverySource: "daily_broadcast", indexStatus: "index" },
+      { at: first, externalId: "sd-3", discoverySource: "daily_broadcast", indexStatus: "index" },
+      { at: first, externalId: "sd-2", discoverySource: "daily_broadcast", indexStatus: "index" },
+      { at: first, externalId: "sd-4", discoverySource: "rankings", indexStatus: "index" },
+      { at: first, externalId: "sd-5", discoverySource: "daily_broadcast", indexStatus: "pending" },
+    ] as const;
+    for (const repository of [d1, memory]) {
+      for (const { at, ...item } of discoveries) {
+        await repository.recordDiscoveries(
+          [{ ...item, resourceType: "subject", indexReason: "seed_order" }],
+          at,
+        );
+      }
+    }
+
+    const ids = (entries: Awaited<ReturnType<typeof d1.listSeedSubjects>>) =>
+      entries
+        .filter((entry) => entry.indexReason === "seed_order")
+        .map((entry) => entry.externalId);
+    for (const repository of [d1, memory]) {
+      expect(
+        ids(
+          await repository.listSeedSubjects({
+            discoverySource: "daily_broadcast",
+            after: null,
+            limit: 10,
+          }),
+        ),
+      ).toEqual(["sd-2", "sd-3", "sd-5", "sd-1"]);
+      expect(
+        ids(
+          await repository.listSeedSubjects({
+            discoverySource: "daily_broadcast",
+            after: { firstDiscoveredAt: first, externalId: "sd-2" },
+            limit: 1,
+          }),
+        ),
+      ).toEqual(["sd-3"]);
+    }
+  });
 });

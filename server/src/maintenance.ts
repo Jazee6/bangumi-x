@@ -1,13 +1,14 @@
 import {
+  isIndexableSubject,
   RANKINGS_MIN_YEAR,
   RANKINGS_PAGE_SIZE,
   SEASON_VALUES,
   getCurrentSeason,
   getCurrentYear,
 } from "share";
-import type { DirectoryResourceType, Season } from "share";
+import type { DirectoryDiscoverySource, DirectoryResourceType, Season } from "share";
 
-import type { DirectoryEntry, DirectoryRepository } from "./directory";
+import type { DirectoryEntry, DirectoryRepository, SeedSubjectCursor } from "./directory";
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -17,7 +18,14 @@ const LEASE_KEY = "request-maintenance:lease";
 
 export const REQUEST_MAINTENANCE_SAMPLE_RATE = 0.01;
 export const MAINTENANCE_HEADER = "X-Bangumi-Maintenance";
-export const REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS = 2;
+export const REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS = 4;
+// Each seeded subject costs two requests and writes about 25 rows, which bounds daily D1 writes.
+const MAX_SEEDED_SUBJECTS_PER_RUN = 2;
+const SEED_SOURCES = [
+  "daily_broadcast",
+  "annual_popular",
+  "rankings",
+] as const satisfies readonly DirectoryDiscoverySource[];
 
 const ENTITY_RESOURCE_TYPES = [
   "subject",
@@ -37,6 +45,7 @@ export interface RequestMaintenanceResult {
   requests: number;
   refreshedEntities: number;
   historicalQuarters: number;
+  seededSubjects: number;
 }
 
 /** Maintenance subrequests are dispatched in-process, so they never carry Cloudflare's CF-Ray. */
@@ -81,6 +90,23 @@ function entityPath(entry: DirectoryEntry) {
   }
 }
 
+function seedCursorKey(source: DirectoryDiscoverySource) {
+  return `relations:seed-cursor:${source}`;
+}
+
+function formatSeedCursor(cursor: SeedSubjectCursor) {
+  return `${cursor.firstDiscoveredAt.getTime()}/${cursor.externalId}`;
+}
+
+function parseSeedCursor(value: string | undefined): SeedSubjectCursor | null {
+  if (!value) return null;
+  const [time, externalId] = value.split("/");
+  const firstDiscoveredAt = new Date(Number(time));
+  return externalId && Number.isFinite(firstDiscoveredAt.getTime())
+    ? { firstDiscoveredAt, externalId }
+    : null;
+}
+
 async function findRanking(
   directory: DirectoryRepository,
   externalId: string,
@@ -111,7 +137,13 @@ export async function runRequestMaintenance({
     new Date(now.getTime() - HOUR_MS),
   );
   if (!acquired) {
-    return { acquired: false, requests: 0, refreshedEntities: 0, historicalQuarters: 0 };
+    return {
+      acquired: false,
+      requests: 0,
+      refreshedEntities: 0,
+      historicalQuarters: 0,
+      seededSubjects: 0,
+    };
   }
   try {
     await purgeExpiredRecords?.();
@@ -135,7 +167,72 @@ export async function runRequestMaintenance({
     }
   }
 
-  // Backfill runs first because a quarter needs all of its months; entities use what remains.
+  // Seeding keeps one cursor per source in first-discovery order, so subjects joining later (a new
+  // season's daily broadcast) always sort after it. A pending subject is verified first, since its
+  // batch shares one discovery time and the cursor must not pass it unverified. A failed subject
+  // stops seeding for this run and is retried next hour; one gone upstream or not indexable is
+  // skipped. See ADR 0015.
+  let seededSubjects = 0;
+  let seedingStopped = false;
+  const drainedSources = new Set<DirectoryDiscoverySource>();
+
+  // Returns whether the subject is settled, so the cursor may move past it.
+  async function seedSubject(subject: DirectoryEntry): Promise<boolean> {
+    const id = subject.externalId;
+    if (subject.indexStatus === "pending") {
+      const response = await run(`/subjects/${id}`);
+      if (response.status === 404) return true;
+      if (!response.ok) return false;
+      // Read the decision from the response: the directory write it triggers is deferred.
+      const detail = (await response.json().catch(() => null)) as {
+        title?: string;
+        nsfw?: boolean;
+      } | null;
+      if (!detail || typeof detail.nsfw !== "boolean") return false;
+      if (!isIndexableSubject({ nsfw: detail.nsfw, title: detail.title })) return true;
+    }
+    const responses = [
+      await run(`/subjects/${id}/characters`),
+      await run(`/subjects/${id}/persons`),
+    ];
+    if (responses.some((response) => !response.ok && response.status !== 404)) return false;
+    seededSubjects += 1;
+    return true;
+  }
+
+  async function seed(sources: readonly DirectoryDiscoverySource[], maxSubjects: number) {
+    for (const source of sources) {
+      const limit = maxSubjects - seededSubjects;
+      if (seedingStopped || limit <= 0) return;
+      if (drainedSources.has(source)) continue;
+      const subjects = await directory.listSeedSubjects({
+        discoverySource: source,
+        after: parseSeedCursor((await directory.getSyncState(seedCursorKey(source)))?.value),
+        limit,
+      });
+      if (subjects.length < limit) drainedSources.add(source);
+      for (const subject of subjects) {
+        const cost = subject.indexStatus === "pending" ? 3 : 2;
+        if (
+          seededSubjects >= maxSubjects ||
+          requests + cost > REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS
+        ) {
+          return;
+        }
+        if (!(await seedSubject(subject))) {
+          seedingStopped = true;
+          return;
+        }
+        await directory.setSyncState(seedCursorKey(source), formatSeedCursor(subject), now);
+      }
+    }
+  }
+
+  // The current season's characters and voice actors draw the most searches, so one daily
+  // broadcast subject goes first; historical backfill waits until that queue is drained.
+  await seed(["daily_broadcast"], 1);
+
+  // Backfill runs next because a quarter needs all of its months; entities use what remains.
   const current = { year: getCurrentYear(now), season: getCurrentSeason(now) };
   const cursorState = await directory.getSyncState("rankings:backfill-cursor");
   let target = parseQuarter(cursorState?.value) ?? previousQuarter(current.year, current.season);
@@ -188,6 +285,9 @@ export async function runRequestMaintenance({
     }
   }
 
+  // The rest of the budget seeds other sources once backfill and refresh are done.
+  await seed(SEED_SOURCES, MAX_SEEDED_SUBJECTS_PER_RUN);
+
   await directory.setSyncState(LEASE_KEY, "done", now);
-  return { acquired: true, requests, refreshedEntities, historicalQuarters };
+  return { acquired: true, requests, refreshedEntities, historicalQuarters, seededSubjects };
 }

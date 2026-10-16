@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
+import { REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS } from "./maintenance";
 import { createUpstreamClient } from "./upstream-client";
 
 const now = new Date("2026-09-13T12:00:00.000Z");
@@ -48,16 +49,20 @@ describe("shared upstream client", () => {
     await Promise.all(foreground);
   });
 
-  test("limits maintenance to two upstream requests per hour", async () => {
+  test("limits maintenance to its hourly upstream budget", async () => {
     const fetch = vi.fn(async () => Response.json({}));
     const client = createUpstreamClient(fetch, () => now);
 
-    await client.load(request(1), { gated: true, priority: "maintenance" });
-    await client.load(request(2), { gated: true, priority: "maintenance" });
+    for (let id = 1; id <= REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS; id += 1) {
+      await client.load(request(id), { gated: true, priority: "maintenance" });
+    }
     await expect(
-      client.load(request(3), { gated: true, priority: "maintenance" }),
+      client.load(request(REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS + 1), {
+        gated: true,
+        priority: "maintenance",
+      }),
     ).rejects.toMatchObject({ status: 429 });
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenCalledTimes(REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS);
   });
 
   test("does not spend the budget on ungated requests", async () => {

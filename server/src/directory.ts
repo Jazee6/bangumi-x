@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, inArray, lte } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, lte, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 
 import type { DirectoryDiscoverySource, DirectoryIndexStatus, DirectoryResourceType } from "share";
@@ -39,6 +39,18 @@ export interface StaleDirectoryQuery {
   limit: number;
 }
 
+/** Position after the last seed subject whose key characters and persons were recorded. */
+export interface SeedSubjectCursor {
+  firstDiscoveredAt: Date;
+  externalId: string;
+}
+
+export interface SeedSubjectQuery {
+  discoverySource: DirectoryDiscoverySource;
+  after: SeedSubjectCursor | null;
+  limit: number;
+}
+
 export interface DirectorySyncState {
   value: string;
   updatedAt: Date;
@@ -60,6 +72,13 @@ export interface DirectoryRepository {
   listEntries(query: DirectoryQuery): Promise<DirectoryEntry[]>;
   listPage(query: DirectoryQuery): Promise<DirectoryPage>;
   listStaleEntries(query: StaleDirectoryQuery): Promise<DirectoryEntry[]>;
+  /**
+   * Indexable or pending subjects of one discovery source in first-discovery order, so subjects
+   * that join the directory later always sort after an existing cursor. Pending ones are included
+   * because a batch shares one discovery time: skipping them would let the cursor pass a subject
+   * that is verified only later. See ADR 0015.
+   */
+  listSeedSubjects(query: SeedSubjectQuery): Promise<DirectoryEntry[]>;
   getSyncState(key: string): Promise<DirectorySyncState | null>;
   setSyncState(key: string, value: string, updatedAt: Date): Promise<void>;
   acquireSyncLease(
@@ -115,6 +134,12 @@ function compareStaleness(left: DirectoryEntry, right: DirectoryEntry) {
     left.resourceType.localeCompare(right.resourceType) ||
     left.externalId.localeCompare(right.externalId)
   );
+}
+
+function isAfterSeedCursor(entry: DirectoryEntry, after: SeedSubjectCursor | null) {
+  if (!after) return true;
+  const difference = entry.firstDiscoveredAt.getTime() - after.firstDiscoveredAt.getTime();
+  return difference > 0 || (difference === 0 && entry.externalId > after.externalId);
 }
 
 function boundedLimit(limit: number) {
@@ -183,6 +208,22 @@ export function createMemoryDirectoryRepository(): DirectoryRepository {
             (entry.lastVerifiedAt === null || entry.lastVerifiedAt <= verifiedBefore),
         )
         .sort(compareStaleness)
+        .slice(0, boundedLimit(limit));
+    },
+    async listSeedSubjects({ discoverySource, after, limit }) {
+      return [...entries.values()]
+        .filter(
+          (entry) =>
+            entry.resourceType === "subject" &&
+            entry.discoverySource === discoverySource &&
+            entry.indexStatus !== "noindex" &&
+            isAfterSeedCursor(entry, after),
+        )
+        .sort(
+          (left, right) =>
+            left.firstDiscoveredAt.getTime() - right.firstDiscoveredAt.getTime() ||
+            left.externalId.localeCompare(right.externalId),
+        )
         .slice(0, boundedLimit(limit));
     },
     async getSyncState(key) {
@@ -365,6 +406,35 @@ export function createD1DirectoryRepository(database: D1Database): DirectoryRepo
       ]);
       const rows = (await db.batch(lanes as [(typeof lanes)[number], ...typeof lanes])).flat();
       return rows.sort(compareStaleness).slice(0, safeLimit);
+    },
+
+    async listSeedSubjects({ discoverySource, after, limit }) {
+      // No index covers this order; it runs once per maintenance lease and only scans the subject
+      // range of the primary key, which stays within the D1 read budget.
+      return db
+        .select(selection)
+        .from(publicEntityDirectory)
+        .where(
+          and(
+            eq(publicEntityDirectory.resourceType, "subject"),
+            eq(publicEntityDirectory.discoverySource, discoverySource),
+            inArray(publicEntityDirectory.indexStatus, ["index", "pending"]),
+            after
+              ? or(
+                  gt(publicEntityDirectory.firstDiscoveredAt, after.firstDiscoveredAt),
+                  and(
+                    eq(publicEntityDirectory.firstDiscoveredAt, after.firstDiscoveredAt),
+                    gt(publicEntityDirectory.externalId, after.externalId),
+                  ),
+                )
+              : undefined,
+          ),
+        )
+        .orderBy(
+          asc(publicEntityDirectory.firstDiscoveredAt),
+          asc(publicEntityDirectory.externalId),
+        )
+        .limit(boundedLimit(limit));
     },
 
     async getSyncState(key) {

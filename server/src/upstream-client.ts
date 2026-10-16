@@ -1,4 +1,5 @@
 import { ApiError } from "./api-error";
+import { REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS } from "./maintenance";
 import {
   createUpstreamCache,
   type UpstreamCachePolicy,
@@ -8,7 +9,6 @@ import {
 const MAX_CONCURRENCY = 4;
 const MAX_REQUESTS_PER_MINUTE = 30;
 const MAX_BACKGROUND_REQUESTS_PER_MINUTE = 15;
-const MAX_MAINTENANCE_REQUESTS_PER_HOUR = 2;
 
 export const UPSTREAM_CACHE_POLICIES = {
   schedule: { softTtlSeconds: 3600, hardTtlSeconds: 86400, fallbackTtlSeconds: 172800 },
@@ -109,7 +109,7 @@ export function createUpstreamClient(fetch: UpstreamFetch, now: () => Date): Ups
     if (
       requestStarts.length >= MAX_REQUESTS_PER_MINUTE ||
       (background && backgroundStarts.length >= MAX_BACKGROUND_REQUESTS_PER_MINUTE) ||
-      (priority === "maintenance" && maintenanceRequests >= MAX_MAINTENANCE_REQUESTS_PER_HOUR)
+      (priority === "maintenance" && maintenanceRequests >= REQUEST_MAINTENANCE_MAX_UPSTREAM_CALLS)
     ) {
       throw upstreamRateLimited();
     }
