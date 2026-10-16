@@ -3,17 +3,34 @@ import { Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 
+// 分享规范地址，避免把分页、tab 等界面状态带给接收方。
+function canonicalUrl() {
+  return (
+    document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href ?? window.location.href
+  );
+}
+
+async function copyLink(url: string) {
+  try {
+    await navigator.clipboard.writeText(url);
+    toast.add({ title: "链接已复制", type: "success" });
+  } catch {
+    toast.add({ title: "复制失败，请重试。", type: "error", priority: "high" });
+  }
+}
+
 async function shareDetail(title: string) {
+  const url = canonicalUrl();
   if (!navigator.share) {
-    toast.add({ title: "当前浏览器不支持系统分享。", type: "error", priority: "high" });
+    await copyLink(url);
     return;
   }
 
   try {
-    await navigator.share({ title, url: window.location.href });
+    await navigator.share({ title, url });
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") return;
-    toast.add({ title: "分享失败，请重试。", type: "error", priority: "high" });
+    await copyLink(url);
   }
 }
 
