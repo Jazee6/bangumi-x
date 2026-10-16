@@ -11,7 +11,8 @@ describe("Mini public indexing", () => {
     const sitemap = JSON.parse(await asset("sitemap.json")) as {
       rules: Array<{ action: string; page: string }>;
     };
-    expect(sitemap.rules[0]).toEqual({ action: "disallow", page: "*" });
+    // Rules match top to bottom, so the catch-all disallow must come after every allow.
+    expect(sitemap.rules.at(-1)).toEqual({ action: "disallow", page: "*" });
     const allowed = sitemap.rules
       .filter((rule) => rule.action === "allow")
       .map((rule) => rule.page);
