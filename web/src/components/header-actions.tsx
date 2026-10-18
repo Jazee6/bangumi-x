@@ -17,11 +17,15 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { type Theme, useTheme } from "@/features/theme/theme";
 
 export function HeaderActions({ source }: { source?: SourceMetadata }) {
   return (
     <div className="ml-auto flex shrink-0 items-center gap-1">
+      <MiniProgramAction />
+      <GitHubAction />
       <ThemeAction />
       <MoreAction source={source} />
     </div>
@@ -36,8 +40,6 @@ function MoreAction({ source }: { source?: SourceMetadata }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <SourceMenu source={source} />
-        <MiniProgramMenu />
-        <GitHubItem />
         <AboutMenu />
       </DropdownMenuContent>
     </DropdownMenu>
@@ -90,40 +92,50 @@ function SourceMenu({ source }: { source?: SourceMetadata }) {
   );
 }
 
-function MiniProgramMenu() {
+function MiniProgramAction() {
   return (
-    <DropdownMenuSub>
-      <DropdownMenuSubTrigger>
+    <Popover>
+      <PopoverTrigger
+        openOnHover
+        render={<Button variant="ghost" size="icon" aria-label="小程序" />}
+      >
         <MiniProgramIcon />
-        小程序
-      </DropdownMenuSubTrigger>
-      <DropdownMenuSubContent className="w-52">
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-52" aria-label="微信小程序码">
         <img
           src="/mini.webp"
           alt="用于打开 Bangumi X 微信小程序的小程序码"
           className="block size-full rounded-2xl"
         />
-      </DropdownMenuSubContent>
-    </DropdownMenuSub>
+      </PopoverContent>
+    </Popover>
   );
 }
 
-function GitHubItem() {
+function GitHubAction() {
   return (
-    <DropdownMenuItem
-      render={
-        <a
-          href="https://github.com/Jazee6/bangumi-x"
-          target="_blank"
-          rel="noreferrer noopener"
-          aria-label={`在 GitHub 查看 Bangumi X v${appVersion}`}
-        />
-      }
-    >
-      <GitHubIcon />
-      GitHub
-      <ExternalLink className="text-muted-foreground ml-auto size-3.5" />
-    </DropdownMenuItem>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            nativeButton={false}
+            render={
+              <a
+                href="https://github.com/Jazee6/bangumi-x"
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label={`在 GitHub 查看 Bangumi X v${appVersion}`}
+              />
+            }
+          />
+        }
+      >
+        <GitHubIcon />
+      </TooltipTrigger>
+      <TooltipContent side="bottom">v{appVersion}</TooltipContent>
+    </Tooltip>
   );
 }
 
