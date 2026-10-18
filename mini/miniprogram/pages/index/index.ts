@@ -84,7 +84,7 @@ Page({
       if (version !== requestVersion) return;
       this.schedule = { ...schedule, days: policy.withoutBlockedGroups(schedule.days) };
       this.setData({
-        items: selectItems(schedule, this.data.selectedWeekday),
+        items: selectItems(this.schedule, this.data.selectedWeekday),
         loaded: true,
         loading: false,
       });
