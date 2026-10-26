@@ -24,11 +24,7 @@ export const Route = createFileRoute("/sitemap/subjects.xml")({
           });
           for (const entry of entries) {
             const base = `${CANONICAL_WEB_ORIGIN}/subjects/${entry.externalId}`;
-            items.push(
-              { loc: base, lastmod: entry.lastVerifiedAt },
-              { loc: `${base}/characters`, lastmod: entry.lastVerifiedAt },
-              { loc: `${base}/persons`, lastmod: entry.lastVerifiedAt },
-            );
+            items.push({ loc: base }, { loc: `${base}/characters` }, { loc: `${base}/persons` });
           }
         } catch {
           return new Response("条目站点地图暂时无法生成，请稍后重试。", {

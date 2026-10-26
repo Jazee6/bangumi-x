@@ -89,7 +89,6 @@ export function createEntitySitemapHandler(
       });
       const items: SitemapItem[] = entries.map((entry) => ({
         loc: `${CANONICAL_WEB_ORIGIN}/${pathPrefix}/${entry.externalId}`,
-        lastmod: entry.lastVerifiedAt,
       }));
       const xml = buildUrlSet(items);
       return new Response(xml, {

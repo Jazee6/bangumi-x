@@ -1168,7 +1168,7 @@ describe("Web production SSR HTTP handler", () => {
       expect(xml).toContain("<loc>https://bgmx.jaze.top/terms</loc>");
       expect(xml).toContain("<loc>https://bgmx.jaze.top/rankings/2025/winter</loc>");
       expect(xml).toContain("<loc>https://bgmx.jaze.top/rankings/2024/spring</loc>");
-      expect(xml).toContain("<lastmod>2026-02-01T12:00:00.000Z</lastmod>");
+      expect(xml).not.toContain("<lastmod>");
 
       // Out of range rankings excluded
       expect(xml).not.toContain("1979");
@@ -1206,8 +1206,7 @@ describe("Web production SSR HTTP handler", () => {
       expect(xml).not.toContain("<loc>https://bgmx.jaze.top/subjects/101/chapters</loc>");
       expect(xml).toContain("<loc>https://bgmx.jaze.top/subjects/102</loc>");
       expect(xml).toContain("<loc>https://bgmx.jaze.top/subjects/102/persons</loc>");
-      expect(xml).toContain("<lastmod>2026-03-10T08:00:00.000Z</lastmod>");
-      expect(xml).toContain("<lastmod>2026-03-11T08:00:00.000Z</lastmod>");
+      expect(xml).not.toContain("<lastmod>");
     });
 
     test("generates /sitemap/characters.xml, /persons.xml, and /collections.xml", async () => {
@@ -1238,6 +1237,7 @@ describe("Web production SSR HTTP handler", () => {
       const charactersXml = await charactersRes.text();
       expect(validateXmlWellFormedness(charactersXml)).toEqual({ valid: true });
       expect(charactersXml).toContain("<loc>https://bgmx.jaze.top/characters/2001</loc>");
+      expect(charactersXml).not.toContain("<lastmod>");
 
       const personsRes = await server.fetch(
         new Request("https://bgmx.jaze.top/sitemap/persons.xml"),

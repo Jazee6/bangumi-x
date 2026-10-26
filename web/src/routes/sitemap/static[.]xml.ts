@@ -47,10 +47,7 @@ export const Route = createFileRoute("/sitemap/static.xml")({
               SEASON_VALUES.includes(season) &&
               !isFutureSeason(year, season, now)
             ) {
-              items.push({
-                loc: `${CANONICAL_WEB_ORIGIN}/rankings/${year}/${season}`,
-                lastmod: entry.lastVerifiedAt,
-              });
+              items.push({ loc: `${CANONICAL_WEB_ORIGIN}/rankings/${year}/${season}` });
             }
           }
         } catch {
