@@ -7,6 +7,7 @@ interface EntityImageProps {
   src: string | null;
   alt: string;
   className?: string;
+  fallbackClassName?: string;
   iconClassName?: string;
   priority?: boolean;
   loading?: "lazy" | "eager";
@@ -31,6 +32,7 @@ export function EntityImage({
   src,
   alt,
   className,
+  fallbackClassName,
   iconClassName,
   priority,
   loading,
@@ -46,6 +48,7 @@ export function EntityImage({
         className={cn(
           "bg-muted text-muted-foreground flex size-full items-center justify-center",
           className,
+          fallbackClassName,
         )}
       >
         <ImageOff className={cn("size-8", iconClassName)} aria-hidden="true" />

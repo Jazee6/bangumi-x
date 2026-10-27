@@ -29,11 +29,12 @@ export function EntityDetail({
   return (
     <div className="mx-auto w-full max-w-6xl p-4 sm:p-6">
       <article className="grid gap-6 sm:grid-cols-[minmax(11rem,14rem)_minmax(0,1fr)]">
-        <div className="bg-muted w-full max-w-56 overflow-hidden rounded-xl">
+        <div className="bg-muted w-full max-w-56 self-start overflow-hidden rounded-xl">
           <EntityImage
             key={imageUrl}
             src={imageUrl}
             alt={`${name}图片`}
+            fallbackClassName="aspect-[3/4]"
             iconClassName="size-10"
             priority
           />
