@@ -10,10 +10,6 @@ export function getRouter() {
   const router = createTanStackRouter({
     routeTree,
     context,
-    // 悬停或触摸约 100ms 后预加载；数据交给 Query 缓存判断新鲜度。
-    defaultPreload: "intent",
-    defaultPreloadDelay: 100,
-    defaultPreloadStaleTime: 0,
     scrollRestoration: true,
   });
 
