@@ -54,6 +54,7 @@
           public-link
         ></entity-row>
       </view>
+      <ui-ad></ui-ad>
     </block>
   </scroll-view>
 </view>

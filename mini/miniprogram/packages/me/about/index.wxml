@@ -10,6 +10,15 @@
         <ui-item bordered title="GitHub" description="{{githubUrl}}" chevron bindtap="onCopyGithub"></ui-item>
         <ui-item bordered title="版本" value="v{{version}}" pressable="{{false}}"></ui-item>
       </ui-item-group>
+      <ui-item-group>
+        <ui-item title="广告说明" chevron bindtap="onOpenAdNotice"></ui-item>
+      </ui-item-group>
     </view>
   </scroll-view>
+
+  <ui-sheet open="{{adNoticeOpen}}" initial-size="0.5" title="广告说明" footer-visible="{{false}}" bindclose="onCloseAdNotice" binddismiss="onCloseAdNotice">
+    <view class="ad-notice">
+      <text wx:for="{{adNotice}}" wx:key="*this" class="ad-notice__paragraph">{{item}}</text>
+    </view>
+  </ui-sheet>
 </view>

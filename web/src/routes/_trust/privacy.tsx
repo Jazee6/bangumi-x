@@ -46,8 +46,14 @@ function PrivacyPage() {
           请求图片中文字实际需要的公开字形；不会发送邮箱、会话或私密内容。
         </p>
       </TrustSection>
+      <TrustSection title="小程序广告">
+        <p>
+          番迹小程序在内容浏览页页尾展示由微信流量主提供的广告，广告由微信按其规则投放。Bangumi X
+          不向广告方提供收藏、进度或站内用户信息。
+        </p>
+      </TrustSection>
       <TrustSection title="不进行行为追踪">
-        <p>本站不接入 GA4、GTM、客户端 Web Analytics、广告脚本或会话回放。</p>
+        <p>Web 端不接入 GA4、GTM、客户端 Web Analytics、广告脚本或会话回放。</p>
       </TrustSection>
     </TrustPage>
   );

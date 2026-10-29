@@ -86,6 +86,7 @@
                 </grid-view>
               </block>
             </block>
+            <ui-ad visible="{{tab === 'subjects' && subjectsLoaded && subjects.length > 0}}"></ui-ad>
             <view class="detail-page__panel-end"></view>
           </scroll-view>
         </swiper-item>
@@ -121,6 +122,7 @@
                 </list-view>
               </block>
             </block>
+            <ui-ad visible="{{tab !== 'subjects' && relatedLoaded && related.length > 0}}"></ui-ad>
             <view class="detail-page__panel-end"></view>
           </scroll-view>
         </swiper-item>

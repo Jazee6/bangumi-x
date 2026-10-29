@@ -71,5 +71,6 @@
     </list-view>
 
     <list-footer state="{{footerState}}" bindretry="onRetryMore"></list-footer>
+    <ui-ad visible="{{loaded && !hasNext && !errorMessage && (posters.length >= 6 || entities.length >= 10)}}"></ui-ad>
   </scroll-view>
 </view>

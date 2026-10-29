@@ -5,6 +5,7 @@
     "detail-hero": "/components/detail-hero/detail-hero",
     "detail-share-button": "/components/detail-share-button/detail-share-button",
     "entity-row": "/components/ui/entity-row/entity-row",
+    "ui-ad": "/components/ui/ad/ad",
     "ui-button": "/components/ui/button/button",
     "ui-empty": "/components/ui/empty/empty",
     "ui-skeleton": "/components/ui/skeleton/skeleton"

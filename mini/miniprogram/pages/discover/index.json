@@ -6,6 +6,7 @@
     "keyword-search": "/components/keyword-search/keyword-search",
     "list-footer": "/components/ui/list-footer/list-footer",
     "poster-card": "/components/ui/poster-card/poster-card",
+    "ui-ad": "/components/ui/ad/ad",
     "ui-button": "/components/ui/button/button",
     "ui-empty": "/components/ui/empty/empty",
     "ui-select-trigger": "/components/ui/select-trigger/select-trigger",

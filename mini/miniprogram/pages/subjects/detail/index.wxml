@@ -113,6 +113,7 @@
               state="{{chapterLoadingMore ? 'loading' : chapterLoadMoreError ? 'error' : 'hidden'}}"
               bindretry="onRetryMore"
             ></list-footer>
+            <ui-ad visible="{{tab === 'chapters' && chaptersLoaded && chapters.length > 0}}"></ui-ad>
             <view class="detail-page__panel-end"></view>
           </scroll-view>
         </swiper-item>
@@ -148,6 +149,7 @@
                 </list-view>
               </block>
             </block>
+            <ui-ad visible="{{tab === 'characters' && charactersLoaded && characters.length > 0}}"></ui-ad>
             <view class="detail-page__panel-end"></view>
           </scroll-view>
         </swiper-item>
@@ -183,6 +185,7 @@
                 </list-view>
               </block>
             </block>
+            <ui-ad visible="{{tab === 'persons' && personsLoaded && persons.length > 0}}"></ui-ad>
             <view class="detail-page__panel-end"></view>
           </scroll-view>
         </swiper-item>

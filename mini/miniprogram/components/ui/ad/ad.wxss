@@ -1,0 +1,6 @@
+.ui-ad {
+  box-sizing: border-box;
+  overflow: hidden;
+  margin: 16px;
+  border-radius: var(--radius-2xl);
+}

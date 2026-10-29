@@ -29,3 +29,15 @@
   flex-direction: column;
   gap: 16px;
 }
+
+.ad-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ad-notice__paragraph {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 1.6;
+}

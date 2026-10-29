@@ -40,5 +40,7 @@
         public-link
       ></poster-card>
     </grid-view>
+
+    <ui-ad visible="{{loaded && items.length >= 6}}"></ui-ad>
   </scroll-view>
 </view>

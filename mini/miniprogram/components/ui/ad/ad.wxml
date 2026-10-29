@@ -1,0 +1,3 @@
+<view wx:if="{{visible && unitId && !hidden}}" class="ui-ad">
+  <ad unit-id="{{unitId}}" ad-type="banner" binderror="onHide" bindclose="onHide"></ad>
+</view>

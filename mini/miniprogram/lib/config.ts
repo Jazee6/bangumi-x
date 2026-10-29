@@ -37,3 +37,6 @@ export function getServerUrl(): string {
     isRunningInDevtools(),
   );
 }
+
+// 微信流量主 Banner 广告位 ID（见 ADR 0016）；留空即全局关闭广告。
+export const AD_UNIT_ID = "adunit-baeb1b76f99e9f61";

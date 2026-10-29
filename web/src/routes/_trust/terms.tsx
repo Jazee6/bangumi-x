@@ -7,7 +7,8 @@ export const Route = createFileRoute("/_trust/terms")({
   head: () =>
     buildPageHead({
       title: "服务条款",
-      description: "Bangumi X 的非商业性质、上游可用性、公开列表责任、禁止滥用与内容撤回说明。",
+      description:
+        "Bangumi X 的非商业性质、小程序广告、上游可用性、公开列表责任、禁止滥用与内容撤回说明。",
       canonicalPath: "/terms",
     }),
   component: TermsPage,
@@ -18,8 +19,8 @@ function TermsPage() {
     <TrustPage title="服务条款">
       <TrustSection title="服务性质">
         <p>
-          Bangumi X
-          是非商业项目，不含广告、赞助位或付费功能。未来商业化前必须重新评审数据与内容许可。
+          Bangumi X 是非商业项目，Web
+          端不含广告、赞助位或付费功能。番迹小程序仅在内容浏览页页尾展示微信流量主广告，用于覆盖运营成本，不含付费功能。其他商业化前必须重新评审数据与内容许可。
         </p>
       </TrustSection>
       <TrustSection title="可用性与准确性">

@@ -21,7 +21,8 @@ function AboutPage() {
         <p>
           Bangumi X 是由 Jazee6
           维护的非官方、非商业项目，以每日放送与发现为中心，并提供个人收藏与进度工具。 本站不是
-          Bangumi 官方产品。
+          Bangumi 官方产品。Web
+          端无广告；番迹小程序在内容浏览页页尾展示微信流量主广告，用于覆盖运营成本。
         </p>
       </TrustSection>
       <TrustSection title="公开集合如何形成">
