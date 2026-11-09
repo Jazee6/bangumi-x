@@ -141,6 +141,13 @@ export const CRAWLER_DEFINITIONS: readonly CrawlerDefinition[] = [
     sourceUrl: "https://developers.facebook.com/docs/sharing/webmasters/crawler",
     notes: "Meta AI model training crawler.",
   },
+  {
+    name: "meta-externalagent",
+    category: "ai_training",
+    allow: false,
+    sourceUrl: "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers",
+    notes: "Meta crawler that collects training data for AI models and indexes content.",
+  },
 ] as const;
 
 export function buildRobotsTxt(): string {

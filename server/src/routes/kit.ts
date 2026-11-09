@@ -66,7 +66,7 @@ export function subjectIndexDecision(subject: {
 // Matches search engines, AI crawlers, link previewers and scripted clients. A real visitor that
 // happens to match only stops adding new directory entries; nothing else changes for them.
 const CRAWLER_AGENT_PATTERN =
-  /bot|crawl|spider|slurp|chatgpt-user|cohere-ai|facebookexternalhit|headless|python|scrapy|curl|wget|httpclient|go-http/i;
+  /bot|crawl|spider|slurp|chatgpt-user|cohere-ai|facebookexternalhit|externalagent|headless|python|scrapy|curl|wget|httpclient|go-http/i;
 
 export function isCrawlerAgent(agent: string | undefined) {
   return !agent || CRAWLER_AGENT_PATTERN.test(agent);
