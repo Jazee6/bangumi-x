@@ -574,8 +574,13 @@ export interface MiniAccountLinkResult {
   message?: string;
 }
 
-export const PROGRESS_STAGE_VALUES = ["in_progress", "completed"] as const;
+export const PROGRESS_STAGE_VALUES = ["in_progress", "completed", "dropped"] as const;
 export type ProgressStage = (typeof PROGRESS_STAGE_VALUES)[number];
+export const PROGRESS_STAGE_LABELS: Record<ProgressStage, string> = {
+  in_progress: "进行中",
+  completed: "已完成",
+  dropped: "已放弃",
+};
 
 export interface SubjectProgress {
   stage: ProgressStage;
@@ -636,6 +641,7 @@ export interface PersonalRecordCounts {
     all: number;
     in_progress: number;
     completed: number;
+    dropped: number;
   };
 }
 

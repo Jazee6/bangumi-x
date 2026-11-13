@@ -50,7 +50,8 @@
               <block wx:if="{{progressSupported}}">
                 <ui-action-button wx:if="{{!personalState.progress}}" label="记录进度" icon="list-checks" loading="{{progressPending}}" bindpress="onRecordProgress"></ui-action-button>
                 <block wx:else>
-                  <ui-stepper wx:if="{{chapterProgressSupported}}" value="{{personalState.progress.completedChapters || 0}}" total="{{personalState.progress.totalChapters || 0}}" loading="{{progressPending}}" bindchange="onProgressStep" bindconfirm="onChapterConfirm"></ui-stepper>
+                  <ui-badge wx:if="{{personalState.progress.stage === 'dropped'}}" value="已放弃" variant="outline"></ui-badge>
+                  <ui-stepper wx:elif="{{chapterProgressSupported}}" value="{{personalState.progress.completedChapters || 0}}" total="{{personalState.progress.totalChapters || 0}}" loading="{{progressPending}}" bindchange="onProgressStep" bindconfirm="onChapterConfirm"></ui-stepper>
                   <ui-action-button icon="ellipsis" icon-only size="icon" variant="ghost" aria-label="更多进度操作" disabled="{{progressPending}}" bindpress="onOpenProgressActions"></ui-action-button>
                 </block>
               </block>

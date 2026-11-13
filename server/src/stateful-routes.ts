@@ -866,8 +866,26 @@ export function createStatefulRoutes(runtime: StatefulRuntime) {
 
     let finalStage: ProgressStage;
     let finalCompletedChapters: number | null = null;
+    const existing = await repository.getProgress(user.id, subjectId);
 
-    if (snapshot.type === "书籍" || snapshot.type === "游戏") {
+    // 只有进行中的进度可以放弃；已放弃的进度只能恢复为进行中，期间章节数保持只读。
+    if (body.stage === "dropped") {
+      if (existing?.stage !== "in_progress") {
+        apiError(400, "INVALID_PROGRESS", "只能放弃进行中的进度。");
+      }
+      if (body.completedChapters !== undefined) {
+        apiError(400, "INVALID_PROGRESS", "进度数据无效。");
+      }
+    } else if (existing?.stage === "dropped") {
+      if (body.stage !== "in_progress" || body.completedChapters !== undefined) {
+        apiError(400, "INVALID_PROGRESS", "请先恢复进行中。");
+      }
+    }
+
+    if (body.stage === "dropped" && existing) {
+      finalStage = "dropped";
+      finalCompletedChapters = existing.completedChapters;
+    } else if (snapshot.type === "书籍" || snapshot.type === "游戏") {
       if (body.completedChapters !== undefined) {
         apiError(400, "INVALID_PROGRESS", "该条目类型不支持记录章节数。");
       }
@@ -895,7 +913,6 @@ export function createStatefulRoutes(runtime: StatefulRuntime) {
 
       const validChapters = typeof rawChapters === "number" ? rawChapters : undefined;
       const total = snapshot.totalChapters;
-      const existing = await repository.getProgress(user.id, subjectId);
 
       if (total !== null && total > 0) {
         // Known total synchronization
@@ -908,11 +925,16 @@ export function createStatefulRoutes(runtime: StatefulRuntime) {
             finalStage = "completed";
             finalCompletedChapters = Math.max(existing?.completedChapters ?? 0, total);
           } else {
-            if ((existing?.completedChapters ?? 0) >= total) {
-              apiError(400, "INVALID_PROGRESS", "请先减少已完成章节数。");
-            }
-            finalStage = "in_progress";
             finalCompletedChapters = existing?.completedChapters ?? 0;
+            if (existing?.stage === "dropped" && finalCompletedChapters >= total) {
+              // 放弃期间总话数可能减少，恢复时按章节数同步为已完成。
+              finalStage = "completed";
+            } else {
+              if (finalCompletedChapters >= total) {
+                apiError(400, "INVALID_PROGRESS", "请先减少已完成章节数。");
+              }
+              finalStage = "in_progress";
+            }
           }
         }
       } else {

@@ -1,9 +1,11 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 
+import { PROGRESS_STAGE_LABELS, PROGRESS_STAGE_VALUES } from "share";
 import type { ProgressStage } from "share";
 
 import { HeaderTitle } from "@/components/app-shell";
+import { KeywordSearchForm } from "@/components/keyword-search-form";
 import { SignInEmpty } from "@/components/sign-in";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +14,7 @@ import { progressRecordsQueryOptions } from "@/features/progress/progress-query"
 import {
   DEFAULT_PROGRESS_SEARCH,
   validateProgressSearch,
+  type ProgressSearch,
 } from "@/features/progress/progress-search";
 import { ProgressError, ProgressList, ProgressLoading } from "@/features/progress/progress-view";
 import { useHydratedSession } from "@/lib/auth-client";
@@ -34,8 +37,9 @@ export const Route = createFileRoute("/_app/progress")({
 function ProgressSessionLoading() {
   return (
     <div aria-busy="true">
+      <Skeleton shape="control" className="mt-4 h-9 w-full" />
       <div className="mt-4 overflow-hidden pb-1">
-        <Skeleton shape="pill" className="h-9 w-48" />
+        <Skeleton shape="pill" className="h-9 w-64" />
       </div>
       <ProgressLoading />
     </div>
@@ -47,7 +51,7 @@ function ProgressPage() {
   const navigate = Route.useNavigate();
   const { data: session, isPending: sessionPending } = useHydratedSession();
   const records = useInfiniteQuery({
-    ...progressRecordsQueryOptions(search.stage),
+    ...progressRecordsQueryOptions(search),
     enabled: Boolean(session),
   });
   const counts = useQuery({
@@ -55,8 +59,10 @@ function ProgressPage() {
     enabled: Boolean(session),
   });
 
-  function setStage(stage: ProgressStage) {
-    void navigate({ search: { stage }, resetScroll: false });
+  function updateSearch(patch: Partial<ProgressSearch>) {
+    const next = { ...search, ...patch };
+    if (!next.keyword) delete next.keyword;
+    void navigate({ search: next, resetScroll: false });
   }
 
   return (
@@ -74,21 +80,30 @@ function ProgressPage() {
 
       {session && (
         <>
+          <KeywordSearchForm
+            className="mt-4"
+            label="搜索进度"
+            placeholder="搜索标题"
+            keyword={search.keyword}
+            searching={records.isFetching}
+            onSubmit={(keyword) => updateSearch({ keyword })}
+            onClear={() => updateSearch({ keyword: undefined })}
+          />
+
           <div className="mt-4 overflow-x-auto pb-1">
-            <Tabs value={search.stage} onValueChange={(value) => setStage(value as ProgressStage)}>
+            <Tabs
+              value={search.stage}
+              onValueChange={(value) => updateSearch({ stage: value as ProgressStage })}
+            >
               <TabsList aria-label="进度阶段">
-                <TabsTrigger value="in_progress">
-                  进行中{" "}
-                  <span className="text-muted-foreground tabular-nums">
-                    {counts.data?.progress.in_progress ?? 0}
-                  </span>
-                </TabsTrigger>
-                <TabsTrigger value="completed">
-                  已完成{" "}
-                  <span className="text-muted-foreground tabular-nums">
-                    {counts.data?.progress.completed ?? 0}
-                  </span>
-                </TabsTrigger>
+                {PROGRESS_STAGE_VALUES.map((stage) => (
+                  <TabsTrigger key={stage} value={stage}>
+                    {PROGRESS_STAGE_LABELS[stage]}{" "}
+                    <span className="text-muted-foreground tabular-nums">
+                      {counts.data?.progress[stage] ?? 0}
+                    </span>
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </Tabs>
           </div>
@@ -102,7 +117,12 @@ function ProgressPage() {
             />
           )}
           {records.data && (
-            <ProgressList pages={records.data.pages} stage={search.stage} state={records} />
+            <ProgressList
+              pages={records.data.pages}
+              stage={search.stage}
+              keyword={search.keyword}
+              state={records}
+            />
           )}
         </>
       )}

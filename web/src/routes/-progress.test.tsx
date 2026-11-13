@@ -14,6 +14,10 @@ const routeOptions = Route.options as typeof Route.options & {
 
 test("the progress route validates its stage", () => {
   expect(routeOptions.validateSearch({ stage: "completed" })).toEqual({ stage: "completed" });
+  expect(routeOptions.validateSearch({ stage: "dropped", keyword: " 贝塔 " })).toEqual({
+    stage: "dropped",
+    keyword: "贝塔",
+  });
   expect(routeOptions.validateSearch({ stage: "planned" })).toEqual({ stage: "in_progress" });
 });
 
@@ -25,4 +29,5 @@ test("the progress route strips only its default stage", () => {
 
   expect(apply({ stage: "in_progress" })).toEqual({});
   expect(apply({ stage: "completed" })).toEqual({ stage: "completed" });
+  expect(apply({ stage: "in_progress", keyword: "贝塔" })).toEqual({ keyword: "贝塔" });
 });

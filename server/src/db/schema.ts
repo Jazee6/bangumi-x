@@ -233,14 +233,14 @@ export const progress = sqliteTable(
     subjectId: integer("subject_id")
       .notNull()
       .references(() => subjectSnapshot.subjectId),
-    stage: text("stage", { enum: ["in_progress", "completed"] }).notNull(),
+    stage: text("stage", { enum: ["in_progress", "completed", "dropped"] }).notNull(),
     completedChapters: integer("completed_chapters"),
     createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
   (table) => [
     uniqueIndex("progress_user_subject_unique").on(table.userId, table.subjectId),
-    check("progress_stage_check", sql`${table.stage} in ('in_progress', 'completed')`),
+    check("progress_stage_check", sql`${table.stage} in ('in_progress', 'completed', 'dropped')`),
     check(
       "progress_completed_chapters_non_negative",
       sql`${table.completedChapters} is null or ${table.completedChapters} >= 0`,

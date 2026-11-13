@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ListChecks } from "lucide-react";
+import { ListChecks, Search } from "lucide-react";
 
 import type { ProgressItem, ProgressPage, ProgressStage } from "share";
 
@@ -117,30 +117,37 @@ function ProgressRow({ item, today }: { item: ProgressItem; today: string | null
   );
 }
 
+const EMPTY_COPY: Record<ProgressStage, { title: string; description: string }> = {
+  in_progress: { title: "暂无进行中进度", description: "从条目详情页开始记录进度。" },
+  completed: { title: "暂无已完成进度", description: "完成的条目会显示在这里。" },
+  dropped: { title: "暂无已放弃进度", description: "放弃的条目会显示在这里。" },
+};
+
 export function ProgressList({
   pages,
   stage,
+  keyword,
   state,
 }: {
   pages: ProgressPage[];
   stage: ProgressStage;
+  keyword?: string;
   state: InfiniteScrollState;
 }) {
   const today = useLocalDate();
   const items: ProgressItem[] = pages.flatMap((page) => page.data);
   if (items.length === 0) {
+    const copy = keyword
+      ? { title: "没有找到匹配进度", description: "可以尝试其他关键词。" }
+      : EMPTY_COPY[stage];
     return (
       <Empty variant="outline" className="mt-6 min-h-72">
         <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <ListChecks />
-          </EmptyMedia>
-          <EmptyTitle>{stage === "completed" ? "暂无已完成进度" : "暂无进行中进度"}</EmptyTitle>
-          <EmptyDescription>
-            {stage === "completed" ? "完成的条目会显示在这里。" : "从条目详情页开始记录进度。"}
-          </EmptyDescription>
+          <EmptyMedia variant="icon">{keyword ? <Search /> : <ListChecks />}</EmptyMedia>
+          <EmptyTitle>{copy.title}</EmptyTitle>
+          <EmptyDescription>{copy.description}</EmptyDescription>
         </EmptyHeader>
-        {stage === "in_progress" && (
+        {stage === "in_progress" && !keyword && (
           <EmptyContent>
             <Button
               nativeButton={false}

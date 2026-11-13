@@ -6,6 +6,7 @@ import {
   type ChapterSummary,
   type CollectionList,
   type PersonalSubjectState,
+  type ProgressStage,
   type SubjectCharactersResponse,
   type SubjectDetail,
   type SubjectPersonsResponse,
@@ -425,19 +426,24 @@ Page({
       progress.stage !== "completed" ||
       !progress.totalChapters ||
       (progress.completedChapters ?? 0) < progress.totalChapters;
-    wx.showActionSheet({
-      itemList: [
-        progress.stage === "in_progress"
-          ? "标记已完成"
-          : canReturnToOngoing
-            ? "恢复进行中"
-            : "恢复进行中（请先减少章节数）",
-        "清除进度",
-      ],
-      success: ({ tapIndex }) => {
-        if (tapIndex === 0) this.onProgressAction("stage");
-        if (tapIndex === 1) this.onProgressAction("clear");
+    const actions: Array<{ label: string; run: () => void }> = [
+      {
+        label:
+          progress.stage === "in_progress"
+            ? "标记已完成"
+            : canReturnToOngoing
+              ? "恢复进行中"
+              : "恢复进行中（请先减少章节数）",
+        run: () => this.onProgressAction("stage"),
       },
+      ...(progress.stage === "in_progress"
+        ? [{ label: "标记已放弃", run: () => void this.updateProgress({ stage: "dropped" }) }]
+        : []),
+      { label: "清除进度", run: () => this.onProgressAction("clear") },
+    ];
+    wx.showActionSheet({
+      itemList: actions.map((action) => action.label),
+      success: ({ tapIndex }) => actions[tapIndex]?.run(),
     });
   },
 
@@ -461,10 +467,7 @@ Page({
     });
   },
 
-  async updateProgress(update: {
-    completedChapters?: number;
-    stage?: "in_progress" | "completed";
-  }) {
+  async updateProgress(update: { completedChapters?: number; stage?: ProgressStage }) {
     const progress = this.data.personalState?.progress;
     if (!progress || this.data.progressPending) return;
     if (update.completedChapters !== undefined) {

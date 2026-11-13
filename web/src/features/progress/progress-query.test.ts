@@ -22,6 +22,7 @@ test("progress queries isolate stage and paginate with credentials", async () =>
     expect(url.pathname).toBe("/me/progress");
     expect(Object.fromEntries(url.searchParams)).toEqual({
       stage: "completed",
+      keyword: "贝塔",
       page: "2",
       pageSize: "24",
     });
@@ -30,8 +31,17 @@ test("progress queries isolate stage and paginate with credentials", async () =>
   });
   globalThis.fetch = request as unknown as typeof fetch;
 
-  const options = progressRecordsQueryOptions("completed");
-  expect([...options.queryKey]).toEqual(["me", "progress", { stage: "completed" }]);
+  expect([...progressRecordsQueryOptions({ stage: "completed" }).queryKey]).toEqual([
+    "me",
+    "progress",
+    { stage: "completed" },
+  ]);
+  const options = progressRecordsQueryOptions({ stage: "completed", keyword: "贝塔" });
+  expect([...options.queryKey]).toEqual([
+    "me",
+    "progress",
+    { stage: "completed", keyword: "贝塔" },
+  ]);
   await options.queryFn?.({ pageParam: 2 } as never);
 
   expect(request).toHaveBeenCalledTimes(1);

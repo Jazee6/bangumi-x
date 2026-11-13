@@ -1,4 +1,6 @@
 import {
+  PROGRESS_STAGE_LABELS,
+  PROGRESS_STAGE_VALUES,
   supportsChapterProgress,
   type PersonalRecordCounts,
   type ProgressItem,
@@ -25,6 +27,7 @@ import { vibrateForRecordChange } from "../../../lib/touch-feedback";
 interface ProgressCardViewModel {
   broadcastLabel: string;
   canReturnToOngoing: boolean;
+  chapterLabel: string;
   completedChapters: number | null;
   hasChapters: boolean;
   id: number;
@@ -36,10 +39,11 @@ interface ProgressCardViewModel {
 }
 
 function getStageTabs(counts: PersonalRecordCounts["progress"] | null) {
-  return [
-    { count: counts ? String(counts.in_progress) : "", label: "进行中", value: "in_progress" },
-    { count: counts ? String(counts.completed) : "", label: "已完成", value: "completed" },
-  ];
+  return PROGRESS_STAGE_VALUES.map((value) => ({
+    count: counts ? String(counts[value]) : "",
+    label: PROGRESS_STAGE_LABELS[value],
+    value,
+  }));
 }
 
 function canReturnToOngoing(
@@ -53,10 +57,18 @@ function canReturnToOngoing(
   );
 }
 
+// 已放弃的进度章节数只读，以文字展示。
+function getChapterLabel(progress: Pick<SubjectProgress, "completedChapters" | "totalChapters">) {
+  const total =
+    progress.totalChapters && progress.totalChapters > 0 ? ` / ${progress.totalChapters}` : "";
+  return `已完成 ${progress.completedChapters ?? 0}${total} 章节`;
+}
+
 function toCard(item: ProgressItem): ProgressCardViewModel {
   return {
     broadcastLabel: getBroadcastBadge(item.broadcast) ?? "",
     canReturnToOngoing: canReturnToOngoing(item),
+    chapterLabel: getChapterLabel(item),
     completedChapters: item.completedChapters,
     hasChapters: supportsChapterProgress(item.type),
     id: item.id,
@@ -191,9 +203,15 @@ Page({
     const id = Number(event.currentTarget.dataset.id);
     const item = this.data.items.find((candidate) => candidate.id === id);
     if (!item || this.data.mutatingId) return;
+    const actions: Array<{ label: string; run: () => void }> = [
+      ...(item.stage === "in_progress"
+        ? [{ label: "标记已放弃", run: () => void this.updateProgress(id, { stage: "dropped" }) }]
+        : []),
+      { label: "清除进度", run: () => void this.onRequestClear(item) },
+    ];
     wx.showActionSheet({
-      itemList: ["清除进度"],
-      success: () => void this.onRequestClear(item),
+      itemList: actions.map((action) => action.label),
+      success: ({ tapIndex }) => actions[tapIndex]?.run(),
     });
   },
 
@@ -295,6 +313,7 @@ Page({
       [`items[${index}]`]: {
         ...card,
         canReturnToOngoing: canReturnToOngoing(progress),
+        chapterLabel: getChapterLabel(progress),
         completedChapters: progress.completedChapters,
         stage: progress.stage,
         totalChapters: progress.totalChapters,

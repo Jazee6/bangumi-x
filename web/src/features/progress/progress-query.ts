@@ -12,6 +12,7 @@ import type {
 
 import { requestJson } from "@/lib/api-error";
 import { serverUrl } from "@/lib/server-url";
+import type { ProgressSearch } from "./progress-search";
 
 const PRIVATE_STALE_TIME = 60 * 1000;
 
@@ -24,12 +25,13 @@ function progressJson<T>(url: URL, init?: RequestInit): Promise<T> {
   return requestJson<T>(url, "进度暂时无法更新，请稍后重试。", { ...init, credentials: "include" });
 }
 
-export function progressRecordsQueryOptions(stage: ProgressStage) {
+export function progressRecordsQueryOptions({ stage, keyword }: ProgressSearch) {
   return infiniteQueryOptions({
-    queryKey: ["me", "progress", { stage }],
+    queryKey: ["me", "progress", { stage, ...(keyword ? { keyword } : {}) }],
     queryFn: ({ pageParam }) => {
       const url = new URL("/me/progress", serverUrl);
       url.searchParams.set("stage", stage);
+      if (keyword) url.searchParams.set("keyword", keyword);
       url.searchParams.set("page", pageParam.toString());
       url.searchParams.set("pageSize", COLLECTION_PAGE_SIZE.toString());
       return progressJson<ProgressPage>(url);

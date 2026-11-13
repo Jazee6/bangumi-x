@@ -92,7 +92,7 @@ export interface StoredCollectionList {
 
 export interface StoredPersonalRecordCounts {
   collections: { all: number; unlisted: number };
-  progress: { all: number; in_progress: number; completed: number };
+  progress: { all: number; in_progress: number; completed: number; dropped: number };
 }
 
 const collectionSelection = {
@@ -653,18 +653,15 @@ export function createD1CollectionRepository(database: D1Database): CollectionRe
             ),
           ),
       ]);
-      const progressStages = { in_progress: 0, completed: 0 };
+      const progressStages = { in_progress: 0, completed: 0, dropped: 0 };
       for (const row of progressRows) {
-        if (row.stage === "in_progress" || row.stage === "completed") {
-          progressStages[row.stage] = row.count;
-        }
+        if (row.stage in progressStages) progressStages[row.stage] = row.count;
       }
       return {
         collections: { all: collectionRows[0]?.count ?? 0, unlisted: unlistedRows[0]?.count ?? 0 },
         progress: {
-          all: progressStages.in_progress + progressStages.completed,
-          in_progress: progressStages.in_progress,
-          completed: progressStages.completed,
+          all: progressStages.in_progress + progressStages.completed + progressStages.dropped,
+          ...progressStages,
         },
       };
     },

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CircleCheck, Ellipsis, ListChecks, Minus, Plus, Trash2 } from "lucide-react";
+import { Ban, CircleCheck, Ellipsis, ListChecks, Minus, Plus, Trash2 } from "lucide-react";
 import * as v from "valibot";
 
 import { supportsChapterProgress, supportsProgress } from "share";
@@ -132,6 +132,8 @@ export function ProgressControl({
     );
   }
 
+  const dropped = progress.stage === "dropped";
+  // 放弃期间总话数可能减少；恢复时由服务端按章节数同步阶段，因此不受章节数限制。
   const canReturnToOngoing =
     progress.stage !== "completed" || knownTotal === null || currentChapters < knownTotal;
   const stageAction =
@@ -148,7 +150,20 @@ export function ProgressControl({
           : "flex min-w-0 flex-wrap items-start gap-2"
       }
     >
-      {chapterProgress && (
+      {dropped && (chapterProgress || !compact) && (
+        <span
+          className={`text-muted-foreground flex items-center text-sm tabular-nums ${compact ? "h-8" : "h-9"}`}
+        >
+          {[
+            !compact && "已放弃",
+            chapterProgress &&
+              `已完成 ${currentChapters}${knownTotal === null ? "" : ` / ${knownTotal}`} 章节`,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </span>
+      )}
+      {chapterProgress && !dropped && (
         <form
           className="min-w-0"
           onSubmit={(event) => {
@@ -271,6 +286,16 @@ export function ProgressControl({
             >
               {updateMutation.isPending ? <Spinner /> : <StageIcon />}
               {stageAction.ariaLabel}
+            </DropdownMenuItem>
+          )}
+          {progress.stage === "in_progress" && (
+            <DropdownMenuItem
+              className="whitespace-nowrap"
+              disabled={pending}
+              onClick={() => updateMutation.mutate({ stage: "dropped" })}
+            >
+              <Ban />
+              标记已放弃
             </DropdownMenuItem>
           )}
           <DropdownMenuItem variant="destructive" onClick={() => setConfirmingClear(true)}>

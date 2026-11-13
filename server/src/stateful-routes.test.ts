@@ -317,7 +317,7 @@ class MemoryCollections implements CollectionRepository {
         return Number(memberKey.slice(separator + 1)) === subjectId;
       });
     }).length;
-    const progressStages = { in_progress: 0, completed: 0 };
+    const progressStages = { in_progress: 0, completed: 0, dropped: 0 };
     for (const [key, value] of this.progress) {
       if (
         key.startsWith(`${userId}:`) &&
@@ -329,9 +329,8 @@ class MemoryCollections implements CollectionRepository {
     return {
       collections: { all: collections, unlisted },
       progress: {
-        all: progressStages.in_progress + progressStages.completed,
-        in_progress: progressStages.in_progress,
-        completed: progressStages.completed,
+        all: progressStages.in_progress + progressStages.completed + progressStages.dropped,
+        ...progressStages,
       },
     };
   }
@@ -736,7 +735,7 @@ describe("private collection HTTP contract", () => {
     expect(await miniLists.json()).toMatchObject({ data: [{ id: listId, count: 1 }] });
     expect(await miniCounts.json()).toEqual({
       collections: { all: 1, unlisted: 0 },
-      progress: { all: 1, in_progress: 1, completed: 0 },
+      progress: { all: 1, in_progress: 1, completed: 0, dropped: 0 },
     });
     expect(await publicList.json()).toMatchObject({
       total: 1,
@@ -763,7 +762,7 @@ describe("private collection HTTP contract", () => {
     const counts = await app.request("/me/personal-record-counts", privateRequest(), bindings);
     expect(await counts.json()).toEqual({
       collections: { all: 1, unlisted: 1 },
-      progress: { all: 0, in_progress: 0, completed: 0 },
+      progress: { all: 0, in_progress: 0, completed: 0, dropped: 0 },
     });
     expect(upstreamFetch).toHaveBeenCalledTimes(1);
 
@@ -1459,6 +1458,81 @@ describe("private progress HTTP contract", () => {
 
     const response = await app.request("/me/progress", privateRequest(), bindings);
     expect((await response.json()).data.map((item: { id: number }) => item.id)).toEqual([43, 42]);
+  });
+
+  test("only in-progress records can be dropped and dropped records only resume", async () => {
+    const put = (subjectId: number, body: Record<string, unknown>) =>
+      app.request(`/me/progress/${subjectId}`, privateRequest("PUT", "alice", body), bindings);
+
+    const missing = await put(42, { stage: "dropped" });
+    expect(missing.status).toBe(400);
+    expect((await missing.json()).code).toBe("INVALID_PROGRESS");
+
+    await put(42, { completedChapters: 5 });
+    const dropped = await put(42, { stage: "dropped" });
+    expect(dropped.status).toBe(200);
+    expect((await dropped.json()).progress).toMatchObject({
+      stage: "dropped",
+      completedChapters: 5,
+    });
+
+    for (const body of [{ completedChapters: 6 }, { stage: "completed" }, { stage: "dropped" }]) {
+      const rejected = await put(42, body);
+      expect(rejected.status).toBe(400);
+    }
+
+    const counts = await app.request("/me/personal-record-counts", privateRequest(), bindings);
+    expect((await counts.json()).progress).toMatchObject({ all: 1, in_progress: 0, dropped: 1 });
+
+    const list = await app.request("/me/progress?stage=dropped", privateRequest(), bindings);
+    expect((await list.json()).data.map((item: { id: number }) => item.id)).toEqual([42]);
+
+    const resumed = await put(42, { stage: "in_progress" });
+    expect((await resumed.json()).progress).toMatchObject({
+      stage: "in_progress",
+      completedChapters: 5,
+    });
+
+    await put(42, { stage: "completed" });
+    const completedDrop = await put(42, { stage: "dropped" });
+    expect(completedDrop.status).toBe(400);
+
+    await put(41, { stage: "in_progress" });
+    const book = await put(41, { stage: "dropped" });
+    expect((await book.json()).progress).toMatchObject({
+      stage: "dropped",
+      completedChapters: null,
+    });
+  });
+
+  test("resuming dropped progress completes it when the total shrank meanwhile", async () => {
+    await app.request(
+      "/me/progress/42",
+      privateRequest("PUT", "alice", { completedChapters: 8 }),
+      bindings,
+    );
+    await app.request(
+      "/me/progress/42",
+      privateRequest("PUT", "alice", { stage: "dropped" }),
+      bindings,
+    );
+    await repository.refreshSnapshot({
+      ...repository.snapshots.get(42)!,
+      totalChapters: 6,
+      updatedAt: currentTime,
+    });
+    expect(repository.progress.get(repository.key("alice", 42))?.stage).toBe("dropped");
+
+    const resumed = await app.request(
+      "/me/progress/42",
+      privateRequest("PUT", "alice", { stage: "in_progress" }),
+      bindings,
+    );
+    expect(resumed.status).toBe(200);
+    expect((await resumed.json()).progress).toMatchObject({
+      stage: "completed",
+      completedChapters: 8,
+    });
   });
 
   test("supports chapter and stage for animation and rejects music entirely", async () => {

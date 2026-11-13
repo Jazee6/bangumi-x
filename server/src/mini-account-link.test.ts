@@ -74,9 +74,9 @@ async function seedUsers(now: number) {
     .prepare(
       `insert into subject_snapshot
        (id, subject_id, title, type, poster_source_url, nsfw, total_chapters, updated_at)
-       values ('snapshot', 1, '条目', '动画', null, 0, 12, ?)`,
+       values ('snapshot-' || ?, ?, '条目', '动画', null, 0, 12, ?)`,
     )
-    .bind(now)
+    .bind(1, 1, now)
     .run();
 
   const insertCollection = `insert into collection (id, user_id, subject_id, collected_at) values (?, ?, 1, ?)`;
@@ -100,6 +100,32 @@ async function seedUsers(now: number) {
     .prepare(insertProgress)
     .bind("web-progress", "web-user", "in_progress", 5, now - 1000, now - 1000)
     .run();
+
+  // 已放弃只在双方都放弃时保留，否则让位于进行中。
+  for (const subjectId of [2, 3]) {
+    await db
+      .prepare(
+        `insert into subject_snapshot
+         (id, subject_id, title, type, poster_source_url, nsfw, total_chapters, updated_at)
+         values ('snapshot-' || ?, ?, '条目', '动画', null, 0, 12, ?)`,
+      )
+      .bind(subjectId, subjectId, now)
+      .run();
+  }
+  const insertSubjectProgress = `insert into progress
+     (id, user_id, subject_id, stage, completed_chapters, created_at, updated_at)
+     values (?, ?, ?, ?, ?, ?, ?)`;
+  for (const [id, userId, subjectId, stage, chapters] of [
+    ["mini-progress-2", "mini-user", 2, "dropped", 8],
+    ["web-progress-2", "web-user", 2, "in_progress", 3],
+    ["mini-progress-3", "mini-user", 3, "dropped", 4],
+    ["web-progress-3", "web-user", 3, "dropped", 6],
+  ] as const) {
+    await db
+      .prepare(insertSubjectProgress)
+      .bind(id, userId, subjectId, stage, chapters, now - 1000, now - 1000)
+      .run();
+  }
 
   const insertList = `insert into collection_list
      (id, user_id, name, is_public, share_token, created_at, updated_at)
@@ -134,8 +160,8 @@ describe("Mini account pairing", () => {
     const claim = await claimAccountLink(bindings, "mini-user", credential.shortCode, now);
     expect(claim.preview.source.name).toBe("微信用户");
     expect(claim.preview.target.name).toBe("Web 用户");
-    expect(claim.preview.source).toMatchObject({ collections: 1, progress: 1, lists: 1 });
-    expect(claim.preview.target).toMatchObject({ collections: 1, progress: 1, lists: 1 });
+    expect(claim.preview.source).toMatchObject({ collections: 1, progress: 3, lists: 1 });
+    expect(claim.preview.target).toMatchObject({ collections: 1, progress: 3, lists: 1 });
 
     await confirmAccountLink(
       bindings,
@@ -172,6 +198,19 @@ describe("Mini account pairing", () => {
         )
         .first(),
     ).toEqual({ stage: "completed", completed_chapters: 12 });
+    expect(
+      (
+        await db
+          .prepare(
+            `select subject_id, stage, completed_chapters from progress
+             where user_id = 'web-user' and subject_id in (2, 3) order by subject_id`,
+          )
+          .all()
+      ).results,
+    ).toEqual([
+      { subject_id: 2, stage: "in_progress", completed_chapters: 8 },
+      { subject_id: 3, stage: "dropped", completed_chapters: 6 },
+    ]);
     expect(
       await (
         await db

@@ -1027,10 +1027,14 @@ export async function confirmAccountLink(
     database
       .prepare(
         `update progress as target set
-             stage = case when target.stage = 'completed' or
-               (select source.stage from progress source where source.user_id = ?
-                and source.subject_id = target.subject_id) = 'completed'
-               then 'completed' else 'in_progress' end,
+             stage = case
+               when 'completed' in (target.stage, (select source.stage from progress source
+                 where source.user_id = ? and source.subject_id = target.subject_id))
+               then 'completed'
+               when 'in_progress' in (target.stage, (select source.stage from progress source
+                 where source.user_id = ? and source.subject_id = target.subject_id))
+               then 'in_progress'
+               else 'dropped' end,
              completed_chapters = case
                when target.completed_chapters is null and
                  (select source.completed_chapters from progress source where source.user_id = ?
@@ -1045,7 +1049,7 @@ export async function confirmAccountLink(
              (select 1 from progress source where source.user_id = ?
               and source.subject_id = target.subject_id)`,
       )
-      .bind(source.id, source.id, source.id, source.id, target.id, source.id),
+      .bind(source.id, source.id, source.id, source.id, source.id, target.id, source.id),
     database
       .prepare(
         `delete from progress where user_id = ? and exists

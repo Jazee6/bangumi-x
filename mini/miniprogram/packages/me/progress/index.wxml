@@ -3,7 +3,9 @@
     <app-header title="进度" back transparent bindback="onBack" bindheaderheightchange="onHeaderHeightChange"></app-header>
     <view class="list-controls">
       <view class="progress-controls__row">
-        <ui-tabs variant="pill" fit tabs="{{stageTabs}}" value="{{selectedStage}}" bindchange="onStageChange"></ui-tabs>
+        <scroll-view class="progress-controls__stages" scroll-x enable-flex show-scrollbar="{{false}}">
+          <ui-tabs variant="pill" fit tabs="{{stageTabs}}" value="{{selectedStage}}" bindchange="onStageChange"></ui-tabs>
+        </scroll-view>
         <picker class="progress-controls__select" mode="selector" range="{{typeLabels}}" value="{{typeIndex}}" bindchange="onTypeChange">
           <ui-select-trigger label="{{typeLabels[typeIndex]}}"></ui-select-trigger>
         </picker>
@@ -39,8 +41,9 @@
             <ui-badge value="{{item.broadcastLabel}}" variant="{{item.broadcastLabel === '已完结' ? 'outline' : 'secondary'}}"></ui-badge>
           </view>
           <view class="progress-card__actions">
+            <text wx:if="{{item.hasChapters && item.stage === 'dropped'}}" class="progress-card__chapters">{{item.chapterLabel}}</text>
             <ui-stepper
-              wx:if="{{item.hasChapters}}"
+              wx:elif="{{item.hasChapters}}"
               value="{{item.completedChapters || 0}}"
               total="{{item.totalChapters || 0}}"
               disabled="{{mutatingId > 0}}"
